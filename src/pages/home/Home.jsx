@@ -97,9 +97,19 @@ class Home extends Component {
     );
   }
   loaddata = async (page, name) => {
-    return await get({
-      url: `/api/site/index-ajax-feed?page=${page}&menu_id=0&menu_name=${name}&part=2&cityId=9&newFeed=1`,
-    });
+    try {
+      const result = await get({
+        url: `/api/site/index-ajax-feed?page=${page}&menu_id=0&menu_name=${name}&part=2&cityId=9&newFeed=1`,
+      });
+      return result;
+    } catch (error) {
+      console.error("Error loading feed data:", error);
+      // Return empty result structure
+      return {
+        feed_list: [],
+        has_more: "0"
+      };
+    }
   };
   moddata(data) {
     if (!data || !data.feed_list || !Array.isArray(data.feed_list)) {
