@@ -3,11 +3,11 @@ services:
     name: clinicai
     env: node
     buildCommand: |
-      rm -rf node_modules yarn.lock dist .yarn || true
-      npm install -g yarn@1.22.19
-      yarn install --ignore-engines --network-timeout 100000
-      yarn build
-    startCommand: yarn start
+      rm -rf node_modules dist .npm package-lock.json || true
+      npm cache clean --force || true
+      npm install --legacy-peer-deps --no-audit --no-fund --loglevel=error
+      npm run build
+    startCommand: npm start
     staticPublishPath: ./dist
     envVars:
       - key: NODE_ENV
