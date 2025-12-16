@@ -50,16 +50,59 @@
   <body>
     <div id="root" style="height: 100%; overflow: scroll;"></div>
     <script>
-      // Register service worker
+      // Register service worker with auto-update
       if ('serviceWorker' in navigator) {
+        let refreshing = false;
+        
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/service-worker.js')
             .then((registration) => {
-              console.log('SW registered: ', registration);
+              console.log('[SW] Registered:', registration.scope);
+              
+              // Check for updates every hour
+              setInterval(() => {
+                registration.update();
+              }, 60 * 60 * 1000);
+              
+              // Listen for service worker updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('[SW] New service worker found');
+                
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New service worker is ready, reload the page
+                    console.log('[SW] New service worker installed, reloading...');
+                    if (!refreshing) {
+                      refreshing = true;
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+              
+              // Listen for messages from service worker
+              navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'SW_UPDATED') {
+                  console.log('[SW] Service worker updated:', event.data.cacheName);
+                  if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                  }
+                }
+              });
             })
             .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
+              console.error('[SW] Registration failed:', registrationError);
             });
+          
+          // Listen for controller change (when new SW takes control)
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+              refreshing = true;
+              window.location.reload();
+            }
+          });
         });
       }
     </script>
