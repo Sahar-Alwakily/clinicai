@@ -2,14 +2,7 @@ services:
   - type: web
     name: clinicai
     env: node
-    buildCommand: |
-      npm config delete registry || true
-      npm config set registry https://registry.npmjs.org/
-      npm config set strict-ssl true
-      rm -rf node_modules dist .npm package-lock.json || true
-      npm cache clean --force || true
-      npm install --legacy-peer-deps --no-audit --no-fund --registry=https://registry.npmjs.org/
-      npm run build
+    buildCommand: npm config set registry https://registry.npmjs.org/ && npm config set strict-ssl true && npm install --legacy-peer-deps --no-audit --no-fund && npm run build
     startCommand: npm start
     staticPublishPath: ./dist
     envVars:
