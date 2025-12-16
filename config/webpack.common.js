@@ -114,8 +114,8 @@ module.exports = {
     }),
 
     new MiniCssExtractPlugin({
-      filename: "css/[name]-[hash:6].css",
-      chunkFilename: "css/[id]-[hash:6].css",
+      filename: "[name]-[hash:6].css",
+      chunkFilename: "[id]-[hash:6].css",
       ignoreOrder: true,
     }),
 
