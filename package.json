@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "sideEffects": false,
-  "repository": "git@gitee.com:fengheping/soyoung.git",
-  "author": "heping <1942725781@qq.com>",
+  "author": "hepin",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.10.5",
