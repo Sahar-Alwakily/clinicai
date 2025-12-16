@@ -96,19 +96,137 @@ class Home extends Component {
       </>
     );
   }
+  getDefaultFeedData = () => {
+    return {
+      feed_list: [
+        {
+          data: {
+            id: "1",
+            summary: "تجربة رائعة في عيادة التجميل - خدمة ممتازة ونتائج مذهلة",
+            imgs: {
+              u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png",
+              w: 120,
+              h: 120
+            },
+            user: {
+              user_name: "سارة أحمد",
+              avatar: {
+                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+              }
+            },
+            view_cnt: "1.2k"
+          }
+        },
+        {
+          data: {
+            id: "2",
+            summary: "بوتوكس الجبهة - نتائج طبيعية وجميلة جداً",
+            imgs: {
+              u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png",
+              w: 120,
+              h: 120
+            },
+            user: {
+              user_name: "فاطمة محمد",
+              avatar: {
+                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+              }
+            },
+            view_cnt: "856"
+          }
+        },
+        {
+          data: {
+            id: "3",
+            summary: "فيلر الشفاه - شكل طبيعي وجميل",
+            imgs: {
+              u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png",
+              w: 120,
+              h: 120
+            },
+            user: {
+              user_name: "ليلى خالد",
+              avatar: {
+                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+              }
+            },
+            view_cnt: "2.1k"
+          }
+        },
+        {
+          data: {
+            id: "4",
+            summary: "تنظيف البشرة العميق - بشرة نضرة ومشرقة",
+            imgs: {
+              u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png",
+              w: 120,
+              h: 120
+            },
+            user: {
+              user_name: "نورا علي",
+              avatar: {
+                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+              }
+            },
+            view_cnt: "945"
+          }
+        },
+        {
+          data: {
+            id: "5",
+            summary: "تفتيح البشرة بالجلوتاثيون - نتائج مذهلة",
+            imgs: {
+              u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png",
+              w: 120,
+              h: 120
+            },
+            user: {
+              user_name: "ريم سعد",
+              avatar: {
+                u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png"
+              }
+            },
+            view_cnt: "1.5k"
+          }
+        },
+        {
+          data: {
+            id: "6",
+            summary: "إبرة نضارة متقدمة - بشرة شابة ومشرقة",
+            imgs: {
+              u: "https://img2.soyoung.com/origin/20200721/7/9a87253568bfb4db9a3d8f19c7b79bc6_120_120.png",
+              w: 120,
+              h: 120
+            },
+            user: {
+              user_name: "هند يوسف",
+              avatar: {
+                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+              }
+            },
+            view_cnt: "678"
+          }
+        }
+      ],
+      has_more: "1"
+    };
+  };
+
   loaddata = async (page, name) => {
     try {
       const result = await get({
         url: `/api/site/index-ajax-feed?page=${page}&menu_id=0&menu_name=${name}&part=2&cityId=9&newFeed=1`,
       });
-      return result;
+      // Check if result has valid data
+      if (result && result.feed_list && result.feed_list.length > 0) {
+        return result;
+      }
+      // If no data or error, return default data
+      return this.getDefaultFeedData();
     } catch (error) {
       console.error("Error loading feed data:", error);
-      // Return empty result structure
-      return {
-        feed_list: [],
-        has_more: "0"
-      };
+      // Return default data on error
+      return this.getDefaultFeedData();
     }
   };
   moddata(data) {
