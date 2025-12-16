@@ -2,10 +2,13 @@ services:
   - type: web
     name: clinicai
     env: node
-    buildCommand: rm -rf node_modules package-lock.json && npm install --legacy-peer-deps --no-audit --no-fund && npm run build
-    startCommand: npm start
+    buildCommand: |
+      rm -rf node_modules yarn.lock dist .yarn || true
+      npm install -g yarn@1.22.19
+      yarn install --ignore-engines --network-timeout 100000
+      yarn build
+    startCommand: yarn start
     staticPublishPath: ./dist
     envVars:
       - key: NODE_ENV
         value: production
-
