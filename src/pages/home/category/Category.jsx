@@ -1,8 +1,5 @@
 import React, { Component } from "react";
-import { Grid } from "antd-mobile";
 import { withRouter } from "react-router-dom";
-
-import _ from "lodash";
 
 import { Categorydiv } from "./styled";
 @withRouter
@@ -117,35 +114,46 @@ class Category extends Component {
     };
   };
   render() {
+    // Add "عرض الكل" as the last item
+    const allCategories = [
+      ...this.state.data,
+      {
+        icon: "📋",
+        text: "عرض الكل",
+        isSeeAll: true
+      }
+    ];
+
     return (
       <>
         <Categorydiv>
-          <div className="section-header">
-            <h3>الخدمات المتاحة</h3>
-            <span className="see-all" onClick={() => this.props.history.push("/catalog")}>عرض الكل</span>
-          </div>
-          <Grid
-            data={this.state.data}
-            activeStyle={false}
-            columnNum={4}
-            isCarousel
-            carouselMaxRow={2}
-            dots={false}
-            renderItem={(dataItem) => (
+          <div className="categories-grid">
+            {allCategories.map((dataItem, index) => (
               <div
+                key={index}
                 className="category-item"
-                onClick={this.gotoinfo(dataItem.text)}
+                onClick={() => {
+                  if (dataItem.isSeeAll) {
+                    this.props.history.push("/catalog");
+                  } else {
+                    this.gotoinfo(dataItem.text)();
+                  }
+                }}
               >
                 <div className="icon-wrapper">
-                  <img
-                    src={dataItem.icon}
-                    alt={dataItem.text}
-                  />
+                  {dataItem.isSeeAll ? (
+                    <div className="see-all-icon">📋</div>
+                  ) : (
+                    <img
+                      src={dataItem.icon}
+                      alt={dataItem.text}
+                    />
+                  )}
                 </div>
                 <span className="category-text">{dataItem.text}</span>
               </div>
-            )}
-          />
+            ))}
+          </div>
         </Categorydiv>
       </>
     );

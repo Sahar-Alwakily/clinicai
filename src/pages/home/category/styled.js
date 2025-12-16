@@ -2,57 +2,15 @@ import styled from "styled-components";
 
 const Categorydiv = styled.div`
   padding: 0.4rem 0.3rem;
-  background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
+  background: #fff5f7;
   margin-top: 0.2rem;
   border-radius: 0.2rem;
   
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.3rem;
-    padding: 0 0.05rem;
-    
-    h3 {
-      font-size: 0.3rem;
-      font-weight: 600;
-      color: #1a1a1a;
-      margin: 0;
-      letter-spacing: -0.01rem;
-    }
-    
-    .see-all {
-      font-size: 0.22rem;
-      color: #6366f1;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      padding: 0.05rem 0.1rem;
-      border-radius: 0.08rem;
-      
-      &:hover {
-        color: #4f46e5;
-        background: #f0f0ff;
-      }
-      
-      &:active {
-        transform: scale(0.95);
-      }
-    }
-  }
-  
-  .am-grid {
-    background: transparent;
-    
-    .am-grid-item {
-      padding: 0.1rem;
-      
-      .am-grid-item-content {
-        padding: 0;
-        background: transparent;
-        border: none;
-      }
-    }
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.25rem;
+    width: 100%;
   }
   
   .category-item {
@@ -61,135 +19,97 @@ const Categorydiv = styled.div`
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0.2rem 0.15rem;
-    border-radius: 0.16rem;
-    width: 100%;
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
-    min-height: 1.2rem;
+    transition: all 0.2s ease;
+    padding: 0.15rem 0.1rem;
+    border-radius: 0.12rem;
     
     &:hover {
-      background: #ffffff;
-      border-color: #e0e7ff;
-      transform: translateY(-0.03rem);
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+      transform: translateY(-0.02rem);
     }
     
     &:active {
-      transform: translateY(0);
-      box-shadow: 0 1px 4px rgba(99, 102, 241, 0.12);
+      transform: translateY(0) scale(0.98);
     }
     
     .icon-wrapper {
-      width: 0.7rem;
-      height: 0.7rem;
-      border-radius: 0.14rem;
-      background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 50%;
+      background: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 0.1rem;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      flex-shrink: 0;
-      position: relative;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-        opacity: 0;
-        transition: opacity 0.25s ease;
+      img {
+        width: 0.6rem;
+        height: 0.6rem;
+        object-fit: cover;
+        border-radius: 50%;
       }
       
-      img {
-        width: 0.42rem;
-        height: 0.42rem;
-        object-fit: contain;
-        position: relative;
-        z-index: 1;
-        filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(1352%) hue-rotate(230deg) brightness(98%) contrast(92%);
+      .see-all-icon {
+        font-size: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
       }
     }
     
     &:hover .icon-wrapper {
-      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-      transform: scale(1.08);
-      
-      &::before {
-        opacity: 1;
-      }
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: scale(1.05);
     }
     
     .category-text {
       display: block;
       text-align: center;
-      color: #374151;
-      font-size: 0.19rem;
+      color: #333;
+      font-size: 0.18rem;
       font-weight: 500;
       line-height: 1.3;
+      margin-top: 0.08rem;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
       max-width: 100%;
-      word-break: break-word;
-      margin-top: 0.05rem;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      display: -webkit-box;
-      letter-spacing: -0.005rem;
     }
   }
   
   @media (min-width: 769px) {
     padding: 0.5rem 0.4rem;
     margin-top: 0.25rem;
-    border-radius: 0.24rem;
     
-    .section-header {
-      margin-bottom: 0.35rem;
-      padding: 0 0.08rem;
-      
-      h3 {
-        font-size: 0.34rem;
-      }
-      
-      .see-all {
-        font-size: 0.24rem;
-        padding: 0.06rem 0.12rem;
-      }
-    }
-    
-    .am-grid {
-      .am-grid-item {
-        padding: 0.12rem;
-      }
+    .categories-grid {
+      gap: 0.3rem;
     }
     
     .category-item {
-      padding: 0.25rem 0.18rem;
-      min-height: 1.35rem;
-      border-radius: 0.18rem;
+      padding: 0.2rem 0.15rem;
       
       .icon-wrapper {
-        width: 0.8rem;
-        height: 0.8rem;
+        width: 1rem;
+        height: 1rem;
         margin-bottom: 0.12rem;
-        border-radius: 0.16rem;
         
         img {
-          width: 0.48rem;
-          height: 0.48rem;
+          width: 0.7rem;
+          height: 0.7rem;
+        }
+        
+        .see-all-icon {
+          font-size: 0.6rem;
         }
       }
       
       .category-text {
-        font-size: 0.21rem;
-        margin-top: 0.06rem;
+        font-size: 0.2rem;
+        margin-top: 0.1rem;
       }
     }
   }
@@ -198,37 +118,32 @@ const Categorydiv = styled.div`
     padding: 0.35rem 0.25rem;
     margin-top: 0.15rem;
     
-    .section-header {
-      margin-bottom: 0.25rem;
-      
-      h3 {
-        font-size: 0.28rem;
-      }
-      
-      .see-all {
-        font-size: 0.2rem;
-        padding: 0.04rem 0.08rem;
-      }
+    .categories-grid {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.2rem;
     }
     
     .category-item {
-      padding: 0.18rem 0.12rem;
-      min-height: 1.1rem;
+      padding: 0.12rem 0.08rem;
       
       .icon-wrapper {
-        width: 0.65rem;
-        height: 0.65rem;
+        width: 0.85rem;
+        height: 0.85rem;
         margin-bottom: 0.08rem;
         
         img {
-          width: 0.4rem;
-          height: 0.4rem;
+          width: 0.55rem;
+          height: 0.55rem;
+        }
+        
+        .see-all-icon {
+          font-size: 0.45rem;
         }
       }
       
       .category-text {
-        font-size: 0.18rem;
-        margin-top: 0.04rem;
+        font-size: 0.16rem;
+        margin-top: 0.06rem;
       }
     }
   }
