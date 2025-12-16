@@ -42,7 +42,7 @@
   "prebuild": "npm run clean || true",
   "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --config ./config/webpack.prod.js",
   "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --config ./config/webpack.dev.js",
-  "start": "serve -s dist -l 10000"
+  "start": "serve -s dist -l 10000 --single"
 },
   "dependencies": {
     "antd-mobile": "^2.3.3",
