@@ -49,22 +49,31 @@ class Home extends Component {
       this.setState({
         loading: true,
       });
-      result = await this.loaddata(this.state.page, this.state.feedname);
+      try {
+        result = await this.loaddata(this.state.page, this.state.feedname);
 
-      if (result.has_more !== "1") {
+        if (result && result.has_more !== "1") {
+          this.setState({
+            hasmore: false,
+          });
+        }
         this.setState({
-          hasmore: false,
+          page: this.state.page + 1,
+          loading: false,
+        });
+
+        if (result) {
+          this.setState({
+            data: [...this.state.data, ...this.moddata(result)],
+          });
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        this.setState({
+          loading: false,
         });
       }
-      this.setState({
-        page: this.state.page + 1,
-        loading: false,
-      });
     }
-
-    this.setState({
-      data: [...this.state.data, ...this.moddata(result)],
-    });
   };
 
   render() {
@@ -93,6 +102,9 @@ class Home extends Component {
     });
   };
   moddata(data) {
+    if (!data || !data.feed_list || !Array.isArray(data.feed_list)) {
+      return [];
+    }
     let num = Math.ceil(data.feed_list.length / 2);
     return _.chunk(data.feed_list, num);
   }
@@ -149,22 +161,31 @@ class Home extends Component {
       this.setState({
         loading: true,
       });
-      result = await this.loaddata(this.state.page, this.state.feedname);
+      try {
+        result = await this.loaddata(this.state.page, this.state.feedname);
 
-      if (result.has_more !== "1") {
+        if (result && result.has_more !== "1") {
+          this.setState({
+            hasmore: false,
+          });
+        }
         this.setState({
-          hasmore: false,
+          page: this.state.page + 1,
+          loading: false,
+        });
+
+        if (result) {
+          this.setState({
+            data: [...this.state.data, ...this.moddata(result)],
+          });
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        this.setState({
+          loading: false,
         });
       }
-      this.setState({
-        page: this.state.page + 1,
-        loading: false,
-      });
     }
-
-    this.setState({
-      data: [...this.state.data, ...this.moddata(result)],
-    });
 
     const callback = async () => {
       if (
@@ -177,7 +198,7 @@ class Home extends Component {
             loading: true,
           });
           result = await this.loaddata(this.state.page, this.state.feedname);
-          if (result.has_more !== "1") {
+          if (result && result.has_more !== "1") {
             this.setState({
               hasmore: false,
             });
@@ -187,13 +208,17 @@ class Home extends Component {
             loading: false,
           });
         }
-        let newdata = this.moddata(result);
-        this.setState({
-          data: [
-            [...this.state.data[0], ...newdata[1]],
-            [...this.state.data[1], ...newdata[0]],
-          ],
-        });
+        if (result) {
+          let newdata = this.moddata(result);
+          if (newdata && newdata.length >= 2 && this.state.data.length >= 2) {
+            this.setState({
+              data: [
+                [...(this.state.data[0] || []), ...(newdata[1] || [])],
+                [...(this.state.data[1] || []), ...(newdata[0] || [])],
+              ],
+            });
+          }
+        }
       }
     };
 

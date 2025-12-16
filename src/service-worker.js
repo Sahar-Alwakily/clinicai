@@ -2,9 +2,7 @@ const CACHE_NAME = 'clinicai-v1';
 const urlsToCache = [
   '/',
   '/home',
-  '/catalog',
-  '/static/css/main.css',
-  '/static/js/main.js'
+  '/catalog'
 ];
 
 // Install event - cache resources
@@ -13,7 +11,23 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        // Cache only existing files
+        return Promise.all(
+          urlsToCache.map(url => {
+            return fetch(url)
+              .then(response => {
+                if (response.ok) {
+                  return cache.put(url, response);
+                }
+              })
+              .catch(() => {
+                // Ignore errors for missing files
+              });
+          })
+        );
+      })
+      .catch((error) => {
+        console.log('Cache install error:', error);
       })
   );
 });
