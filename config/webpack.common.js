@@ -114,9 +114,9 @@ module.exports = {
     }),
 
     new MiniCssExtractPlugin({
-      moduleFilename: ({ name }) => {
-        return `${name.replace("js", "css")}-[hash:6].css`;
-      },
+      filename: "css/[name]-[hash:6].css",
+      chunkFilename: "css/[id]-[hash:6].css",
+      ignoreOrder: true,
     }),
 
     new CleanWebpackPlugin(),
