@@ -127,9 +127,8 @@ class Category extends Component {
           <Grid
             data={this.state.data}
             activeStyle={false}
-            columnNum={4}
-            isCarousel
-            carouselMaxRow={2}
+            columnNum={2}
+            isCarousel={false}
             dots={false}
             renderItem={(dataItem) => (
               <div
