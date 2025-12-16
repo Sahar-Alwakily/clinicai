@@ -38,7 +38,7 @@
     "webpack-merge": "^5.0.9"
   },
 "scripts": {
-  "clean": "rm -rf node_modules dist",
+  "clean": "rm -rf dist",
   "prebuild": "npm run clean || true",
   "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --config ./config/webpack.prod.js",
   "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --config ./config/webpack.dev.js",
