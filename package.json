@@ -6,7 +6,7 @@
   "author": "hepin",
   "license": "MIT",
   "engines": {
-    "node": ">=16.0.0 <=18.0.0",
+    "node": "18.x",
     "npm": ">=8.0.0"
   },
   "devDependencies": {
@@ -38,7 +38,8 @@
   },
 "scripts": {
   "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --config ./config/webpack.prod.js",
-  "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --config ./config/webpack.dev.js"
+  "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --config ./config/webpack.dev.js",
+  "start": "serve -s dist -l 10000"
 },
   "dependencies": {
     "antd-mobile": "^2.3.3",
