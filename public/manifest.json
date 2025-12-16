@@ -1,0 +1,32 @@
+{
+  "name": "ClinicAI - عيادة التجميل",
+  "short_name": "ClinicAI",
+  "description": "تطبيق عيادة التجميل والعلاجات التجميلية",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#EC4899",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["medical", "beauty", "health"],
+  "lang": "ar",
+  "dir": "rtl"
+}
+

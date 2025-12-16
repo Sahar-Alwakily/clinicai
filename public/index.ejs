@@ -1,0 +1,41 @@
+<!--
+ * @Author: heping
+ * @Date: 2020-07-28 19:40:58
+ * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2020-07-30 20:21:27
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#EC4899" />
+    <meta name="description" content="تطبيق عيادة التجميل والعلاجات التجميلية" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ClinicAI" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <title>ClinicAI - عيادة التجميل</title>
+  </head>
+  <body>
+    <div id="root" style="height: 100%; overflow: scroll;"></div>
+    <script>
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
