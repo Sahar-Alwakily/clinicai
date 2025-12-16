@@ -3,12 +3,14 @@ services:
     name: clinicai
     env: node
     buildCommand: |
-      rm -rf node_modules dist .npm package-lock.json yarn.lock || true
-      corepack enable
-      corepack prepare yarn@1.22.19 --activate
-      yarn install --ignore-engines --network-timeout 100000 --frozen-lockfile=false
-      yarn build
-    startCommand: yarn start
+      npm config delete registry || true
+      npm config set registry https://registry.npmjs.org/
+      npm config set strict-ssl true
+      rm -rf node_modules dist .npm package-lock.json || true
+      npm cache clean --force || true
+      npm install --legacy-peer-deps --no-audit --no-fund --registry=https://registry.npmjs.org/
+      npm run build
+    startCommand: npm start
     staticPublishPath: ./dist
     envVars:
       - key: NODE_ENV
