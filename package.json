@@ -9,6 +9,7 @@
     "node": ">=18.0.0 <=20.0.0",
     "npm": ">=9.0.0"
   },
+  "packageManager": "yarn@1.22.19",
   "devDependencies": {
     "@babel/core": "^7.10.5",
     "@babel/plugin-proposal-class-properties": "^7.10.4",
