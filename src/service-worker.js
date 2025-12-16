@@ -77,6 +77,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip chrome-extension, chrome, and other non-http(s) schemes
+  const url = new URL(event.request.url);
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
@@ -85,13 +91,26 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
         
+        // Only cache same-origin requests
+        const responseUrl = new URL(response.url);
+        if (responseUrl.origin !== location.origin) {
+          return response;
+        }
+        
         // Clone the response
         const responseToCache = response.clone();
         
-        // Cache the response
+        // Cache the response (with error handling)
         caches.open(CACHE_NAME)
           .then((cache) => {
-            cache.put(event.request, responseToCache);
+            try {
+              cache.put(event.request, responseToCache);
+            } catch (error) {
+              console.warn('[Service Worker] Failed to cache:', event.request.url, error);
+            }
+          })
+          .catch((error) => {
+            console.warn('[Service Worker] Cache open error:', error);
           });
         
         return response;
