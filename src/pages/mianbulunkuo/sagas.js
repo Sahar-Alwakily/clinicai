@@ -14,15 +14,25 @@ import {
 } from "./actionTyeps";
 
 function* loaditemProductData() {
-  let result = yield call(get, {
-    url:
-      "/api/yuehui/product?ajax=1&lver=6.3.9&district_id=9&sort=0&menu1_id=10006&menu2_id=0&index=1",
-  });
+  try {
+    let result = yield call(get, {
+      url:
+        "/api/yuehui/product?ajax=1&lver=6.3.9&district_id=9&sort=0&menu1_id=10006&menu2_id=0&index=1",
+    });
 
-  yield put({
-    type: LOAD_ITEM_PRODUCT_DATA,
-    itemproductlist: result.result.product_info,
-  });
+    const productInfo = result?.result?.product_info || [];
+    
+    yield put({
+      type: LOAD_ITEM_PRODUCT_DATA,
+      itemproductlist: productInfo,
+    });
+  } catch (error) {
+    console.error("Error loading product data:", error);
+    yield put({
+      type: LOAD_ITEM_PRODUCT_DATA,
+      itemproductlist: [],
+    });
+  }
 }
 
 function* sagas() {
