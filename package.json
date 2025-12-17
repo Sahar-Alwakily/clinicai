@@ -45,8 +45,8 @@
   "start": "serve -s dist -l 10000 --single"
 },
   "dependencies": {
-    "@react-three/drei": "^9.88.0",
-    "@react-three/fiber": "^8.15.0",
+    "@react-three/drei": "^7.27.5",
+    "@react-three/fiber": "^7.0.29",
     "antd-mobile": "^2.3.3",
     "axios": "^0.19.2",
     "lodash": "^4.17.19",

@@ -365,3 +365,4 @@ class Trends extends Component {
 
 export default Trends;
 
+

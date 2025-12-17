@@ -147,3 +147,4 @@ const BottomNav = ({ history, location }) => {
 
 export default withRouter(BottomNav);
 
+
