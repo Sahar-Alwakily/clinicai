@@ -359,7 +359,7 @@ const TrackingModal = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2000;
   padding: 0.3rem;
   
   .modal-content {
@@ -367,7 +367,7 @@ const TrackingModal = styled.div`
     border-radius: 0.2rem;
     width: 100%;
     max-width: 6rem;
-    max-height: 90vh;
+    max-height: 85vh;
     overflow-y: auto;
     
     .modal-header {
@@ -589,6 +589,7 @@ const SubmitButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   margin-top: 0.2rem;
+  margin-bottom: 0.3rem;
   
   &:hover {
     opacity: 0.9;

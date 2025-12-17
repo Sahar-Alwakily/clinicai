@@ -8,11 +8,6 @@ class Category extends Component {
     data: [
       {
         icon:
-          "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png?imageView2/0/format/webp",
-        text: `محيط الوجه`,
-      },
-      {
-        icon:
           "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png?imageView2/0/format/webp",
         text: `حمض الهيالورونيك`,
       },
@@ -38,11 +33,6 @@ class Category extends Component {
       },
       {
         icon:
-          "https://img2.soyoung.com/origin/20200508/9/85256f54946e4bf3d031d0f4fe96a8be_120_120.png?imageView2/0/format/webp",
-        text: `التجميل اليومي`,
-      },
-      {
-        icon:
           "https://img2.soyoung.com/origin/20200508/6/4ea77600e2444d5620a67a3ad1f2e3a8_120_120.png?imageView2/0/format/webp",
         text: `منطقة الصدر`,
       },
@@ -63,11 +53,6 @@ class Category extends Component {
       },
       {
         icon:
-          "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png?imageView2/0/format/webp",
-        text: `العناية بالبشرة`,
-      },
-      {
-        icon:
           "https://img2.soyoung.com/origin/20200508/1/b5deda8352d549692fd31c78b79b3438_120_120.png?imageView2/0/format/webp",
         text: `زراعة الشعر والعناية به`,
       },
@@ -80,11 +65,6 @@ class Category extends Component {
         icon:
           "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png?imageView2/0/format/webp",
         text: `ترطيب وتفتيح البشرة`,
-      },
-      {
-        icon:
-          "https://img2.soyoung.com/origin/20200508/6/2731d3fed0ca114e027434584fa4e414_120_120.png?imageView2/0/format/webp",
-        text: `وجه V الصغير`,
       },
       {
         icon:
