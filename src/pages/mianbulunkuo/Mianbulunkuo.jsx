@@ -5,13 +5,11 @@ import { loaditemProductData } from "./actionCreator";
 import Productlist from "./list/Productlist";
 import {
   PageContainer,
-  TopBar,
   Header,
   SearchBar,
   PageTitle,
   ProductCount,
   SortFilterIcons,
-  HamburgerIcon,
   BackButton
 } from "./styled";
 
@@ -55,20 +53,11 @@ class Mianbulunkuo extends Component {
 
   render() {
     const serviceName = this.props.match?.params?.name || "الخدمات";
-    const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
     const apiServices = this.props.itemproductlist || [];
     const totalProducts = apiServices.length || 25;
 
     return (
       <PageContainer>
-        <TopBar>
-          <span className="time">{currentTime}</span>
-          <div className="status-icons">
-            <span className="signal">📶</span>
-            <span className="battery">🔋</span>
-          </div>
-        </TopBar>
-
         <Header>
           <BackButton onClick={this.handleBack}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
