@@ -69,19 +69,18 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
   const { scene } = useGLTF("/assets/models/model.glb");
   
-  // تفعيل الألوان - إذا فشل تحميل الـ textures نستخدم لون بشرة
+  // تطبيق لون بشرة على الموديل
   React.useEffect(() => {
     scene.traverse((child) => {
-      if (child.isMesh) {
+      if (child.isMesh && child.material) {
+        // إزالة الـ texture وتطبيق لون بشرة
+        child.material.map = null;
+        child.material.color.setHex(0xf5c6a5);
+        child.material.metalness = 0.1;
+        child.material.roughness = 0.6;
+        child.material.needsUpdate = true;
         child.castShadow = true;
         child.receiveShadow = true;
-        if (child.material) {
-          // إذا لم يكن هناك texture، نضيف لون بشرة طبيعي
-          if (!child.material.map) {
-            child.material.color.setHex(0xf5c6a5);
-          }
-          child.material.needsUpdate = true;
-        }
       }
     });
   }, [scene]);
