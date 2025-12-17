@@ -10,6 +10,7 @@ import Mianbulunkuo from "pages/mianbulunkuo/Mianbulunkuo";
 import Details from "pages/details/Details";
 import Catalog from "pages/catalog/Catalog";
 import Trends from "pages/trends/Trends";
+import Bookings from "pages/bookings/Bookings";
 
 // المكونات الجديدة للتشخيص - نظام منفصل
 
@@ -27,6 +28,7 @@ export default class App extends Component {
           <Route path="/details" component={Details}></Route>
           <Route path="/catalog" component={Catalog}></Route>
           <Route path="/trends" component={Trends}></Route>
+          <Route path="/bookings" component={Bookings}></Route>
           
           <Redirect from="/" exact to="/home"></Redirect>
         </Switch>
