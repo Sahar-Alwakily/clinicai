@@ -269,10 +269,367 @@ const StatsBar = styled.div`
   }
 `;
 
+const TrackingAlert = styled.div`
+  background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+  margin: 0.25rem;
+  border-radius: 0.15rem;
+  padding: 0.25rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s;
+  
+  &:hover {
+    transform: scale(1.02);
+  }
+  
+  .alert-header {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin-bottom: 0.12rem;
+    
+    .icon {
+      font-size: 0.35rem;
+      animation: pulse 2s infinite;
+    }
+    
+    .title {
+      font-size: 0.24rem;
+      font-weight: 600;
+    }
+    
+    .badge {
+      background: rgba(255,255,255,0.3);
+      padding: 0.05rem 0.12rem;
+      border-radius: 0.2rem;
+      font-size: 0.16rem;
+      margin-right: auto;
+    }
+  }
+  
+  .alert-content {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    
+    .treatment-info {
+      flex: 1;
+      
+      .treatment-name {
+        font-size: 0.2rem;
+        opacity: 0.95;
+      }
+      
+      .days-left {
+        font-size: 0.18rem;
+        opacity: 0.8;
+        margin-top: 0.05rem;
+      }
+    }
+    
+    .action-btn {
+      background: white;
+      color: #ff6b6b;
+      border: none;
+      padding: 0.12rem 0.2rem;
+      border-radius: 0.3rem;
+      font-size: 0.18rem;
+      font-weight: 600;
+      cursor: pointer;
+      
+      &:hover {
+        background: #fff5f5;
+      }
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+`;
+
+const TrackingModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 0.3rem;
+  
+  .modal-content {
+    background: white;
+    border-radius: 0.2rem;
+    width: 100%;
+    max-width: 6rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    
+    .modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 0.3rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      
+      h2 {
+        font-size: 0.28rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.1rem;
+      }
+      
+      .close-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        font-size: 0.25rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    
+    .modal-body {
+      padding: 0.3rem;
+    }
+  }
+`;
+
+const TrackingSection = styled.div`
+  margin-bottom: 0.3rem;
+  
+  .section-title {
+    font-size: 0.22rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+  }
+`;
+
+const QuestionCard = styled.div`
+  background: #f9f9f9;
+  border-radius: 0.12rem;
+  padding: 0.2rem;
+  margin-bottom: 0.15rem;
+  
+  .question {
+    font-size: 0.2rem;
+    color: #333;
+    margin-bottom: 0.15rem;
+  }
+  
+  .options {
+    display: flex;
+    gap: 0.1rem;
+    flex-wrap: wrap;
+    
+    .option {
+      padding: 0.1rem 0.2rem;
+      border-radius: 0.3rem;
+      font-size: 0.18rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid #e0e0e0;
+      background: white;
+      
+      &:hover {
+        border-color: #667eea;
+      }
+      
+      &.selected {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+      
+      &.danger {
+        &.selected {
+          background: #f44336;
+          border-color: #f44336;
+        }
+      }
+      
+      &.warning {
+        &.selected {
+          background: #ff9800;
+          border-color: #ff9800;
+        }
+      }
+      
+      &.success {
+        &.selected {
+          background: #4caf50;
+          border-color: #4caf50;
+        }
+      }
+    }
+  }
+`;
+
+const PhotoUpload = styled.div`
+  border: 2px dashed #ddd;
+  border-radius: 0.15rem;
+  padding: 0.3rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+  }
+  
+  .upload-icon {
+    font-size: 0.6rem;
+    margin-bottom: 0.1rem;
+  }
+  
+  .upload-text {
+    font-size: 0.2rem;
+    color: #666;
+  }
+  
+  .upload-hint {
+    font-size: 0.16rem;
+    color: #999;
+    margin-top: 0.05rem;
+  }
+  
+  .uploaded-photos {
+    display: flex;
+    gap: 0.15rem;
+    flex-wrap: wrap;
+    margin-top: 0.2rem;
+    justify-content: center;
+    
+    .photo-item {
+      width: 1.2rem;
+      height: 1.2rem;
+      border-radius: 0.1rem;
+      background: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5rem;
+      position: relative;
+      
+      .remove-btn {
+        position: absolute;
+        top: -0.1rem;
+        right: -0.1rem;
+        background: #f44336;
+        color: white;
+        border: none;
+        width: 0.35rem;
+        height: 0.35rem;
+        border-radius: 50%;
+        font-size: 0.18rem;
+        cursor: pointer;
+      }
+    }
+  }
+`;
+
+const RatingStars = styled.div`
+  display: flex;
+  gap: 0.1rem;
+  justify-content: center;
+  margin: 0.2rem 0;
+  
+  .star {
+    font-size: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+    
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.1rem;
+  padding: 0.15rem;
+  font-size: 0.2rem;
+  resize: none;
+  min-height: 1.2rem;
+  font-family: inherit;
+  
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.2rem;
+  border-radius: 0.1rem;
+  font-size: 0.24rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.2rem;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 @withRouter
 class Bookings extends Component {
   state = {
     activeTab: "upcoming",
+    showTrackingModal: false,
+    trackingData: {
+      treatment: "ليزر فراكشنال",
+      date: "10 ديسمبر 2025",
+      daysAfter: 3,
+      questions: {
+        redness: null,
+        irritation: null,
+        pain: null,
+        pigmentation: null,
+        swelling: null
+      },
+      photos: [],
+      rating: 0,
+      notes: "",
+      doctorMessage: ""
+    },
+    pendingTracking: [
+      {
+        id: 1,
+        treatment: "ليزر فراكشنال",
+        date: "10 ديسمبر 2025",
+        daysAfter: 3,
+        urgent: true
+      }
+    ],
     bookings: {
       upcoming: [
         {
@@ -337,6 +694,226 @@ class Bookings extends Component {
     }
   };
 
+  handleQuestionAnswer = (question, answer) => {
+    this.setState(prev => ({
+      trackingData: {
+        ...prev.trackingData,
+        questions: {
+          ...prev.trackingData.questions,
+          [question]: answer
+        }
+      }
+    }));
+  };
+
+  handleRating = (rating) => {
+    this.setState(prev => ({
+      trackingData: {
+        ...prev.trackingData,
+        rating
+      }
+    }));
+  };
+
+  handlePhotoUpload = () => {
+    // Simulate photo upload
+    this.setState(prev => ({
+      trackingData: {
+        ...prev.trackingData,
+        photos: [...prev.trackingData.photos, { id: Date.now(), emoji: "📸" }]
+      }
+    }));
+  };
+
+  removePhoto = (photoId) => {
+    this.setState(prev => ({
+      trackingData: {
+        ...prev.trackingData,
+        photos: prev.trackingData.photos.filter(p => p.id !== photoId)
+      }
+    }));
+  };
+
+  submitTracking = () => {
+    alert("تم إرسال تقرير المتابعة إلى الطبيب بنجاح! ✅");
+    this.setState({ 
+      showTrackingModal: false,
+      pendingTracking: []
+    });
+  };
+
+  renderTrackingModal = () => {
+    const { trackingData } = this.state;
+    
+    return (
+      <TrackingModal onClick={() => this.setState({ showTrackingModal: false })}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>📋 تتبع العلاج</h2>
+            <button className="close-btn" onClick={() => this.setState({ showTrackingModal: false })}>×</button>
+          </div>
+          
+          <div className="modal-body">
+            {/* معلومات العلاج */}
+            <TrackingSection>
+              <div className="section-title">💉 {trackingData.treatment}</div>
+              <p style={{ fontSize: '0.18rem', color: '#666', margin: 0 }}>
+                تاريخ الجلسة: {trackingData.date} • اليوم {trackingData.daysAfter} بعد العلاج
+              </p>
+            </TrackingSection>
+
+            {/* أسئلة المتابعة */}
+            <TrackingSection>
+              <div className="section-title">❓ كيف حالك بعد العلاج؟</div>
+              
+              <QuestionCard>
+                <div className="question">هل يوجد احمرار في المنطقة المعالجة؟</div>
+                <div className="options">
+                  <div 
+                    className={`option success ${trackingData.questions.redness === 'none' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('redness', 'none')}
+                  >لا يوجد</div>
+                  <div 
+                    className={`option warning ${trackingData.questions.redness === 'mild' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('redness', 'mild')}
+                  >خفيف</div>
+                  <div 
+                    className={`option danger ${trackingData.questions.redness === 'severe' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('redness', 'severe')}
+                  >شديد</div>
+                </div>
+              </QuestionCard>
+
+              <QuestionCard>
+                <div className="question">هل تشعرين بتهيج أو حكة؟</div>
+                <div className="options">
+                  <div 
+                    className={`option success ${trackingData.questions.irritation === 'none' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('irritation', 'none')}
+                  >لا يوجد</div>
+                  <div 
+                    className={`option warning ${trackingData.questions.irritation === 'mild' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('irritation', 'mild')}
+                  >خفيف</div>
+                  <div 
+                    className={`option danger ${trackingData.questions.irritation === 'severe' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('irritation', 'severe')}
+                  >شديد</div>
+                </div>
+              </QuestionCard>
+
+              <QuestionCard>
+                <div className="question">هل تشعرين بألم؟</div>
+                <div className="options">
+                  <div 
+                    className={`option success ${trackingData.questions.pain === 'none' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('pain', 'none')}
+                  >لا يوجد</div>
+                  <div 
+                    className={`option warning ${trackingData.questions.pain === 'mild' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('pain', 'mild')}
+                  >خفيف</div>
+                  <div 
+                    className={`option danger ${trackingData.questions.pain === 'severe' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('pain', 'severe')}
+                  >شديد</div>
+                </div>
+              </QuestionCard>
+
+              <QuestionCard>
+                <div className="question">هل ظهرت تصبغات أو بقع؟</div>
+                <div className="options">
+                  <div 
+                    className={`option success ${trackingData.questions.pigmentation === 'none' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('pigmentation', 'none')}
+                  >لا يوجد</div>
+                  <div 
+                    className={`option warning ${trackingData.questions.pigmentation === 'mild' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('pigmentation', 'mild')}
+                  >خفيف</div>
+                  <div 
+                    className={`option danger ${trackingData.questions.pigmentation === 'severe' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('pigmentation', 'severe')}
+                  >واضح</div>
+                </div>
+              </QuestionCard>
+
+              <QuestionCard>
+                <div className="question">هل يوجد تورم أو انتفاخ؟</div>
+                <div className="options">
+                  <div 
+                    className={`option success ${trackingData.questions.swelling === 'none' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('swelling', 'none')}
+                  >لا يوجد</div>
+                  <div 
+                    className={`option warning ${trackingData.questions.swelling === 'mild' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('swelling', 'mild')}
+                  >خفيف</div>
+                  <div 
+                    className={`option danger ${trackingData.questions.swelling === 'severe' ? 'selected' : ''}`}
+                    onClick={() => this.handleQuestionAnswer('swelling', 'severe')}
+                  >شديد</div>
+                </div>
+              </QuestionCard>
+            </TrackingSection>
+
+            {/* رفع الصور */}
+            <TrackingSection>
+              <div className="section-title">📷 صور المنطقة المعالجة</div>
+              <PhotoUpload onClick={this.handlePhotoUpload}>
+                <div className="upload-icon">📸</div>
+                <div className="upload-text">اضغط لالتقاط أو رفع صورة</div>
+                <div className="upload-hint">ساعدي الطبيب برؤية حالة بشرتك</div>
+                {trackingData.photos.length > 0 && (
+                  <div className="uploaded-photos">
+                    {trackingData.photos.map(photo => (
+                      <div key={photo.id} className="photo-item">
+                        {photo.emoji}
+                        <button className="remove-btn" onClick={(e) => { e.stopPropagation(); this.removePhoto(photo.id); }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </PhotoUpload>
+            </TrackingSection>
+
+            {/* تقييم الجلسة */}
+            <TrackingSection>
+              <div className="section-title">⭐ تقييم الجلسة</div>
+              <RatingStars>
+                {[1, 2, 3, 4, 5].map(star => (
+                  <span 
+                    key={star}
+                    className="star"
+                    onClick={() => this.handleRating(star)}
+                  >
+                    {star <= trackingData.rating ? '⭐' : '☆'}
+                  </span>
+                ))}
+              </RatingStars>
+            </TrackingSection>
+
+            {/* ملاحظات إضافية */}
+            <TrackingSection>
+              <div className="section-title">📝 ملاحظات للطبيب</div>
+              <TextArea 
+                placeholder="اكتبي أي ملاحظات أو أسئلة للطبيب..."
+                value={trackingData.notes}
+                onChange={(e) => this.setState(prev => ({
+                  trackingData: { ...prev.trackingData, notes: e.target.value }
+                }))}
+              />
+            </TrackingSection>
+
+            <SubmitButton onClick={this.submitTracking}>
+              📤 إرسال التقرير للطبيب
+            </SubmitButton>
+          </div>
+        </div>
+      </TrackingModal>
+    );
+  };
+
   renderBookingCard = (booking) => {
     const { activeTab } = this.state;
     
@@ -394,7 +971,7 @@ class Bookings extends Component {
   };
 
   render() {
-    const { activeTab, bookings, stats } = this.state;
+    const { activeTab, bookings, stats, pendingTracking, showTrackingModal } = this.state;
     const currentBookings = bookings[activeTab] || [];
 
     return (
@@ -403,6 +980,30 @@ class Bookings extends Component {
           <h1>📋 حجوزاتي</h1>
           <p>إدارة مواعيدك بسهولة</p>
         </Header>
+
+        {/* تنبيه تتبع العلاج */}
+        {pendingTracking.length > 0 && (
+          <TrackingAlert onClick={() => this.setState({ showTrackingModal: true })}>
+            <div className="alert-header">
+              <span className="icon">🔔</span>
+              <span className="title">تتبع العلاج</span>
+              <span className="badge">مطلوب</span>
+            </div>
+            <div className="alert-content">
+              <div className="treatment-info">
+                <div className="treatment-name">
+                  {pendingTracking[0].treatment} - اليوم {pendingTracking[0].daysAfter}
+                </div>
+                <div className="days-left">
+                  أجيبي على الأسئلة وأرسلي صور للطبيب
+                </div>
+              </div>
+              <button className="action-btn">ابدأي الآن</button>
+            </div>
+          </TrackingAlert>
+        )}
+
+        {showTrackingModal && this.renderTrackingModal()}
 
         <StatsBar>
           <div className="stat-item">
