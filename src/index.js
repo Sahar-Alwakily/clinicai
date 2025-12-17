@@ -6,7 +6,7 @@
  * @Description:
  */
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 
 import store from "./store/";
@@ -16,11 +16,11 @@ import App from "./App";
 
 import "assets/styles/reset";
 
-ReactDOM.render(
+const root = createRoot(document.querySelector("#root"));
+root.render(
   <Router>
     <Provider store={store}>
       <App />
     </Provider>
-  </Router>,
-  document.querySelector("#root")
+  </Router>
 );
