@@ -23,11 +23,6 @@ class Category extends Component {
       },
       {
         icon:
-          "https://img2.soyoung.com/origin/20200508/6/4ea77600e2444d5620a67a3ad1f2e3a8_120_120.png?imageView2/0/format/webp",
-        text: `منطقة الصدر`,
-      },
-      {
-        icon:
           "https://img2.soyoung.com/origin/20200508/1/254348321c151ecebf79e9a35f12bd39_120_120.png?imageView2/0/format/webp",
         text: `تشكيل وتنحيف الجسم`,
       },
