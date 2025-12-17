@@ -5,6 +5,7 @@ export const CatalogContainer = styled.div`
   background: #f5f5f5;
   display: flex;
   flex-direction: column;
+  padding-bottom: 1.5rem;
 `;
 
 export const CatalogHeader = styled.div`

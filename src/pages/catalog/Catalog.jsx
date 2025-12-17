@@ -12,6 +12,7 @@ import {
   ServiceIcon, 
   BackButton 
 } from "./styled";
+import BottomNav from "../../components/bottomNav/BottomNav";
 
 @withRouter
 class Catalog extends Component {
@@ -228,6 +229,7 @@ class Catalog extends Component {
             </ServiceGrid>
           </MainContent>
         </CatalogLayout>
+        <BottomNav />
       </CatalogContainer>
     );
   }
