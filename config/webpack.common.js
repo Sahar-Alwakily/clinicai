@@ -92,6 +92,16 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.(glb|gltf)$/,
+        use: {
+          loader: "file-loader",
+          options: {
+            name: "[name].[ext]",
+            outputPath: "assets/models/",
+          },
+        },
+      },
     ],
   },
 
@@ -146,6 +156,17 @@ module.exports = {
           const iconDest = path.resolve(distPath, "icon.svg");
           if (fs.existsSync(iconSrc)) {
             fs.copyFileSync(iconSrc, iconDest);
+          }
+          
+          // Copy 3D model
+          const modelDir = path.resolve(distPath, "assets/models");
+          if (!fs.existsSync(modelDir)) {
+            fs.mkdirSync(modelDir, { recursive: true });
+          }
+          const modelSrc = path.resolve(__dirname, "../src/assets/models/model.glb");
+          const modelDest = path.resolve(modelDir, "model.glb");
+          if (fs.existsSync(modelSrc)) {
+            fs.copyFileSync(modelSrc, modelDest);
           }
         });
       },

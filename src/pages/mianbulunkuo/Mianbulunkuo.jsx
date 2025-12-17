@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Suspense, lazy } from "react";
 import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { loaditemProductData } from "./actionCreator";
@@ -13,6 +13,8 @@ import {
   FilterTabs,
   BackButton
 } from "./styled";
+
+const FaceModel = lazy(() => import("../../components/FaceModel/FaceModel"));
 
 let mapStateToProps = (state) => {
   return {
@@ -34,7 +36,8 @@ class Mianbulunkuo extends Component {
   state = {
     favorites: [],
     activeFilter: "all",
-    searchQuery: ""
+    searchQuery: "",
+    selectedCategory: null
   };
 
   componentDidMount() {
@@ -52,6 +55,10 @@ class Mianbulunkuo extends Component {
 
   handleBack = () => {
     this.props.history.goBack();
+  };
+
+  handleCategorySelect = (category) => {
+    this.setState({ selectedCategory: category });
   };
 
   render() {
@@ -98,6 +105,10 @@ class Mianbulunkuo extends Component {
         <PageTitle>
           <ProductCount>{totalProducts} نتيجة</ProductCount>
         </PageTitle>
+
+        <Suspense fallback={<div style={{ height: '3.5rem', background: '#667eea', margin: '0.2rem', borderRadius: '0.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>جاري التحميل...</div>}>
+          <FaceModel onSelectCategory={this.handleCategorySelect} />
+        </Suspense>
 
         <FilterTabs>
           {filters.map(filter => (
