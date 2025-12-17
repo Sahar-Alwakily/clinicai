@@ -11,6 +11,7 @@ import Details from "pages/details/Details";
 import Catalog from "pages/catalog/Catalog";
 import Trends from "pages/trends/Trends";
 import Bookings from "pages/bookings/Bookings";
+import Profile from "pages/profile/Profile";
 
 // المكونات الجديدة للتشخيص - نظام منفصل
 
@@ -29,6 +30,7 @@ export default class App extends Component {
           <Route path="/catalog" component={Catalog}></Route>
           <Route path="/trends" component={Trends}></Route>
           <Route path="/bookings" component={Bookings}></Route>
+          <Route path="/profile" component={Profile}></Route>
           
           <Redirect from="/" exact to="/home"></Redirect>
         </Switch>
