@@ -142,80 +142,64 @@ const Filtergroupdiv = styled.div`
 `;
 
 const Productlistdiv = styled.div`
-  background: #fff;
-  padding: 0.1rem;
+  background: #f5f7fa;
+  padding: 0.2rem;
   flex: 1;
   overflow-y: auto;
   
   .product-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.12rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.2rem;
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
   }
   
-  @media (min-width: 769px) {
-    padding: 0.15rem;
-    
-    .product-grid {
-      gap: 0.15rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    padding: 0.08rem;
-    
-    .product-grid {
-      gap: 0.1rem;
-    }
-  }
-  
   .product-card {
     background: #fff;
-    border-radius: 0.12rem;
+    border-radius: 0.2rem;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    width: 100%;
-    min-height: 1.5rem;
+    flex-direction: column;
     
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
     
     &:active {
-      transform: translateY(0);
+      transform: translateY(-2px);
     }
     
     .image-container {
       position: relative;
-      width: 2.5rem;
-      min-width: 2.5rem;
-      height: auto;
-      background: #f8f9fa;
+      width: 100%;
+      height: 2.2rem;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       overflow: hidden;
-      flex-shrink: 0;
       
       img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-      display: block;
+        display: block;
+        transition: transform 0.3s ease;
+      }
+      
+      &:hover img {
+        transform: scale(1.05);
       }
       
       .favorite-icon {
         position: absolute;
-        top: 0.08rem;
-        right: 0.08rem;
-        width: 0.32rem;
-        height: 0.32rem;
+        top: 0.12rem;
+        right: 0.12rem;
+        width: 0.45rem;
+        height: 0.45rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -224,62 +208,102 @@ const Productlistdiv = styled.div`
         cursor: pointer;
         transition: all 0.3s ease;
         z-index: 2;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         
         svg {
-          width: 0.18rem;
-          height: 0.18rem;
+          width: 0.22rem;
+          height: 0.22rem;
         }
         
         &:hover {
-          background: rgba(255, 255, 255, 1);
+          background: #fff;
           transform: scale(1.15);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
         
         &:active {
           transform: scale(0.95);
         }
       }
+      
+      .discount-badge {
+        position: absolute;
+        top: 0.12rem;
+        left: 0.12rem;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+        color: white;
+        padding: 0.06rem 0.12rem;
+        border-radius: 0.08rem;
+        font-size: 0.16rem;
+        font-weight: 700;
+      }
     }
     
     .product-info {
-      padding: 0.12rem;
+      padding: 0.2rem;
       display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 0.1rem;
       flex: 1;
-      gap: 0.12rem;
       
-      .info-content {
+      .brand {
         display: flex;
-        flex-direction: column;
-        gap: 0.05rem;
-        flex: 1;
-        min-width: 0;
+        align-items: center;
+        gap: 0.08rem;
         
-        .brand {
-          font-size: 0.12rem;
-          color: #666;
+        .brand-icon {
+          width: 0.3rem;
+          height: 0.3rem;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.16rem;
+        }
+        
+        .brand-name {
+          font-size: 0.18rem;
+          color: #888;
           font-weight: 500;
-          line-height: 1.3;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+        }
+      }
+      
+      .title {
+        font-size: 0.22rem;
+        color: #333;
+        font-weight: 600;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .rating {
+        display: flex;
+        align-items: center;
+        gap: 0.08rem;
+        
+        .stars {
+          color: #ffc107;
+          font-size: 0.18rem;
         }
         
-        .title {
-          font-size: 0.14rem;
-          color: #333;
-          font-weight: 600;
-          line-height: 1.4;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          margin-bottom: 0.04rem;
+        .count {
+          font-size: 0.16rem;
+          color: #999;
         }
+      }
+      
+      .price-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 0.1rem;
+        border-top: 1px solid #f0f0f0;
         
         .price {
           display: flex;
@@ -287,15 +311,22 @@ const Productlistdiv = styled.div`
           gap: 0.04rem;
           
           .currency {
-            font-size: 0.12rem;
-            color: #333;
+            font-size: 0.16rem;
+            color: #EC4899;
             font-weight: 600;
           }
           
           .amount {
-            font-size: 0.16rem;
+            font-size: 0.28rem;
             color: #EC4899;
             font-weight: 700;
+          }
+          
+          .old-price {
+            font-size: 0.16rem;
+            color: #bbb;
+            text-decoration: line-through;
+            margin-right: 0.08rem;
           }
         }
       }
@@ -304,139 +335,79 @@ const Productlistdiv = styled.div`
         background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
         color: #fff;
         border: none;
-        border-radius: 0.2rem;
-        padding: 0.12rem 0.24rem;
-        font-size: 0.14rem;
+        border-radius: 0.12rem;
+        padding: 0.15rem;
+        font-size: 0.2rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        white-space: nowrap;
-        flex-shrink: 0;
-        box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
+        text-align: center;
+        margin-top: 0.12rem;
+        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
         
         &:hover {
           background: linear-gradient(135deg, #DB2777 0%, #EC4899 100%);
-          transform: translateY(-1px);
-          box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
         }
         
         &:active {
           transform: translateY(0);
-          box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
-        }
-      }
-    }
-  }
-  
-  @media (min-width: 769px) {
-    .product-card {
-      border-radius: 0.15rem;
-      min-height: 1.8rem;
-      
-      .image-container {
-        width: 3rem;
-        min-width: 3rem;
-        
-        .favorite-icon {
-          top: 0.1rem;
-          right: 0.1rem;
-          width: 0.4rem;
-          height: 0.4rem;
-          
-          svg {
-            width: 0.22rem;
-            height: 0.22rem;
-          }
-        }
-      }
-      
-      .product-info {
-        padding: 0.15rem;
-        gap: 0.15rem;
-        
-        .info-content {
-          gap: 0.06rem;
-          
-          .brand {
-            font-size: 0.14rem;
-          }
-          
-          .title {
-            font-size: 0.16rem;
-          }
-          
-          .price {
-            .currency {
-              font-size: 0.14rem;
-            }
-            
-            .amount {
-              font-size: 0.18rem;
-            }
-          }
-        }
-        
-        .book-button {
-          padding: 0.15rem 0.3rem;
-          font-size: 0.16rem;
-          border-radius: 0.25rem;
         }
       }
     }
   }
   
   @media (max-width: 480px) {
+    padding: 0.15rem;
+    
+    .product-grid {
+      gap: 0.15rem;
+    }
+    
     .product-card {
-      border-radius: 0.1rem;
-      min-height: 1.3rem;
+      border-radius: 0.15rem;
       
       .image-container {
-        width: 2rem;
-        min-width: 2rem;
+        height: 1.8rem;
         
         .favorite-icon {
-          top: 0.06rem;
-          right: 0.06rem;
-          width: 0.28rem;
-          height: 0.28rem;
+          width: 0.4rem;
+          height: 0.4rem;
+          top: 0.1rem;
+          right: 0.1rem;
           
           svg {
-            width: 0.16rem;
-            height: 0.16rem;
+            width: 0.2rem;
+            height: 0.2rem;
           }
         }
       }
       
       .product-info {
-        padding: 0.1rem;
-        gap: 0.1rem;
+        padding: 0.15rem;
         
-        .info-content {
-          gap: 0.04rem;
-          
-          .brand {
-            font-size: 0.11rem;
+        .brand .brand-name {
+          font-size: 0.16rem;
+        }
+        
+        .title {
+          font-size: 0.2rem;
+        }
+        
+        .price-row .price {
+          .currency {
+            font-size: 0.14rem;
           }
           
-          .title {
-            font-size: 0.13rem;
-          }
-          
-          .price {
-            .currency {
-              font-size: 0.11rem;
-            }
-            
-            .amount {
-              font-size: 0.15rem;
-            }
+          .amount {
+            font-size: 0.24rem;
           }
         }
         
         .book-button {
-          padding: 0.1rem 0.2rem;
-          font-size: 0.12rem;
-          border-radius: 0.18rem;
+          padding: 0.12rem;
+          font-size: 0.18rem;
         }
       }
     }
@@ -560,3 +531,4 @@ const CityItem = styled.div`
 `;
 
 export { Filtergroupdiv, Productlistdiv, CityModal, CityList, CityItem };
+
