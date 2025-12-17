@@ -9,6 +9,7 @@ import Category from "./category/Category";
 import Nntry from "./entry/Nntry";
 import Feedtab from "./feedtab/Feedtab";
 import FeedList from "./feedList/FeedList";
+import BottomNav from "components/bottomNav/BottomNav";
 
 import { loadProductData, loadFeedListData } from "./actionCreator";
 
@@ -82,6 +83,7 @@ class Home extends Component {
         <Head></Head>
         <div style={{ 
           paddingTop: '1.5rem', 
+          paddingBottom: '1.5rem',
           background: '#f8f9fa', 
           minHeight: '100vh',
           width: '100%',
@@ -93,6 +95,7 @@ class Home extends Component {
           <Feedtab {...this.props} changetype={this.changename}></Feedtab>
           <FeedList data={this.state.data}></FeedList>
         </div>
+        <BottomNav />
       </>
     );
   }
