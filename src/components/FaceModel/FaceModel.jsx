@@ -67,7 +67,7 @@ function Hotspot({ position, name, onClick, active }) {
 
 function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
-  const { scene, materials } = useGLTF("/assets/models/model.gltf");
+  const { scene, materials } = useGLTF("/assets/models/model.glb");
   
   // نسخ الموديل مع المواد
   const clonedScene = React.useMemo(() => {
