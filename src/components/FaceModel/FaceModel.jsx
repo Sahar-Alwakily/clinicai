@@ -69,6 +69,19 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
   const { scene } = useGLTF("/assets/models/model.glb");
   
+  // تفعيل الألوان والمواد الأصلية للموديل
+  React.useEffect(() => {
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        if (child.material) {
+          child.material.needsUpdate = true;
+        }
+      }
+    });
+  }, [scene]);
+  
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.1;
@@ -77,7 +90,7 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
 
   return (
     <group ref={meshRef}>
-      <primitive object={scene} scale={1.5} position={[0, -0.5, 0]} />
+      <primitive object={scene.clone(true)} scale={1.5} position={[0, -0.5, 0]} />
       {faceHotspots.map((hotspot) => (
         <Hotspot
           key={hotspot.id}
@@ -150,9 +163,10 @@ export default function FaceModel({ onSelectCategory }) {
   return (
     <ModelContainer>
       <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 5, 5]} intensity={0.8} />
-        <pointLight position={[-5, 5, 5]} intensity={0.4} />
+        <ambientLight intensity={1} />
+        <directionalLight position={[5, 5, 5]} intensity={1} />
+        <directionalLight position={[-5, 5, 5]} intensity={0.5} />
+        <pointLight position={[0, 5, 5]} intensity={0.6} />
         
         <Suspense fallback={<LoadingFallback />}>
           {useGLB ? (
