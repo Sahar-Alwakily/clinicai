@@ -8,7 +8,7 @@ const Categorydiv = styled.div`
   
   .categories-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.25rem;
     width: 100%;
   }
@@ -119,7 +119,7 @@ const Categorydiv = styled.div`
     margin-top: 0.15rem;
     
     .categories-grid {
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0.2rem;
     }
     
