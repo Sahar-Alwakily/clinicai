@@ -69,15 +69,10 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
   const { scene } = useGLTF("/assets/models/model.glb");
   
-  // تطبيق لون بشرة على الموديل
+  // الحفاظ على المواد الأصلية من الموديل
   React.useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh && child.material) {
-        // إزالة الـ texture وتطبيق لون بشرة
-        child.material.map = null;
-        child.material.color.setHex(0xf5c6a5);
-        child.material.metalness = 0.1;
-        child.material.roughness = 0.6;
         child.material.needsUpdate = true;
         child.castShadow = true;
         child.receiveShadow = true;
