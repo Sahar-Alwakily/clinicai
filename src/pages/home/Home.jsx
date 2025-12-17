@@ -9,7 +9,7 @@ import Category from "./category/Category";
 import Nntry from "./entry/Nntry";
 import Feedtab from "./feedtab/Feedtab";
 import FeedList from "./feedList/FeedList";
-import BottomNav from "components/bottomNav/BottomNav";
+import BottomNav from "../../components/bottomNav/BottomNav";
 
 import { loadProductData, loadFeedListData } from "./actionCreator";
 
