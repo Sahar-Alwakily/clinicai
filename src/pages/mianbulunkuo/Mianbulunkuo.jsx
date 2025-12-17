@@ -3,13 +3,14 @@ import { withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { loaditemProductData } from "./actionCreator";
 import Productlist from "./list/Productlist";
+import BottomNav from "../../components/bottomNav/BottomNav";
 import {
   PageContainer,
   Header,
   SearchBar,
   PageTitle,
   ProductCount,
-  SortFilterIcons,
+  FilterTabs,
   BackButton
 } from "./styled";
 
@@ -31,7 +32,9 @@ let mapDispatchToProps = (dispatch) => {
 @connect(mapStateToProps, mapDispatchToProps)
 class Mianbulunkuo extends Component {
   state = {
-    favorites: []
+    favorites: [],
+    activeFilter: "all",
+    searchQuery: ""
   };
 
   componentDidMount() {
@@ -55,44 +58,68 @@ class Mianbulunkuo extends Component {
     const serviceName = this.props.match?.params?.name || "الخدمات";
     const apiServices = this.props.itemproductlist || [];
     const totalProducts = apiServices.length || 25;
+    const { activeFilter, searchQuery } = this.state;
+
+    const filters = [
+      { id: "all", label: "الكل" },
+      { id: "popular", label: "الأكثر طلباً" },
+      { id: "newest", label: "الأحدث" },
+      { id: "price_low", label: "السعر: الأقل" },
+      { id: "price_high", label: "السعر: الأعلى" },
+    ];
 
     return (
       <PageContainer>
         <Header>
           <BackButton onClick={this.handleBack}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            ←
           </BackButton>
-          <SearchBar>
-            <input type="text" placeholder="البحث عن منتج" />
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M14 14L11.1 11.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </SearchBar>
+          <h1>{serviceName}</h1>
         </Header>
 
+        <SearchBar>
+          <span className="search-icon">🔍</span>
+          <input 
+            type="text" 
+            placeholder="ابحث عن علاج أو خدمة..." 
+            value={searchQuery}
+            onChange={(e) => this.setState({ searchQuery: e.target.value })}
+          />
+          {searchQuery && (
+            <span 
+              className="clear-btn"
+              onClick={() => this.setState({ searchQuery: "" })}
+            >
+              ✕
+            </span>
+          )}
+        </SearchBar>
+
         <PageTitle>
-          <div className="title-section">
-            <h1>{serviceName}</h1>
-            <ProductCount>{totalProducts} منتج متوفر</ProductCount>
-          </div>
-          <SortFilterIcons>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </SortFilterIcons>
+          <ProductCount>{totalProducts} نتيجة</ProductCount>
         </PageTitle>
+
+        <FilterTabs>
+          {filters.map(filter => (
+            <div 
+              key={filter.id}
+              className={`filter-tab ${activeFilter === filter.id ? 'active' : ''}`}
+              onClick={() => this.setState({ activeFilter: filter.id })}
+            >
+              {filter.label}
+            </div>
+          ))}
+        </FilterTabs>
 
         <Productlist 
           {...this.props} 
           favorites={this.state.favorites}
           onToggleFavorite={this.toggleFavorite}
+          searchQuery={searchQuery}
+          activeFilter={activeFilter}
         />
+
+        <BottomNav />
       </PageContainer>
     );
   }
