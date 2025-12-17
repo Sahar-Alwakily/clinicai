@@ -67,21 +67,17 @@ function Hotspot({ position, name, onClick, active }) {
 
 function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
-  const { scene, materials } = useGLTF("/assets/models/model.glb");
+  const { scene } = useGLTF("/assets/models/model.glb");
   
-  // نسخ الموديل مع المواد
-  const clonedScene = React.useMemo(() => {
-    const clone = scene.clone(true);
-    clone.traverse((child) => {
-      if (child.isMesh) {
-        // نسخ المواد بشكل منفصل
-        if (child.material) {
-          child.material = child.material.clone();
-          child.material.needsUpdate = true;
-        }
+  // تطبيق الألوان على الموديل
+  React.useEffect(() => {
+    scene.traverse((child) => {
+      if (child.isMesh && child.material) {
+        // تفعيل الـ vertex colors إذا موجودة
+        child.material.vertexColors = false;
+        child.material.needsUpdate = true;
       }
     });
-    return clone;
   }, [scene]);
   
   useFrame((state) => {
@@ -92,7 +88,7 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
 
   return (
     <group ref={meshRef}>
-      <primitive object={clonedScene} scale={1.5} position={[0, -0.5, 0]} />
+      <primitive object={scene} scale={1.5} position={[0, -0.5, 0]} />
       {faceHotspots.map((hotspot) => (
         <Hotspot
           key={hotspot.id}
