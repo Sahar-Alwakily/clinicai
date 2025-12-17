@@ -1,7 +1,13 @@
 import React, { Suspense, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
+import { TextureLoader } from "three";
 import styled from "styled-components";
+
+// استيراد الصور
+import baseColorImg from "assets/models/textures/Image_1.jpg";
+import metallicImg from "assets/models/textures/Image_0.jpg";
+import normalImg from "assets/models/textures/Image_2.jpg";
 
 const ModelContainer = styled.div`
   width: 100%;
@@ -69,16 +75,24 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
   const { scene } = useGLTF("/assets/models/model.glb");
   
-  // تطبيق الألوان على الموديل
+  // تحميل الـ textures
+  const [baseColor, metallic, normal] = useLoader(TextureLoader, [
+    baseColorImg,
+    metallicImg,
+    normalImg
+  ]);
+  
+  // تطبيق الـ textures على الموديل
   React.useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh && child.material) {
-        // تفعيل الـ vertex colors إذا موجودة
-        child.material.vertexColors = false;
+        child.material.map = baseColor;
+        child.material.metalnessMap = metallic;
+        child.material.normalMap = normal;
         child.material.needsUpdate = true;
       }
     });
-  }, [scene]);
+  }, [scene, baseColor, metallic, normal]);
   
   useFrame((state) => {
     if (meshRef.current) {
