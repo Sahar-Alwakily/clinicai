@@ -51,8 +51,8 @@ const Headdiv = styled.div`
       
       &:active {
         transform: translateY(-50%) scale(0.95);
-      }
     }
+  }
   }
   
   .text {

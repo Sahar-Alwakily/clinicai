@@ -17,7 +17,7 @@ import {
 
 function* loadProductData() {
   try {
-    let result = yield call(get, { url: "/api/itemcity/product?lver=7.8.0" });
+  let result = yield call(get, { url: "/api/itemcity/product?lver=7.8.0" });
     const productlist = result?.responseData?.menu1_info || [];
     yield put({
       type: LOAD_PRODUCT_DATA,
@@ -25,21 +25,21 @@ function* loadProductData() {
     });
   } catch (error) {
     console.error("Error loading product data:", error);
-    yield put({
-      type: LOAD_PRODUCT_DATA,
+  yield put({
+    type: LOAD_PRODUCT_DATA,
       productlist: [],
-    });
+  });
   }
 }
 
 function* loadFeedListData() {
   try {
-    let result = yield call(get, {
-      url:
-        "/api/site/index-ajax-feed?page=1&menu_id=0&menu_name=%E6%8E%A8%E8%8D%90&part=2&cityId=9&newFeed=1",
-    });
-    yield put({
-      type: LOAD_FEEDLIST_DATA,
+  let result = yield call(get, {
+    url:
+      "/api/site/index-ajax-feed?page=1&menu_id=0&menu_name=%E6%8E%A8%E8%8D%90&part=2&cityId=9&newFeed=1",
+  });
+  yield put({
+    type: LOAD_FEEDLIST_DATA,
       feedlist: result || {},
     });
   } catch (error) {
@@ -47,7 +47,7 @@ function* loadFeedListData() {
     yield put({
       type: LOAD_FEEDLIST_DATA,
       feedlist: {},
-    });
+  });
   }
 }
 

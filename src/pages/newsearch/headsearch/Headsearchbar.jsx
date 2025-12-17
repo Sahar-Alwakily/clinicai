@@ -42,16 +42,16 @@ class Headsearchbar extends Component {
               />
             </svg>
           </BackButton>
-          <Searchinput>
-            <SearchBar
-              style={{}}
-              value={this.state.value}
-              placeholder="الجميع يبحث عن: أسرار مكافحة الشيخوخة"
-              showCancelButton
-              onChange={this.onChange}
+        <Searchinput>
+          <SearchBar
+            style={{}}
+            value={this.state.value}
+            placeholder="الجميع يبحث عن: أسرار مكافحة الشيخوخة"
+            showCancelButton
+            onChange={this.onChange}
               onCancel={this.handleCancel}
-            />
-          </Searchinput>
+          />
+        </Searchinput>
         </SearchHeader>
       </>
     );

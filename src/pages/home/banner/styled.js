@@ -40,7 +40,7 @@ const Bannerdiv = styled.div`
 `;
 
 const OfferCard = styled.div`
-  position: relative;
+    position: relative;
   height: 3rem;
   border-radius: 0.24rem;
   overflow: hidden;
@@ -119,7 +119,7 @@ const OfferSubtitle = styled.p`
   
   @media (min-width: 769px) {
     font-size: 0.22rem;
-  }
+    }
   
   @media (max-width: 480px) {
     font-size: 0.18rem;

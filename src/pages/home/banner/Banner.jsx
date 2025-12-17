@@ -49,7 +49,7 @@ export default class Banner extends Component {
               <OfferCard key={offer.id} bgColor={offer.color}>
                 <div className="offer-image">
                   <img src={offer.image} alt={offer.title} />
-                </div>
+              </div>
                 <OfferContent>
                   <OfferBadge>{offer.discount}</OfferBadge>
                   <OfferTitle>{offer.title}</OfferTitle>

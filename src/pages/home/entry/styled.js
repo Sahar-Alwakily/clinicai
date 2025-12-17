@@ -113,7 +113,7 @@ const Nntrydiv = styled.div`
         font-size: 0.26rem;
         line-height: 0.34rem;
         margin-bottom: 0.1rem;
-      }
+        }
       
       .subtitle {
         font-size: 0.2rem;

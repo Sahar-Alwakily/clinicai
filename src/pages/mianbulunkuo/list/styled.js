@@ -207,7 +207,7 @@ const Productlistdiv = styled.div`
         width: 100%;
         height: 100%;
         object-fit: cover;
-        display: block;
+      display: block;
       }
       
       .favorite-icon {
@@ -551,7 +551,7 @@ const CityItem = styled.div`
     color: #EC4899;
     font-weight: 700;
     font-size: 0.18rem;
-  }
+          }
   
   @media (min-width: 769px) {
     font-size: 0.22rem;

@@ -98,14 +98,14 @@ export default class Head extends Component {
             <HeaderContent>
               <div className="left-section">
                 <Greeting>{this.getGreeting()}</Greeting>
-                <City></City>
+            <City></City>
               </div>
               <div className="right-section">
                 <NotificationIcon onClick={this.handleNotificationClick}>
                   <Icon type="bell" size="xs" />
                   {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
                 </NotificationIcon>
-                <Mine></Mine>
+            <Mine></Mine>
               </div>
             </HeaderContent>
             <SearchSection>

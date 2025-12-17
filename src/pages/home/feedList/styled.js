@@ -43,15 +43,15 @@ const FeedListdiv = styled.div`
         border-radius: 0.16rem 0.16rem 0 0;
       }
       
-      p {
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
+  p {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
         max-height: 0.6rem;
         font-size: 0.22rem;
         line-height: 0.3rem;
         color: #333;
         margin: 0.15rem;
-        overflow: hidden;
+    overflow: hidden;
         font-weight: 500;
       }
       

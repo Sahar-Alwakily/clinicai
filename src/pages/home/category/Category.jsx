@@ -144,8 +144,8 @@ class Category extends Component {
                   {dataItem.isSeeAll ? (
                     <div className="see-all-icon">📋</div>
                   ) : (
-                    <img
-                      src={dataItem.icon}
+                <img
+                  src={dataItem.icon}
                       alt={dataItem.text}
                     />
                   )}
