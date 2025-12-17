@@ -23,16 +23,6 @@ class Category extends Component {
       },
       {
         icon:
-          "https://img2.soyoung.com/origin/20200721/3/fa67f15b7512390a00d5037f149d1147_120_120.png?imageView2/0/format/webp",
-        text: `منطقة الأنف`,
-      },
-      {
-        icon:
-          "https://img2.soyoung.com/origin/20200508/4/adef799e0114a207e991daac3c1db1dc_120_120.png?imageView2/0/format/webp",
-        text: `حشو الدهون`,
-      },
-      {
-        icon:
           "https://img2.soyoung.com/origin/20200508/6/4ea77600e2444d5620a67a3ad1f2e3a8_120_120.png?imageView2/0/format/webp",
         text: `منطقة الصدر`,
       },
@@ -68,11 +58,6 @@ class Category extends Component {
       },
       {
         icon:
-          "https://img2.soyoung.com/origin/20200508/0/37c3f1256707215eeb7912e89f588562_120_120.png?imageView2/0/format/webp",
-        text: `جراحة التجميل الخاصة`,
-      },
-      {
-        icon:
           "https://img2.soyoung.com/origin/20200508/7/2c253db9236b6adae1b1c65d2283a8a6_120_120.png?imageView2/0/format/webp",
         text: `جراحة تجميل الشفاه`,
       },
@@ -80,12 +65,7 @@ class Category extends Component {
         icon:
           "https://img2.soyoung.com/origin/20200518/5/d5974e20fa0b31b7e98af00cad0f778d_120_120.png?imageView2/0/format/webp",
         text: `إصلاح العمليات الفاشلة`,
-      },
-      {
-        icon:
-          "https://img2.soyoung.com/origin/20200518/2/f20c77faa2a1c29afd00a43a25c87324_120_120.png?imageView2/0/format/webp",
-        text: `أخرى`,
-      },
+      }
     ],
   };
   gotoinfo = (name) => {
