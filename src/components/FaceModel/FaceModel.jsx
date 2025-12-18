@@ -458,14 +458,6 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   return (
     <group ref={meshRef}>
       <primitive object={scene} scale={2} position={[0, -0.3, 0]} />
-      {Object.entries(faceRegions).map(([id, region]) => (
-        <Hotspot
-          key={id}
-          position={region.position}
-          active={activeHotspot === id}
-          onClick={() => onHotspotClick({ id, ...region })}
-        />
-      ))}
     </group>
   );
 }
