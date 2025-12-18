@@ -10,6 +10,8 @@ const Container = styled.div`
   margin: 0.2rem;
   direction: rtl;
   justify-content: ${props => props.hasSelection ? 'flex-start' : 'center'};
+  align-items: center;
+  position: relative;
 `;
 
 const ModelCard = styled.div`
@@ -46,6 +48,44 @@ const CanvasContainer = styled.div`
   overflow: hidden;
   background: rgba(255, 255, 255, 0.1);
   min-height: 3.5rem;
+`;
+
+const SideButtonsContainer = styled.div`
+  position: absolute;
+  ${props => props.side === 'right' ? 'right: 0.15rem;' : 'left: 0.15rem;'}
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  z-index: 10;
+  pointer-events: auto;
+`;
+
+const SideButton = styled.button`
+  background: ${props => props.active 
+    ? 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)' 
+    : 'rgba(255, 255, 255, 0.95)'};
+  color: ${props => props.active ? '#fff' : '#333'};
+  padding: 0.12rem 0.15rem;
+  border-radius: 0.1rem;
+  font-size: 0.16rem;
+  cursor: pointer;
+  border: ${props => props.active ? '2px solid #fff' : '2px solid transparent'};
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s;
+  font-weight: ${props => props.active ? 'bold' : 'normal'};
+  text-align: center;
+  min-width: 0.9rem;
+  white-space: nowrap;
+  
+  &:hover {
+    transform: translateX(${props => props.side === 'right' ? '-0.05rem' : '0.05rem'});
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    background: ${props => props.active 
+      ? 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)' 
+      : 'linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%)'};
+  }
 `;
 
 const HotspotButton = styled.div`
@@ -147,26 +187,6 @@ const ServiceDescription = styled.div`
   line-height: 1.6;
 `;
 
-const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #999;
-  text-align: center;
-  padding: 0.3rem;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 0.5rem;
-  margin-bottom: 0.15rem;
-`;
-
-const EmptyText = styled.div`
-  font-size: 0.18rem;
-`;
-
 // معلومات المناطق والخدمات
 const faceRegions = {
   eyes: {
@@ -194,7 +214,8 @@ const faceRegions = {
         description: "إزالة التجاعيد وشد الجلد المترهل حول منطقة العين"
       }
     ],
-    position: [0, 0.3, 0.8]
+    position: [0, 0.3, 0.8],
+    side: 'right'
   },
   nose: {
     name: "الأنف",
@@ -221,7 +242,8 @@ const faceRegions = {
         description: "تحسين شكل الأنف وتناسقه مع ملامح الوجه"
       }
     ],
-    position: [0, 0, 0.9]
+    position: [0, 0, 0.9],
+    side: 'right'
   },
   chin: {
     name: "الذقن",
@@ -244,7 +266,8 @@ const faceRegions = {
         description: "إزالة الترهل وشد الجلد في منطقة الذقن"
       }
     ],
-    position: [0, -0.6, 0.7]
+    position: [0, -0.6, 0.7],
+    side: 'right'
   },
   forehead: {
     name: "الجبهة",
@@ -267,7 +290,8 @@ const faceRegions = {
         description: "شد الجلد المترهل في منطقة الجبهة"
       }
     ],
-    position: [0, 0.7, 0.6]
+    position: [0, 0.7, 0.6],
+    side: 'right'
   },
   lips: {
     name: "الشفاه",
@@ -290,7 +314,8 @@ const faceRegions = {
         description: "علاج التجاعيد والخطوط حول منطقة الفم"
       }
     ],
-    position: [0, -0.3, 0.8]
+    position: [0, -0.3, 0.8],
+    side: 'left'
   },
   cheeks: {
     name: "الخدود",
@@ -313,7 +338,8 @@ const faceRegions = {
         description: "علاج التجاعيد والخطوط في منطقة الخدود"
       }
     ],
-    position: [0.5, 0, 0.5]
+    position: [0.5, 0, 0.5],
+    side: 'left'
   },
   neck: {
     name: "الرقبة",
@@ -336,7 +362,8 @@ const faceRegions = {
         description: "تقليل حجم الرقبة وتحسين شكلها"
       }
     ],
-    position: [0, -0.8, 0.5]
+    position: [0, -0.8, 0.5],
+    side: 'left'
   },
   jawline: {
     name: "الفكين",
@@ -359,7 +386,8 @@ const faceRegions = {
         description: "تقليل حجم الوجه وتحسين شكله العام"
       }
     ],
-    position: [-0.5, -0.2, 0.5]
+    position: [-0.5, -0.2, 0.5],
+    side: 'left'
   }
 };
 
@@ -427,9 +455,34 @@ export default function FaceModel({ onSelectCategory }) {
 
   const hasSelection = !!selectedRegion;
 
+  // تقسيم المناطق حسب الجانب
+  const rightRegions = Object.entries(faceRegions)
+    .filter(([_, region]) => region.side === 'right')
+    .map(([id, region]) => ({ id, ...region }));
+
+  const leftRegions = Object.entries(faceRegions)
+    .filter(([_, region]) => region.side === 'left')
+    .map(([id, region]) => ({ id, ...region }));
+
   return (
     <Container hasSelection={hasSelection}>
-      {/* الكارد الأول: الموديل فقط */}
+      {/* الأزرار على اليمين - تظهر فقط عندما لا يكون هناك اختيار */}
+      {!hasSelection && (
+        <SideButtonsContainer side="right">
+          {rightRegions.map((region) => (
+            <SideButton
+              key={region.id}
+              side="right"
+              active={activeHotspot === region.id}
+              onClick={() => handleRegionClick(region)}
+            >
+              {region.name}
+            </SideButton>
+          ))}
+        </SideButtonsContainer>
+      )}
+
+      {/* الكارد الأول: الموديل */}
       <ModelCard hasSelection={hasSelection}>
         <CanvasContainer>
           <Canvas camera={{ position: [0, 0, 2.5], fov: 45 }}>
@@ -456,6 +509,22 @@ export default function FaceModel({ onSelectCategory }) {
           </Canvas>
         </CanvasContainer>
       </ModelCard>
+
+      {/* الأزرار على الشمال - تظهر فقط عندما لا يكون هناك اختيار */}
+      {!hasSelection && (
+        <SideButtonsContainer side="left">
+          {leftRegions.map((region) => (
+            <SideButton
+              key={region.id}
+              side="left"
+              active={activeHotspot === region.id}
+              onClick={() => handleRegionClick(region)}
+            >
+              {region.name}
+            </SideButton>
+          ))}
+        </SideButtonsContainer>
+      )}
 
       {/* الكارد الثاني: معلومات الخدمات - يظهر فقط عند الاختيار */}
       {selectedRegion && (
