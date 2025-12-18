@@ -3,166 +3,210 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import styled from "styled-components";
 
-const Container = styled.div`
+const MainContainer = styled.div`
   width: 100%;
-  display: flex;
-  gap: 0.2rem;
   margin: 0.2rem;
   direction: rtl;
-  justify-content: ${props => props.hasSelection ? 'flex-start' : 'center'};
-  align-items: center;
-  position: relative;
 `;
 
-const ModelCard = styled.div`
-  flex: ${props => props.hasSelection ? '1' : '0 0 auto'};
-  max-width: ${props => props.hasSelection ? 'none' : '5rem'};
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 0.2rem;
-  padding: 0.2rem;
-  position: relative;
-  overflow: hidden;
-  min-height: 4rem;
+const ContentWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
+  gap: 0.2rem;
+  justify-content: ${props => props.hasSelection ? 'flex-start' : 'center'};
+  align-items: stretch;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-const ServicesCard = styled.div`
-  flex: 1;
+const ModelWrapper = styled.div`
+  flex: ${props => props.hasSelection ? '0 0 45%' : '0 0 auto'};
   background: #fff;
   border-radius: 0.2rem;
-  padding: 0.25rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  min-height: 4rem;
-  display: flex;
-  flex-direction: column;
-  direction: rtl;
-  transition: all 0.3s ease;
-`;
-
-const CanvasContainer = styled.div`
-  flex: 1;
-  position: relative;
-  border-radius: 0.15rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.1);
-  min-height: 3.5rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  min-width: ${props => props.hasSelection ? 'auto' : '5.5rem'};
 `;
 
-const SideButtonsContainer = styled.div`
+const ModelHeader = styled.div`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.2rem;
+  color: #fff;
+  text-align: center;
+  font-size: 0.2rem;
+  font-weight: bold;
+`;
+
+const CanvasWrapper = styled.div`
+  position: relative;
+  height: 4rem;
+  background: linear-gradient(180deg, #f8f9ff 0%, #e8ecff 100%);
+`;
+
+const SideButtonsWrapper = styled.div`
   position: absolute;
-  ${props => props.side === 'right' ? 'right: 0.15rem;' : 'left: 0.15rem;'}
+  ${props => props.side === 'right' ? 'right: 0.2rem;' : 'left: 0.2rem;'}
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-  z-index: 10;
-  pointer-events: auto;
+  gap: 0.12rem;
+  z-index: 20;
 `;
 
-const SideButton = styled.button`
+const RegionBtn = styled.button`
+  background: #fff;
+  color: #667eea;
+  border: 2px solid ${props => props.active ? '#ff6b6b' : '#e0e7ff'};
+  padding: 0.1rem 0.18rem;
+  border-radius: 0.12rem;
+  font-size: 0.15rem;
+  font-weight: ${props => props.active ? 'bold' : 'normal'};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: ${props => props.active 
+    ? '0 4px 12px rgba(255, 107, 107, 0.3)' 
+    : '0 2px 6px rgba(0, 0, 0, 0.08)'};
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+  }
+  
+  &:hover {
+    transform: translateX(${props => props.side === 'right' ? '-0.08rem' : '0.08rem'});
+    border-color: #ff6b6b;
+    background: ${props => props.active ? '#ff6b6b' : '#fff5f5'};
+    color: ${props => props.active ? '#fff' : '#ff6b6b'};
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.25);
+    
+    &::before {
+      left: 100%;
+    }
+  }
+  
+  ${props => props.active && `
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+    color: #fff;
+    border-color: #ff6b6b;
+  `}
+`;
+
+const HotspotLabel = styled.div`
   background: ${props => props.active 
     ? 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)' 
-    : 'rgba(255, 255, 255, 0.95)'};
+    : 'rgba(255, 255, 255, 0.98)'};
   color: ${props => props.active ? '#fff' : '#333'};
-  padding: 0.12rem 0.15rem;
-  border-radius: 0.1rem;
-  font-size: 0.16rem;
-  cursor: pointer;
-  border: ${props => props.active ? '2px solid #fff' : '2px solid transparent'};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s;
-  font-weight: ${props => props.active ? 'bold' : 'normal'};
-  text-align: center;
-  min-width: 0.9rem;
-  white-space: nowrap;
-  
-  &:hover {
-    transform: translateX(${props => props.side === 'right' ? '-0.05rem' : '0.05rem'});
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    background: ${props => props.active 
-      ? 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)' 
-      : 'linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%)'};
-  }
-`;
-
-const HotspotButton = styled.div`
-  background: ${props => props.active ? '#ff6b6b' : 'rgba(255, 255, 255, 0.95)'};
-  color: ${props => props.active ? '#fff' : '#333'};
-  padding: 0.08rem 0.12rem;
-  border-radius: 0.15rem;
+  padding: 0.1rem 0.15rem;
+  border-radius: 0.2rem;
   font-size: 0.14rem;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s;
   font-weight: ${props => props.active ? 'bold' : 'normal'};
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
   border: ${props => props.active ? '2px solid #fff' : '2px solid transparent'};
+  white-space: nowrap;
   
   &:hover {
-    transform: scale(1.1);
-    background: #ff6b6b;
-    color: #fff;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.5);
+    transform: scale(1.15);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
   }
 `;
 
-const ServiceHeader = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  padding: 0.2rem;
-  border-radius: 0.15rem;
-  margin-bottom: 0.2rem;
-  text-align: center;
+const ServicesPanel = styled.div`
+  flex: ${props => props.hasSelection ? '0 0 55%' : '0'};
+  background: #fff;
+  border-radius: 0.2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: ${props => props.hasSelection ? '1' : '0'};
+  transform: ${props => props.hasSelection ? 'translateX(0)' : 'translateX(20px)'};
+  max-height: ${props => props.hasSelection ? 'none' : '0'};
+  direction: rtl;
 `;
 
-const ServiceTitle = styled.h3`
-  font-size: 0.24rem;
-  margin: 0;
+const ServicesHeader = styled.div`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.25rem;
+  color: #fff;
+`;
+
+const ServicesTitle = styled.h2`
+  font-size: 0.26rem;
+  margin: 0 0 0.08rem 0;
   font-weight: bold;
 `;
 
-const ServiceSubtitle = styled.p`
+const ServicesSubtitle = styled.p`
   font-size: 0.16rem;
-  margin: 0.1rem 0 0 0;
-  opacity: 0.9;
+  margin: 0;
+  opacity: 0.95;
 `;
 
-const ServicesList = styled.div`
-  flex: 1;
+const ServicesContent = styled.div`
+  padding: 0.2rem;
+  max-height: 3.5rem;
   overflow-y: auto;
-  padding: 0.1rem;
   
   &::-webkit-scrollbar {
-    width: 0.08rem;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 0.1rem;
+    width: 0.1rem;
   }
   
   &::-webkit-scrollbar-track {
     background: #f5f5f5;
     border-radius: 0.1rem;
   }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 0.1rem;
+    
+    &:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+  }
 `;
 
-const ServiceItem = styled.div`
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 0.15rem;
-  margin-bottom: 0.12rem;
-  border-radius: 0.1rem;
+const ServiceCard = styled.div`
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  border: 1px solid #e0e7ff;
   border-right: 4px solid #667eea;
-  transition: all 0.3s;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border-radius: 0.12rem;
+  padding: 0.18rem;
+  margin-bottom: 0.15rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0.05rem;
+    height: 100%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s;
+  }
   
   &:hover {
-    transform: translateX(-0.05rem);
-    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.2);
-    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    transform: translateX(-0.08rem);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+    
+    &::before {
+      width: 0.1rem;
+    }
   }
 `;
 
@@ -170,21 +214,21 @@ const ServiceName = styled.div`
   font-size: 0.18rem;
   font-weight: bold;
   color: #667eea;
-  margin-bottom: 0.08rem;
+  margin-bottom: 0.1rem;
   display: flex;
   align-items: center;
-  gap: 0.08rem;
+  gap: 0.1rem;
   
   &::before {
-    content: "✨";
-    font-size: 0.2rem;
+    content: "💎";
+    font-size: 0.18rem;
   }
 `;
 
-const ServiceDescription = styled.div`
+const ServiceDesc = styled.div`
   font-size: 0.15rem;
-  color: #555;
-  line-height: 1.6;
+  color: #666;
+  line-height: 1.7;
 `;
 
 // معلومات المناطق والخدمات
@@ -394,9 +438,9 @@ const faceRegions = {
 function Hotspot({ position, name, onClick, active }) {
   return (
     <Html position={position} center>
-      <HotspotButton active={active} onClick={onClick}>
+      <HotspotLabel active={active} onClick={onClick}>
         {name}
-      </HotspotButton>
+      </HotspotLabel>
     </Html>
   );
 }
@@ -431,9 +475,10 @@ function LoadingFallback() {
   return (
     <Html center>
       <div style={{ 
-        color: 'white', 
+        color: '#667eea', 
         fontSize: '0.24rem',
-        textAlign: 'center'
+        textAlign: 'center',
+        fontWeight: 'bold'
       }}>
         جاري التحميل...
       </div>
@@ -455,7 +500,6 @@ export default function FaceModel({ onSelectCategory }) {
 
   const hasSelection = !!selectedRegion;
 
-  // تقسيم المناطق حسب الجانب
   const rightRegions = Object.entries(faceRegions)
     .filter(([_, region]) => region.side === 'right')
     .map(([id, region]) => ({ id, ...region }));
@@ -465,84 +509,93 @@ export default function FaceModel({ onSelectCategory }) {
     .map(([id, region]) => ({ id, ...region }));
 
   return (
-    <Container hasSelection={hasSelection}>
-      {/* الأزرار على اليمين - تظهر فقط عندما لا يكون هناك اختيار */}
-      {!hasSelection && (
-        <SideButtonsContainer side="right">
-          {rightRegions.map((region) => (
-            <SideButton
-              key={region.id}
-              side="right"
-              active={activeHotspot === region.id}
-              onClick={() => handleRegionClick(region)}
-            >
-              {region.name}
-            </SideButton>
-          ))}
-        </SideButtonsContainer>
-      )}
+    <MainContainer>
+      <ContentWrapper hasSelection={hasSelection}>
+        {/* الأزرار الجانبية - تظهر فقط عند عدم الاختيار */}
+        {!hasSelection && (
+          <>
+            <SideButtonsWrapper side="right">
+              {rightRegions.map((region) => (
+                <RegionBtn
+                  key={region.id}
+                  side="right"
+                  active={activeHotspot === region.id}
+                  onClick={() => handleRegionClick(region)}
+                >
+                  {region.name}
+                </RegionBtn>
+              ))}
+            </SideButtonsWrapper>
+          </>
+        )}
 
-      {/* الكارد الأول: الموديل */}
-      <ModelCard hasSelection={hasSelection}>
-        <CanvasContainer>
-          <Canvas camera={{ position: [0, 0, 2.5], fov: 45 }}>
-            <ambientLight intensity={1.2} />
-            <directionalLight position={[5, 5, 5]} intensity={1.2} />
-            <directionalLight position={[-5, 5, 5]} intensity={0.6} />
-            <pointLight position={[0, 5, 5]} intensity={0.8} />
-            
-            <Suspense fallback={<LoadingFallback />}>
-              <FaceModelMesh 
-                onHotspotClick={handleRegionClick} 
-                activeHotspot={activeHotspot}
+        {/* كارد الموديل */}
+        <ModelWrapper hasSelection={hasSelection}>
+          <ModelHeader>نموذج الوجه التفاعلي</ModelHeader>
+          <CanvasWrapper>
+            <Canvas camera={{ position: [0, 0, 2.5], fov: 45 }}>
+              <ambientLight intensity={1.2} />
+              <directionalLight position={[5, 5, 5]} intensity={1.2} />
+              <directionalLight position={[-5, 5, 5]} intensity={0.6} />
+              <pointLight position={[0, 5, 5]} intensity={0.8} />
+              
+              <Suspense fallback={<LoadingFallback />}>
+                <FaceModelMesh 
+                  onHotspotClick={handleRegionClick} 
+                  activeHotspot={activeHotspot}
+                />
+              </Suspense>
+              
+              <OrbitControls 
+                enableZoom={true}
+                enablePan={false}
+                minDistance={2}
+                maxDistance={4}
+                minPolarAngle={Math.PI / 4}
+                maxPolarAngle={Math.PI / 1.8}
               />
-            </Suspense>
+            </Canvas>
             
-            <OrbitControls 
-              enableZoom={true}
-              enablePan={false}
-              minDistance={2}
-              maxDistance={4}
-              minPolarAngle={Math.PI / 4}
-              maxPolarAngle={Math.PI / 1.8}
-            />
-          </Canvas>
-        </CanvasContainer>
-      </ModelCard>
+            {/* الأزرار الجانبية داخل Canvas */}
+            {!hasSelection && (
+              <>
+                <SideButtonsWrapper side="left">
+                  {leftRegions.map((region) => (
+                    <RegionBtn
+                      key={region.id}
+                      side="left"
+                      active={activeHotspot === region.id}
+                      onClick={() => handleRegionClick(region)}
+                    >
+                      {region.name}
+                    </RegionBtn>
+                  ))}
+                </SideButtonsWrapper>
+              </>
+            )}
+          </CanvasWrapper>
+        </ModelWrapper>
 
-      {/* الأزرار على الشمال - تظهر فقط عندما لا يكون هناك اختيار */}
-      {!hasSelection && (
-        <SideButtonsContainer side="left">
-          {leftRegions.map((region) => (
-            <SideButton
-              key={region.id}
-              side="left"
-              active={activeHotspot === region.id}
-              onClick={() => handleRegionClick(region)}
-            >
-              {region.name}
-            </SideButton>
-          ))}
-        </SideButtonsContainer>
-      )}
-
-      {/* الكارد الثاني: معلومات الخدمات - يظهر فقط عند الاختيار */}
-      {selectedRegion && (
-        <ServicesCard>
-          <ServiceHeader>
-            <ServiceTitle>{selectedRegion.name}</ServiceTitle>
-            <ServiceSubtitle>{selectedRegion.description}</ServiceSubtitle>
-          </ServiceHeader>
-          <ServicesList>
-            {selectedRegion.services.map((service, index) => (
-              <ServiceItem key={index}>
-                <ServiceName>{service.name}</ServiceName>
-                <ServiceDescription>{service.description}</ServiceDescription>
-              </ServiceItem>
-            ))}
-          </ServicesList>
-        </ServicesCard>
-      )}
-    </Container>
+        {/* لوحة الخدمات */}
+        <ServicesPanel hasSelection={hasSelection}>
+          {selectedRegion && (
+            <>
+              <ServicesHeader>
+                <ServicesTitle>{selectedRegion.name}</ServicesTitle>
+                <ServicesSubtitle>{selectedRegion.description}</ServicesSubtitle>
+              </ServicesHeader>
+              <ServicesContent>
+                {selectedRegion.services.map((service, index) => (
+                  <ServiceCard key={index}>
+                    <ServiceName>{service.name}</ServiceName>
+                    <ServiceDesc>{service.description}</ServiceDesc>
+                  </ServiceCard>
+                ))}
+              </ServicesContent>
+            </>
+          )}
+        </ServicesPanel>
+      </ContentWrapper>
+    </MainContainer>
   );
 }
