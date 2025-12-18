@@ -73,26 +73,16 @@ function Hotspot({ position, name, onClick, active }) {
 
 function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
-  const { scene } = useGLTF("/assets/models/model.glb");
+  const { scene } = useGLTF("/assets/models/model.gltf");
   
-  // تحميل الـ textures
-  const [baseColor, metallic, normal] = useLoader(TextureLoader, [
-    baseColorImg,
-    metallicImg,
-    normalImg
-  ]);
-  
-  // تطبيق الـ textures على الموديل
+  // تفعيل المواد الأصلية
   React.useEffect(() => {
     scene.traverse((child) => {
       if (child.isMesh && child.material) {
-        child.material.map = baseColor;
-        child.material.metalnessMap = metallic;
-        child.material.normalMap = normal;
         child.material.needsUpdate = true;
       }
     });
-  }, [scene, baseColor, metallic, normal]);
+  }, [scene]);
   
   useFrame((state) => {
     if (meshRef.current) {
