@@ -258,7 +258,7 @@ const faceRegions = {
         description: "إزالة التجاعيد وشد الجلد المترهل حول منطقة العين"
       }
     ],
-    position: [0, 0.3, 0.8],
+    position: [0.4, 0.4, 0.7],
     side: 'right'
   },
   nose: {
@@ -286,7 +286,7 @@ const faceRegions = {
         description: "تحسين شكل الأنف وتناسقه مع ملامح الوجه"
       }
     ],
-    position: [0, 0, 0.9],
+    position: [0.3, 0, 0.85],
     side: 'right'
   },
   chin: {
@@ -310,7 +310,7 @@ const faceRegions = {
         description: "إزالة الترهل وشد الجلد في منطقة الذقن"
       }
     ],
-    position: [0, -0.6, 0.7],
+    position: [0.4, -0.7, 0.6],
     side: 'right'
   },
   forehead: {
@@ -334,7 +334,7 @@ const faceRegions = {
         description: "شد الجلد المترهل في منطقة الجبهة"
       }
     ],
-    position: [0, 0.7, 0.6],
+    position: [0.3, 0.8, 0.5],
     side: 'right'
   },
   lips: {
@@ -358,7 +358,7 @@ const faceRegions = {
         description: "علاج التجاعيد والخطوط حول منطقة الفم"
       }
     ],
-    position: [0, -0.3, 0.8],
+    position: [-0.4, -0.4, 0.7],
     side: 'left'
   },
   cheeks: {
@@ -382,7 +382,7 @@ const faceRegions = {
         description: "علاج التجاعيد والخطوط في منطقة الخدود"
       }
     ],
-    position: [0.5, 0, 0.5],
+    position: [-0.6, 0.1, 0.4],
     side: 'left'
   },
   neck: {
@@ -406,7 +406,7 @@ const faceRegions = {
         description: "تقليل حجم الرقبة وتحسين شكلها"
       }
     ],
-    position: [0, -0.8, 0.5],
+    position: [-0.3, -0.9, 0.4],
     side: 'left'
   },
   jawline: {
@@ -430,7 +430,7 @@ const faceRegions = {
         description: "تقليل حجم الوجه وتحسين شكله العام"
       }
     ],
-    position: [-0.5, -0.2, 0.5],
+    position: [-0.7, -0.2, 0.4],
     side: 'left'
   }
 };
