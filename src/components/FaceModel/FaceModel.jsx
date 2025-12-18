@@ -73,7 +73,7 @@ function Hotspot({ position, name, onClick, active }) {
 
 function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
-  const { scene } = useGLTF("/assets/models/model.gltf");
+  const { scene } = useGLTF("/assets/models/model.glb");
   
   // تفعيل المواد الأصلية
   React.useEffect(() => {
