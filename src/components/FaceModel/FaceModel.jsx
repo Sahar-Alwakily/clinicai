@@ -9,10 +9,12 @@ const Container = styled.div`
   gap: 0.2rem;
   margin: 0.2rem;
   direction: rtl;
+  justify-content: ${props => props.hasSelection ? 'flex-start' : 'center'};
 `;
 
 const ModelCard = styled.div`
-  flex: 1;
+  flex: ${props => props.hasSelection ? '1' : '0 0 auto'};
+  max-width: ${props => props.hasSelection ? 'none' : '5rem'};
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 0.2rem;
   padding: 0.2rem;
@@ -21,6 +23,7 @@ const ModelCard = styled.div`
   min-height: 4rem;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
 `;
 
 const ServicesCard = styled.div`
@@ -33,6 +36,7 @@ const ServicesCard = styled.div`
   display: flex;
   flex-direction: column;
   direction: rtl;
+  transition: all 0.3s ease;
 `;
 
 const CanvasContainer = styled.div`
@@ -41,44 +45,7 @@ const CanvasContainer = styled.div`
   border-radius: 0.15rem;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.1);
-`;
-
-const RegionsContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.15rem;
-  gap: 0.1rem;
-`;
-
-const RegionColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  flex: 1;
-`;
-
-const RegionButton = styled.button`
-  background: ${props => props.active 
-    ? 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)' 
-    : 'rgba(255, 255, 255, 0.95)'};
-  color: ${props => props.active ? '#fff' : '#333'};
-  padding: 0.12rem 0.15rem;
-  border-radius: 0.1rem;
-  font-size: 0.16rem;
-  cursor: pointer;
-  border: ${props => props.active ? '2px solid #fff' : '2px solid transparent'};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s;
-  font-weight: ${props => props.active ? 'bold' : 'normal'};
-  text-align: center;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    background: ${props => props.active 
-      ? 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)' 
-      : 'linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%)'};
-  }
+  min-height: 3.5rem;
 `;
 
 const HotspotButton = styled.div`
@@ -458,24 +425,12 @@ export default function FaceModel({ onSelectCategory }) {
     }
   };
 
-  const rightRegions = [
-    { id: 'forehead', ...faceRegions.forehead },
-    { id: 'eyes', ...faceRegions.eyes },
-    { id: 'nose', ...faceRegions.nose },
-    { id: 'chin', ...faceRegions.chin }
-  ];
-
-  const leftRegions = [
-    { id: 'jawline', ...faceRegions.jawline },
-    { id: 'cheeks', ...faceRegions.cheeks },
-    { id: 'lips', ...faceRegions.lips },
-    { id: 'neck', ...faceRegions.neck }
-  ];
+  const hasSelection = !!selectedRegion;
 
   return (
-    <Container>
-      {/* الكارد الأول: الموديل + أسماء المناطق */}
-      <ModelCard>
+    <Container hasSelection={hasSelection}>
+      {/* الكارد الأول: الموديل فقط */}
+      <ModelCard hasSelection={hasSelection}>
         <CanvasContainer>
           <Canvas camera={{ position: [0, 0, 2.5], fov: 45 }}>
             <ambientLight intensity={1.2} />
@@ -500,60 +455,25 @@ export default function FaceModel({ onSelectCategory }) {
             />
           </Canvas>
         </CanvasContainer>
-
-        <RegionsContainer>
-          {/* المناطق على اليمين */}
-          <RegionColumn>
-            {rightRegions.map((region) => (
-              <RegionButton
-                key={region.id}
-                active={activeHotspot === region.id}
-                onClick={() => handleRegionClick(region)}
-              >
-                {region.name}
-              </RegionButton>
-            ))}
-          </RegionColumn>
-
-          {/* المناطق على الشمال */}
-          <RegionColumn>
-            {leftRegions.map((region) => (
-              <RegionButton
-                key={region.id}
-                active={activeHotspot === region.id}
-                onClick={() => handleRegionClick(region)}
-              >
-                {region.name}
-              </RegionButton>
-            ))}
-          </RegionColumn>
-        </RegionsContainer>
       </ModelCard>
 
-      {/* الكارد الثاني: معلومات الخدمات */}
-      <ServicesCard>
-        {selectedRegion ? (
-          <>
-            <ServiceHeader>
-              <ServiceTitle>{selectedRegion.name}</ServiceTitle>
-              <ServiceSubtitle>{selectedRegion.description}</ServiceSubtitle>
-            </ServiceHeader>
-            <ServicesList>
-              {selectedRegion.services.map((service, index) => (
-                <ServiceItem key={index}>
-                  <ServiceName>{service.name}</ServiceName>
-                  <ServiceDescription>{service.description}</ServiceDescription>
-                </ServiceItem>
-              ))}
-            </ServicesList>
-          </>
-        ) : (
-          <EmptyState>
-            <EmptyIcon>👆</EmptyIcon>
-            <EmptyText>اختر منطقة من الوجه لعرض الخدمات المتاحة</EmptyText>
-          </EmptyState>
-        )}
-      </ServicesCard>
+      {/* الكارد الثاني: معلومات الخدمات - يظهر فقط عند الاختيار */}
+      {selectedRegion && (
+        <ServicesCard>
+          <ServiceHeader>
+            <ServiceTitle>{selectedRegion.name}</ServiceTitle>
+            <ServiceSubtitle>{selectedRegion.description}</ServiceSubtitle>
+          </ServiceHeader>
+          <ServicesList>
+            {selectedRegion.services.map((service, index) => (
+              <ServiceItem key={index}>
+                <ServiceName>{service.name}</ServiceName>
+                <ServiceDescription>{service.description}</ServiceDescription>
+              </ServiceItem>
+            ))}
+          </ServicesList>
+        </ServicesCard>
+      )}
     </Container>
   );
 }
