@@ -462,7 +462,6 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
         <Hotspot
           key={id}
           position={region.position}
-          name={region.name}
           active={activeHotspot === id}
           onClick={() => onHotspotClick({ id, ...region })}
         />
