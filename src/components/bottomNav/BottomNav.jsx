@@ -10,8 +10,8 @@ const NavContainer = styled.div`
   background: #ffffff;
   display: flex;
   justify-content: space-around;
-  align-items: flex-end;
-  padding: 0.15rem 0 0.2rem;
+  align-items: center;
+  padding: 0.1rem 0 0.12rem;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
   z-index: 1000;
   border-top: 1px solid #f0f0f0;
@@ -22,27 +22,26 @@ const NavItem = styled.div`
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  padding: 0.1rem 0.2rem;
+  padding: 0.06rem 0.15rem;
   transition: all 0.2s ease;
   
   &.center-item {
     position: relative;
-    top: -0.25rem;
     
     .icon-wrapper {
-      width: 1rem;
-      height: 1rem;
+      width: 0.5rem;
+      height: 0.5rem;
       background: #e8e8e8;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      margin-bottom: 0.08rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 0.05rem;
       
       svg {
-        width: 0.5rem;
-        height: 0.5rem;
+        width: 0.35rem;
+        height: 0.35rem;
         fill: #666;
       }
     }
@@ -57,18 +56,19 @@ const NavItem = styled.div`
   }
   
   svg {
-    width: 0.4rem;
-    height: 0.4rem;
+    width: 0.35rem;
+    height: 0.35rem;
     fill: #999;
-    margin-bottom: 0.06rem;
+    margin-bottom: 0.05rem;
     transition: all 0.2s ease;
   }
   
   span {
-    font-size: 0.2rem;
+    font-size: 0.16rem;
     color: #999;
     font-weight: 500;
     transition: all 0.2s ease;
+    white-space: nowrap;
   }
   
   &.active {
