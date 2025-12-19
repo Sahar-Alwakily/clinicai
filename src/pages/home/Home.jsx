@@ -82,7 +82,7 @@ class Home extends Component {
       <>
         <Head></Head>
         <div style={{ 
-          paddingTop: '1.5rem', 
+          paddingTop: '0', 
           paddingBottom: '1.5rem',
           background: '#f8f9fa', 
           minHeight: '100vh',

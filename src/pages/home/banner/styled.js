@@ -9,12 +9,29 @@
 import styled from "styled-components";
 
 const Bannerdiv = styled.div`
-  margin-top: 1.2rem;
-  padding: 0 0.3rem;
-  height: 3rem;
+  position: relative;
+  margin-top: 0;
+  padding: 0;
+  padding-top: 1.6rem;
+  height: 4.6rem;
+  width: 100%;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: 0;
+  }
   
   .am-carousel {
-    height: 100%;
+    height: 3rem;
+    position: relative;
+    z-index: 1;
+    padding: 0 0.3rem;
   }
   
   .am-carousel-wrap {

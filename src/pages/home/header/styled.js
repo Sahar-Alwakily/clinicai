@@ -88,7 +88,7 @@ const Topbar = styled.div`
   top: ${props => props.hasNotification ? "0.5rem" : "0"};
   left: 0;
   width: 100%;
-  z-index: 10;
+  z-index: 1000;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: top 0.3s ease;
