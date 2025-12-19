@@ -89,8 +89,8 @@ const Topbar = styled.div`
   left: 0;
   width: 100%;
   z-index: 1000;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  box-shadow: none;
   transition: top 0.3s ease;
   
   @media (max-width: 480px) {
@@ -101,7 +101,7 @@ const Topbar = styled.div`
 const Header = styled.header`
   position: relative;
   z-index: 1;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: transparent;
   padding: 0.15rem 0.25rem 0.25rem;
   box-sizing: border-box;
   
