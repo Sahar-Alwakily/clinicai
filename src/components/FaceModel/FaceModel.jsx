@@ -502,24 +502,6 @@ export default function FaceModel({ onSelectCategory }) {
   return (
     <MainContainer>
       <ContentWrapper hasSelection={hasSelection}>
-        {/* الأزرار الجانبية - تظهر فقط عند عدم الاختيار */}
-        {!hasSelection && (
-          <>
-            <SideButtonsWrapper side="right">
-              {rightRegions.map((region) => (
-                <RegionBtn
-                  key={region.id}
-                  side="right"
-                  active={activeHotspot === region.id}
-                  onClick={() => handleRegionClick(region)}
-                >
-                  {region.name}
-                </RegionBtn>
-              ))}
-            </SideButtonsWrapper>
-          </>
-        )}
-
         {/* كارد الموديل */}
         <ModelWrapper hasSelection={hasSelection}>
           <ModelHeader>نموذج الوجه التفاعلي</ModelHeader>
@@ -550,6 +532,21 @@ export default function FaceModel({ onSelectCategory }) {
             {/* الأزرار الجانبية داخل Canvas */}
             {!hasSelection && (
               <>
+                {/* الأزرار على اليمين (الجبهة، العين، الأنف، الذقن) */}
+                <SideButtonsWrapper side="right">
+                  {rightRegions.map((region) => (
+                    <RegionBtn
+                      key={region.id}
+                      side="right"
+                      active={activeHotspot === region.id}
+                      onClick={() => handleRegionClick(region)}
+                    >
+                      {region.name}
+                    </RegionBtn>
+                  ))}
+                </SideButtonsWrapper>
+                
+                {/* الأزرار على الشمال (الفكين، الخدود، الشفاه، الرقبة) */}
                 <SideButtonsWrapper side="left">
                   {leftRegions.map((region) => (
                     <RegionBtn
