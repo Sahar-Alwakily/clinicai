@@ -212,18 +212,20 @@ class DiagnosisSteps extends Component {
 
   // ============ التنقل بين الخطوات ============
   goToNextStep = () => {
+    const { currentStep, formData } = this.state;
+    
+    // إذا كانت الخطوة 2 واختار التخطي، نتجاوز مباشرة إلى الخطوة 3 (تشخيص البشرة)
+    if (currentStep === 2 && formData.wantsMedicalQuestions === false) {
+      this.setState({ 
+        currentStep: 3,
+        errors: {}
+      });
+      return;
+    }
+    
+    // التحقق من صحة البيانات للخطوات الأخرى
     if (this.validateCurrentStep()) {
       const totalSteps = this.getTotalSteps();
-      const { currentStep, formData } = this.state;
-      
-      // إذا كانت الخطوة 2 واختار التخطي، نتجاوز إلى الخطوة 3 (تشخيص البشرة)
-      if (currentStep === 2 && formData.wantsMedicalQuestions === false) {
-        this.setState({ 
-          currentStep: 3,
-          errors: {}
-        });
-        return;
-      }
       
       if (currentStep < totalSteps) {
         this.setState(prevState => ({ 
