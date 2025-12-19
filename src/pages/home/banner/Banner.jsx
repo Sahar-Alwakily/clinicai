@@ -4,6 +4,7 @@ import { Bannerdiv, OfferCard, OfferContent, OfferBadge, OfferTitle, OfferSubtit
 
 export default class Banner extends Component {
   state = {
+    currentIndex: 0,
     offers: [
       {
         id: 1,
@@ -32,10 +33,17 @@ export default class Banner extends Component {
     ]
   };
 
+  handleSlideChange = (index) => {
+    this.setState({ currentIndex: index });
+  };
+
   render() {
+    const { currentIndex, offers } = this.state;
+    const currentColor = offers[currentIndex]?.color || "#667eea";
+    
     return (
       <>
-        <Bannerdiv>
+        <Bannerdiv bgColor={currentColor}>
           <Carousel
             dots={true}
             swiping={true}
@@ -44,9 +52,10 @@ export default class Banner extends Component {
             speed={500}
             autoplayInterval={4000}
             resetAutoplay={false}
+            afterChange={this.handleSlideChange}
           >
             {this.state.offers.map((offer) => (
-              <OfferCard key={offer.id} bgColor={offer.color}>
+              <OfferCard key={offer.id}>
                 <div className="offer-image">
                   <img src={offer.image} alt={offer.title} />
               </div>

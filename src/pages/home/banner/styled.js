@@ -23,8 +23,22 @@ const Bannerdiv = styled.div`
     left: 0;
     right: 0;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, ${props => props.bgColor || '#667eea'} 0%, ${props => {
+      // إنشاء لون أغمق قليلاً للـ gradient
+      const color = props.bgColor || '#667eea';
+      // تحويل hex إلى rgb
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      // جعل اللون أغمق بنسبة 20%
+      const darkerR = Math.max(0, Math.floor(r * 0.8));
+      const darkerG = Math.max(0, Math.floor(g * 0.8));
+      const darkerB = Math.max(0, Math.floor(b * 0.8));
+      return `rgb(${darkerR}, ${darkerG}, ${darkerB})`;
+    }} 100%);
     z-index: 0;
+    transition: background 0.5s ease;
   }
   
   .am-carousel {
@@ -57,11 +71,11 @@ const Bannerdiv = styled.div`
 `;
 
 const OfferCard = styled.div`
-    position: relative;
+  position: relative;
   height: 3rem;
   border-radius: 0.24rem;
   overflow: hidden;
-  background: linear-gradient(135deg, ${props => props.bgColor || '#667eea'} 0%, ${props => props.bgColor || '#764ba2'} 100%);
+  background: transparent;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
