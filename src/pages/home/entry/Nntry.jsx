@@ -6,11 +6,7 @@ import { Nntrydiv } from "./styled";
 class Nntry extends Component {
   state = {
     data: [
-      {
-        icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/wiki-06085b14f7.png",
-        title: "تحليل الوجه",
-        subtitle: "تحليل الوجه",
-      },
+
       {
         icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/hospital-e825185f4d.png",
         title: "مناطق الوجه",
