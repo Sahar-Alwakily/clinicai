@@ -13,6 +13,9 @@ const Nntrydiv = styled.div`
   background: #fff;
   margin-top: 0.15rem;
   direction: rtl;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
   
   .swiper-wrapper {
     margin: 0 auto;

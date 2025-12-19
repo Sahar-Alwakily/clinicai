@@ -15,6 +15,8 @@ const Bannerdiv = styled.div`
   padding-top: 1.6rem;
   height: 4.6rem;
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   
   &::before {
     content: '';

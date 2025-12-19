@@ -13,6 +13,9 @@ const Feedtabdiv = styled.div`
   padding: 0.25rem 0.25rem 0.15rem;
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
   
   ul {
     display: flex;
@@ -24,6 +27,7 @@ const Feedtabdiv = styled.div`
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    width: 100%;
     
     &::-webkit-scrollbar {
       display: none;

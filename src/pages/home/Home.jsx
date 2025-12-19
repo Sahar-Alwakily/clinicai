@@ -87,7 +87,11 @@ class Home extends Component {
           background: '#f8f9fa', 
           minHeight: '100vh',
           width: '100%',
-          boxSizing: 'border-box'
+          maxWidth: '100%',
+          overflowX: 'hidden',
+          overflowY: 'auto',
+          boxSizing: 'border-box',
+          position: 'relative'
         }}>
           <Banner></Banner>
           <Category></Category>

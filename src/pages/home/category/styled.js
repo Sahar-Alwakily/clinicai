@@ -5,6 +5,9 @@ const Categorydiv = styled.div`
   background: #fff;
   margin-top: 0.15rem;
   direction: rtl;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
   
   .categories-grid {
     display: flex;
@@ -15,6 +18,7 @@ const Categorydiv = styled.div`
     scrollbar-width: none;
     -ms-overflow-style: none;
     padding: 0.05rem 0;
+    width: 100%;
     
     &::-webkit-scrollbar {
       display: none;
