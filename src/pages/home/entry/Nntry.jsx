@@ -7,42 +7,38 @@ class Nntry extends Component {
   state = {
     data: [
       {
-        icon:
-          "//mstatic.soyoung.com/m/static/fe_m/view/home/img/wiki-06085b14f7.png",
-        title: `موسوعة التجميل`,
-        subtitle: `معلومات المشاريع`,
+        icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/wiki-06085b14f7.png",
+        title: "تحليل الوجه",
+        subtitle: "اعرفي مشكلتك بدقة",
       },
       {
-        icon:
-          "//mstatic.soyoung.com/m/static/fe_m/view/home/img/diary-9600fbed24.png",
-        title: `يوميات الجمال`,
-        subtitle: `يوميات الخبراء`,
+        icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/hospital-e825185f4d.png",
+        title: "مناطق الوجه",
+        subtitle: "اختاري المنطقة",
       },
       {
-        icon:
-          "//mstatic.soyoung.com/m/static/fe_m/view/home/img/doctor-5b5ac5d1d3.png",
-        title: `تصنيف الأطباء`,
-        subtitle: `ابحث عن طبيب`,
+        icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/diary-9600fbed24.png",
+        title: "الحلول التجميلية",
+        subtitle: "الخيارات المناسبة لك",
       },
       {
-        icon:
-          "//mstatic.soyoung.com/m/static/fe_m/view/home/img/hospital-e825185f4d.png",
-        title: `تصنيف المؤسسات`,
-        subtitle: `ابحث عن مؤسسة`,
+        icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/live-19db3052a6.png",
+        title: "قبل وبعد",
+        subtitle: "نتائج حقيقية",
       },
       {
-        icon:
-          "//mstatic.soyoung.com/m/static/fe_m/view/home/img/live-19db3052a6.png",
-        title: `البث المباشر`,
-        subtitle: `بث المشاريع`,
+        icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/doctor-5b5ac5d1d3.png",
+        title: "الأطباء",
+        subtitle: "اختاري بثقة",
       },
       {
         icon: "//static.soyoung.com/sy-pre/wenda-1562123407993.png",
-        title: `أسئلة الأطباء`,
-        subtitle: `إجابات على الأسئلة`,
+        title: "اسألي طبيب",
+        subtitle: "إجابة سريعة",
       },
     ],
   };
+  
   render() {
     return (
       <>
