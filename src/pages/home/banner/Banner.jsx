@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Carousel } from "antd-mobile";
-import { Bannerdiv, OfferCard, OfferContent, OfferBadge, OfferTitle, OfferSubtitle } from "./styled";
+import { Bannerdiv, OfferCard } from "./styled";
 
 export default class Banner extends Component {
   state = {
@@ -56,11 +56,6 @@ export default class Banner extends Component {
           >
             {this.state.offers.map((offer) => (
               <OfferCard key={offer.id}>
-                <OfferContent>
-                  <OfferBadge>{offer.discount}</OfferBadge>
-                  <OfferTitle>{offer.title}</OfferTitle>
-                  <OfferSubtitle>{offer.subtitle}</OfferSubtitle>
-                </OfferContent>
                 <div className="offer-image">
                   <img src={offer.image} alt={offer.title} />
                 </div>

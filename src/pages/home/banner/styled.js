@@ -80,19 +80,16 @@ const OfferCard = styled.div`
   background: transparent;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 0.3rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   box-sizing: border-box;
   
   .offer-image {
     width: 100%;
-    height: 1.2rem;
-    border-radius: 0.2rem;
+    height: 100%;
+    border-radius: 0.24rem;
     overflow: hidden;
-    margin-top: 0.2rem;
-    flex-shrink: 0;
-    align-self: center;
     
     img {
       width: 100%;
