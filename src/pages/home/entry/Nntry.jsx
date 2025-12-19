@@ -9,7 +9,7 @@ class Nntry extends Component {
       {
         icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/wiki-06085b14f7.png",
         title: "تحليل الوجه",
-        subtitle: "اعرفي مشكلتك بدقة",
+        subtitle: "تحليل الوجه",
       },
       {
         icon: "//mstatic.soyoung.com/m/static/fe_m/view/home/img/hospital-e825185f4d.png",

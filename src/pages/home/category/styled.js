@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 const Categorydiv = styled.div`
-  padding: 0.4rem 0.3rem;
+  padding: 0.2rem 0.25rem;
   background: #fff5f7;
   margin-top: 0.2rem;
   border-radius: 0.2rem;
@@ -9,8 +9,9 @@ const Categorydiv = styled.div`
   .categories-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.25rem;
+    gap: 0.2rem;
     width: 100%;
+    row-gap: 0.2rem;
   }
   
   .category-item {
@@ -20,7 +21,7 @@ const Categorydiv = styled.div`
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    padding: 0.15rem 0.1rem;
+    padding: 0.12rem 0.08rem;
     border-radius: 0.12rem;
     
     &:hover {
@@ -32,27 +33,27 @@ const Categorydiv = styled.div`
     }
     
     .icon-wrapper {
-      width: 0.9rem;
-      height: 0.9rem;
+      width: 0.75rem;
+      height: 0.75rem;
       border-radius: 50%;
       background: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 0.1rem;
+      margin-bottom: 0.08rem;
       transition: all 0.2s ease;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       overflow: hidden;
       
       img {
-        width: 0.6rem;
-        height: 0.6rem;
+        width: 0.5rem;
+        height: 0.5rem;
         object-fit: cover;
         border-radius: 50%;
       }
       
       .see-all-icon {
-        font-size: 0.5rem;
+        font-size: 0.4rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -70,10 +71,10 @@ const Categorydiv = styled.div`
       display: block;
       text-align: center;
       color: #333;
-      font-size: 0.18rem;
+      font-size: 0.16rem;
       font-weight: 500;
       line-height: 1.3;
-      margin-top: 0.08rem;
+      margin-top: 0.05rem;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -82,49 +83,16 @@ const Categorydiv = styled.div`
   }
   
   @media (min-width: 769px) {
-    padding: 0.5rem 0.4rem;
-    margin-top: 0.25rem;
+    padding: 0.25rem 0.3rem;
+    margin-top: 0.2rem;
     
     .categories-grid {
-      gap: 0.3rem;
-    }
-    
-    .category-item {
-      padding: 0.2rem 0.15rem;
-      
-      .icon-wrapper {
-        width: 1rem;
-        height: 1rem;
-        margin-bottom: 0.12rem;
-        
-        img {
-          width: 0.7rem;
-          height: 0.7rem;
-        }
-        
-        .see-all-icon {
-          font-size: 0.6rem;
-        }
-      }
-      
-      .category-text {
-        font-size: 0.2rem;
-        margin-top: 0.1rem;
-      }
-    }
-  }
-  
-  @media (max-width: 480px) {
-    padding: 0.35rem 0.25rem;
-    margin-top: 0.15rem;
-    
-    .categories-grid {
-      grid-template-columns: repeat(4, 1fr);
       gap: 0.2rem;
+      row-gap: 0.2rem;
     }
     
     .category-item {
-      padding: 0.12rem 0.08rem;
+      padding: 0.15rem 0.1rem;
       
       .icon-wrapper {
         width: 0.85rem;
@@ -132,18 +100,53 @@ const Categorydiv = styled.div`
         margin-bottom: 0.08rem;
         
         img {
-          width: 0.55rem;
-          height: 0.55rem;
+          width: 0.6rem;
+          height: 0.6rem;
         }
         
         .see-all-icon {
-          font-size: 0.45rem;
+          font-size: 0.5rem;
         }
       }
       
       .category-text {
-        font-size: 0.16rem;
+        font-size: 0.18rem;
         margin-top: 0.06rem;
+      }
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.2rem 0.2rem;
+    margin-top: 0.15rem;
+    
+    .categories-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.2rem;
+      row-gap: 0.2rem;
+    }
+    
+    .category-item {
+      padding: 0.1rem 0.06rem;
+      
+      .icon-wrapper {
+        width: 0.7rem;
+        height: 0.7rem;
+        margin-bottom: 0.06rem;
+        
+        img {
+          width: 0.48rem;
+          height: 0.48rem;
+        }
+        
+        .see-all-icon {
+          font-size: 0.4rem;
+        }
+      }
+      
+      .category-text {
+        font-size: 0.14rem;
+        margin-top: 0.04rem;
       }
     }
   }
