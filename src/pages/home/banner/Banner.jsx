@@ -56,14 +56,14 @@ export default class Banner extends Component {
           >
             {this.state.offers.map((offer) => (
               <OfferCard key={offer.id}>
-                <div className="offer-image">
-                  <img src={offer.image} alt={offer.title} />
-              </div>
                 <OfferContent>
                   <OfferBadge>{offer.discount}</OfferBadge>
                   <OfferTitle>{offer.title}</OfferTitle>
                   <OfferSubtitle>{offer.subtitle}</OfferSubtitle>
                 </OfferContent>
+                <div className="offer-image">
+                  <img src={offer.image} alt={offer.title} />
+                </div>
               </OfferCard>
             ))}
           </Carousel>

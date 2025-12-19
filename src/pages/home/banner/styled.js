@@ -80,17 +80,19 @@ const OfferCard = styled.div`
   background: transparent;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
   padding: 0.3rem;
   box-sizing: border-box;
   
   .offer-image {
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 100%;
+    height: 1.2rem;
     border-radius: 0.2rem;
     overflow: hidden;
-    margin-left: 0.3rem;
+    margin-top: 0.2rem;
     flex-shrink: 0;
+    align-self: center;
     
     img {
       width: 100%;
@@ -101,12 +103,11 @@ const OfferCard = styled.div`
 `;
 
 const OfferContent = styled.div`
-  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
-  height: 100%;
+  width: 100%;
 `;
 
 const OfferBadge = styled.div`
