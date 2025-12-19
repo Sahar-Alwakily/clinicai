@@ -449,15 +449,16 @@ function FaceModelMesh({ onHotspotClick, activeHotspot }) {
   const meshRef = useRef();
   const { scene } = useGLTF("/assets/models/model.glb");
   
-  useFrame((state) => {
+  // تدوير الموديل ليواجه مباشرة
+  React.useEffect(() => {
     if (meshRef.current) {
-      meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.1;
+      meshRef.current.rotation.y = 0;
     }
-  });
+  }, []);
 
   return (
     <group ref={meshRef}>
-      <primitive object={scene} scale={2} position={[0, -0.3, 0]} />
+      <primitive object={scene} scale={2} position={[0, -0.3, 0]} rotation={[0, 0, 0]} />
     </group>
   );
 }
@@ -524,8 +525,10 @@ export default function FaceModel({ onSelectCategory }) {
                 enablePan={false}
                 minDistance={2}
                 maxDistance={4}
-                minPolarAngle={Math.PI / 4}
-                maxPolarAngle={Math.PI / 1.8}
+                minPolarAngle={Math.PI / 3}
+                maxPolarAngle={Math.PI / 1.5}
+                target={[0, 0, 0]}
+                autoRotate={false}
               />
             </Canvas>
             
