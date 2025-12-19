@@ -263,6 +263,7 @@ class DiagnosisSteps extends Component {
   // ============ التحقق من صحة البيانات ============
   validateCurrentStep = () => {
     const { currentStep, formData } = this.state;
+    const { wantsMedicalQuestions } = formData;
     const errors = {};
 
     switch (currentStep) {
@@ -288,24 +289,49 @@ class DiagnosisSteps extends Component {
         }
         break;
       
-      case 3: // الوضع الصحي العام (إذا اختار الإجابة)
-      case 4: // الحساسية
-      case 5: // المكملات والأدوية
-      case 6: // الأمراض الجلدية والمزمنة
+      case 3: // الوضع الصحي العام (إذا اختار الإجابة) أو تشخيص البشرة (إذا اختار التخطي)
+        if (wantsMedicalQuestions === false) {
+          // تشخيص البشرة
+          if (!formData.skinType) errors.skinType = "الرجاء اختيار نوع البشرة";
+          if (!formData.age) errors.age = "الرجاء اختيار الفئة العمرية";
+          if (!formData.lifestyle) errors.lifestyle = "الرجاء اختيار أسلوب الحياة";
+        }
+        // إذا اختار الإجابة، لا حاجة للتحقق (اختياري)
+        break;
+      
+      case 4: // الحساسية (إذا اختار الإجابة) أو الأفاتار (إذا اختار التخطي)
+        if (wantsMedicalQuestions === false) {
+          // الأفاتار
+          if (!formData.avatarModel) errors.avatarModel = "الرجاء اختيار النموذج";
+        }
+        // إذا اختار الإجابة، لا حاجة للتحقق (اختياري)
+        break;
+      
+      case 5: // المكملات والأدوية (إذا اختار الإجابة) أو الاهتمامات (إذا اختار التخطي)
+        if (wantsMedicalQuestions === false) {
+          // الاهتمامات
+          if (formData.interests.length === 0) {
+            errors.interests = "الرجاء اختيار اهتمام واحد على الأقل";
+          }
+        }
+        // إذا اختار الإجابة، لا حاجة للتحقق (اختياري)
+        break;
+      
+      case 6: // الأمراض الجلدية والمزمنة (فقط إذا اختار الإجابة)
         // لا حاجة للتحقق، كلها اختيارية
         break;
       
-      case 7: // تشخيص البشرة (إذا اختار الإجابة) أو 3 (إذا اختار التخطي)
+      case 7: // تشخيص البشرة (إذا اختار الإجابة)
         if (!formData.skinType) errors.skinType = "الرجاء اختيار نوع البشرة";
         if (!formData.age) errors.age = "الرجاء اختيار الفئة العمرية";
         if (!formData.lifestyle) errors.lifestyle = "الرجاء اختيار أسلوب الحياة";
         break;
       
-      case 4: // الأفاتار
+      case 8: // الأفاتار (إذا اختار الإجابة)
         if (!formData.avatarModel) errors.avatarModel = "الرجاء اختيار النموذج";
         break;
       
-      case 5: // الاهتمامات
+      case 9: // الاهتمامات (إذا اختار الإجابة)
         if (formData.interests.length === 0) {
           errors.interests = "الرجاء اختيار اهتمام واحد على الأقل";
         }
@@ -575,10 +601,81 @@ class DiagnosisSteps extends Component {
           </div>
         );
 
-      case 3: // الوضع الصحي العام (إذا اختار الإجابة)
+      case 3: // الوضع الصحي العام (إذا اختار الإجابة) أو تشخيص البشرة (إذا اختار التخطي)
         if (wantsMedicalQuestions === false) {
-          // إذا اختار التخطي، نتجاوز إلى تشخيص البشرة (case 7)
-          return this.renderStepContent();
+          // إذا اختار التخطي، نعرض تشخيص البشرة مباشرة
+          return (
+            <div className="step-content skin-diagnosis">
+              <h3>تشخيص البشرة</h3>
+              <p className="step-description">
+                هذه المعلومات تساعدنا في تخصيص المنتجات المناسبة لك
+              </p>
+              
+              <div className="options-section">
+                <label>نوع البشرة *</label>
+                <div className="options-grid">
+                  {this.skinTypes.map(type => (
+                    <div
+                      key={type.id}
+                      className={`option-card ${formData.skinType === type.id ? "selected" : ""}`}
+                      onClick={() => this.handleInputChange("skinType", type.id)}
+                      style={{ borderColor: type.color }}
+                    >
+                      <div className="option-icon" style={{ color: type.color }}>
+                        {type.icon}
+                      </div>
+                      <div className="option-label">{type.label}</div>
+                    </div>
+                  ))}
+                </div>
+                {this.state.errors.skinType && 
+                  <div className="step-error">{this.state.errors.skinType}</div>}
+              </div>
+
+              <div className="options-section">
+                <label>الفئة العمرية *</label>
+                <div className="options-grid">
+                  {this.ageGroups.map(age => (
+                    <div
+                      key={age.id}
+                      className={`option-card ${formData.age === age.id ? "selected" : ""}`}
+                      onClick={() => this.handleInputChange("age", age.id)}
+                      style={{ borderColor: age.color }}
+                    >
+                      <div className="option-range" style={{ color: age.color }}>
+                        {age.range}
+                      </div>
+                      <div className="option-label">{age.label}</div>
+                    </div>
+                  ))}
+                </div>
+                {this.state.errors.age && 
+                  <div className="step-error">{this.state.errors.age}</div>}
+              </div>
+
+              <div className="options-section">
+                <label>أسلوب الحياة *</label>
+                <div className="options-grid">
+                  {this.lifestyleOptions.map(lifestyle => (
+                    <div
+                      key={lifestyle.id}
+                      className={`option-card ${formData.lifestyle === lifestyle.id ? "selected" : ""}`}
+                      onClick={() => this.handleInputChange("lifestyle", lifestyle.id)}
+                      style={{ borderColor: lifestyle.color }}
+                    >
+                      <div className="option-icon" style={{ color: lifestyle.color }}>
+                        {lifestyle.icon}
+                      </div>
+                      <div className="option-label">{lifestyle.label}</div>
+                      <div className="option-desc">{lifestyle.desc}</div>
+                    </div>
+                  ))}
+                </div>
+                {this.state.errors.lifestyle && 
+                  <div className="step-error">{this.state.errors.lifestyle}</div>}
+              </div>
+            </div>
+          );
         }
         return (
           <div className="step-content medical-health">
@@ -605,9 +702,49 @@ class DiagnosisSteps extends Component {
           </div>
         );
 
-      case 4: // الحساسية
+      case 4: // الحساسية (إذا اختار الإجابة) أو الأفاتار (إذا اختار التخطي)
         if (wantsMedicalQuestions === false) {
-          return this.renderStepContent();
+          // إذا اختار التخطي، نعرض الأفاتار مباشرة
+          const filteredAvatarModels = this.avatarModels.filter(model => {
+            if (formData.gender === "female") {
+              return model.gender === "female";
+            } else if (formData.gender === "male") {
+              return model.gender === "male";
+            }
+            return true;
+          });
+
+          return (
+            <div className="step-content avatar-selection">
+              <h3>اختر نموذجك ثلاثي الأبعاد</h3>
+              <p className="step-description">
+                سيظهر هذا النموذج في حسابك ويمكنك تغييره لاحقاً
+              </p>
+              
+              <div className="avatar-grid">
+                {filteredAvatarModels.map(model => (
+                  <div
+                    key={model.id}
+                    className={`avatar-card ${formData.avatarModel === model.id ? "selected" : ""}`}
+                    onClick={() => this.handleInputChange("avatarModel", model.id)}
+                    style={{ borderColor: model.color }}
+                  >
+                    <div className="avatar-emoji">{model.emoji}</div>
+                    <div className="avatar-label">{model.label}</div>
+                  </div>
+                ))}
+              </div>
+              
+              {this.state.errors.avatarModel && 
+                <div className="step-error">{this.state.errors.avatarModel}</div>}
+              
+              {formData.avatarModel && 
+                <AvatarModel 
+                  modelId={formData.avatarModel} 
+                  gender={formData.gender} 
+                />}
+            </div>
+          );
         }
         return (
           <div className="step-content medical-allergies">
@@ -651,9 +788,36 @@ class DiagnosisSteps extends Component {
           </div>
         );
 
-      case 5: // المكملات والأدوية
+      case 5: // المكملات والأدوية (إذا اختار الإجابة) أو الاهتمامات (إذا اختار التخطي)
         if (wantsMedicalQuestions === false) {
-          return this.renderStepContent();
+          // إذا اختار التخطي، نعرض الاهتمامات مباشرة
+          return (
+            <div className="step-content preferences">
+              <h3>ما هي اهتماماتك في عالم التجميل؟</h3>
+              <p className="step-description">
+                (لإرسال العروض والإعلانات المناسبة لك)
+              </p>
+              
+              <div className="interests-grid">
+                {this.interestsList.map(interest => (
+                  <div
+                    key={interest.id}
+                    className={`interest-card ${formData.interests.includes(interest.id) ? "selected" : ""}`}
+                    onClick={() => this.handleInterestToggle(interest.id)}
+                    style={{ borderColor: interest.color }}
+                  >
+                    <div className="interest-icon" style={{ color: interest.color }}>
+                      {interest.icon}
+                    </div>
+                    <div className="interest-label">{interest.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {this.state.errors.interests && 
+                <div className="step-error">{this.state.errors.interests}</div>}
+            </div>
+          );
         }
         return (
           <div className="step-content medical-medications">
@@ -697,9 +861,10 @@ class DiagnosisSteps extends Component {
           </div>
         );
 
-      case 6: // الأمراض الجلدية والمزمنة
+      case 6: // الأمراض الجلدية والمزمنة (فقط إذا اختار الإجابة)
         if (wantsMedicalQuestions === false) {
-          return this.renderStepContent();
+          // لا يجب الوصول هنا إذا اختار التخطي
+          return null;
         }
         return (
           <div className="step-content medical-diseases">
@@ -803,90 +968,85 @@ class DiagnosisSteps extends Component {
           </div>
         );
 
-      case 7: // تشخيص البشرة
-      case 3: // تشخيص البشرة (إذا اختار التخطي)
-        // إذا اختار التخطي وكانت الخطوة 3، أو اختار الإجابة وكانت الخطوة 7
-        if ((wantsMedicalQuestions === false && currentStep === 3) || 
-            (wantsMedicalQuestions === true && currentStep === 7)) {
+      case 7: // تشخيص البشرة (إذا اختار الإجابة)
+        if (wantsMedicalQuestions === true && currentStep === 7) {
           return (
-          <div className="step-content skin-diagnosis">
-            <h3>تشخيص البشرة</h3>
-            <p className="step-description">
-              هذه المعلومات تساعدنا في تخصيص المنتجات المناسبة لك
-            </p>
-            
-            <div className="options-section">
-              <label>نوع البشرة *</label>
-              <div className="options-grid">
-                {this.skinTypes.map(type => (
-                  <div
-                    key={type.id}
-                    className={`option-card ${formData.skinType === type.id ? "selected" : ""}`}
-                    onClick={() => this.handleInputChange("skinType", type.id)}
-                    style={{ borderColor: type.color }}
-                  >
-                    <div className="option-icon" style={{ color: type.color }}>
-                      {type.icon}
+            <div className="step-content skin-diagnosis">
+              <h3>تشخيص البشرة</h3>
+              <p className="step-description">
+                هذه المعلومات تساعدنا في تخصيص المنتجات المناسبة لك
+              </p>
+              
+              <div className="options-section">
+                <label>نوع البشرة *</label>
+                <div className="options-grid">
+                  {this.skinTypes.map(type => (
+                    <div
+                      key={type.id}
+                      className={`option-card ${formData.skinType === type.id ? "selected" : ""}`}
+                      onClick={() => this.handleInputChange("skinType", type.id)}
+                      style={{ borderColor: type.color }}
+                    >
+                      <div className="option-icon" style={{ color: type.color }}>
+                        {type.icon}
+                      </div>
+                      <div className="option-label">{type.label}</div>
                     </div>
-                    <div className="option-label">{type.label}</div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                {this.state.errors.skinType && 
+                  <div className="step-error">{this.state.errors.skinType}</div>}
               </div>
-              {this.state.errors.skinType && 
-                <div className="step-error">{this.state.errors.skinType}</div>}
-            </div>
 
-            <div className="options-section">
-              <label>الفئة العمرية *</label>
-              <div className="options-grid">
-                {this.ageGroups.map(age => (
-                  <div
-                    key={age.id}
-                    className={`option-card ${formData.age === age.id ? "selected" : ""}`}
-                    onClick={() => this.handleInputChange("age", age.id)}
-                    style={{ borderColor: age.color }}
-                  >
-                    <div className="option-range" style={{ color: age.color }}>
-                      {age.range}
+              <div className="options-section">
+                <label>الفئة العمرية *</label>
+                <div className="options-grid">
+                  {this.ageGroups.map(age => (
+                    <div
+                      key={age.id}
+                      className={`option-card ${formData.age === age.id ? "selected" : ""}`}
+                      onClick={() => this.handleInputChange("age", age.id)}
+                      style={{ borderColor: age.color }}
+                    >
+                      <div className="option-range" style={{ color: age.color }}>
+                        {age.range}
+                      </div>
+                      <div className="option-label">{age.label}</div>
                     </div>
-                    <div className="option-label">{age.label}</div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                {this.state.errors.age && 
+                  <div className="step-error">{this.state.errors.age}</div>}
               </div>
-              {this.state.errors.age && 
-                <div className="step-error">{this.state.errors.age}</div>}
-            </div>
 
-            <div className="options-section">
-              <label>أسلوب الحياة *</label>
-              <div className="options-grid">
-                {this.lifestyleOptions.map(lifestyle => (
-                  <div
-                    key={lifestyle.id}
-                    className={`option-card ${formData.lifestyle === lifestyle.id ? "selected" : ""}`}
-                    onClick={() => this.handleInputChange("lifestyle", lifestyle.id)}
-                    style={{ borderColor: lifestyle.color }}
-                  >
-                    <div className="option-icon" style={{ color: lifestyle.color }}>
-                      {lifestyle.icon}
+              <div className="options-section">
+                <label>أسلوب الحياة *</label>
+                <div className="options-grid">
+                  {this.lifestyleOptions.map(lifestyle => (
+                    <div
+                      key={lifestyle.id}
+                      className={`option-card ${formData.lifestyle === lifestyle.id ? "selected" : ""}`}
+                      onClick={() => this.handleInputChange("lifestyle", lifestyle.id)}
+                      style={{ borderColor: lifestyle.color }}
+                    >
+                      <div className="option-icon" style={{ color: lifestyle.color }}>
+                        {lifestyle.icon}
+                      </div>
+                      <div className="option-label">{lifestyle.label}</div>
+                      <div className="option-desc">{lifestyle.desc}</div>
                     </div>
-                    <div className="option-label">{lifestyle.label}</div>
-                    <div className="option-desc">{lifestyle.desc}</div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                {this.state.errors.lifestyle && 
+                  <div className="step-error">{this.state.errors.lifestyle}</div>}
               </div>
-              {this.state.errors.lifestyle && 
-                <div className="step-error">{this.state.errors.lifestyle}</div>}
             </div>
-          </div>
           );
         }
         return null;
 
       case 8: // الأفاتار (إذا اختار الإجابة)
-      case 4: // الأفاتار (إذا اختار التخطي)
-        if ((wantsMedicalQuestions === false && currentStep === 4) || 
-            (wantsMedicalQuestions === true && currentStep === 8)) {
+        if (wantsMedicalQuestions === true && currentStep === 8) {
           const filteredAvatarModels = this.avatarModels.filter(model => {
             if (formData.gender === "female") {
               return model.gender === "female";
@@ -897,69 +1057,67 @@ class DiagnosisSteps extends Component {
           });
 
           return (
-          <div className="step-content avatar-selection">
-            <h3>اختر نموذجك ثلاثي الأبعاد</h3>
-            <p className="step-description">
-              سيظهر هذا النموذج في حسابك ويمكنك تغييره لاحقاً
-            </p>
-            
-            <div className="avatar-grid">
-              {filteredAvatarModels.map(model => (
-                <div
-                  key={model.id}
-                  className={`avatar-card ${formData.avatarModel === model.id ? "selected" : ""}`}
-                  onClick={() => this.handleInputChange("avatarModel", model.id)}
-                  style={{ borderColor: model.color }}
-                >
-                  <div className="avatar-emoji">{model.emoji}</div>
-                  <div className="avatar-label">{model.label}</div>
-                </div>
-              ))}
+            <div className="step-content avatar-selection">
+              <h3>اختر نموذجك ثلاثي الأبعاد</h3>
+              <p className="step-description">
+                سيظهر هذا النموذج في حسابك ويمكنك تغييره لاحقاً
+              </p>
+              
+              <div className="avatar-grid">
+                {filteredAvatarModels.map(model => (
+                  <div
+                    key={model.id}
+                    className={`avatar-card ${formData.avatarModel === model.id ? "selected" : ""}`}
+                    onClick={() => this.handleInputChange("avatarModel", model.id)}
+                    style={{ borderColor: model.color }}
+                  >
+                    <div className="avatar-emoji">{model.emoji}</div>
+                    <div className="avatar-label">{model.label}</div>
+                  </div>
+                ))}
+              </div>
+              
+              {this.state.errors.avatarModel && 
+                <div className="step-error">{this.state.errors.avatarModel}</div>}
+              
+              {formData.avatarModel && 
+                <AvatarModel 
+                  modelId={formData.avatarModel} 
+                  gender={formData.gender} 
+                />}
             </div>
-            
-            {this.state.errors.avatarModel && 
-              <div className="step-error">{this.state.errors.avatarModel}</div>}
-            
-            {formData.avatarModel && 
-              <AvatarModel 
-                modelId={formData.avatarModel} 
-                gender={formData.gender} 
-              />}
-          </div>
           );
         }
         return null;
 
       case 9: // الاهتمامات (إذا اختار الإجابة)
-      case 5: // الاهتمامات (إذا اختار التخطي)
-        if ((wantsMedicalQuestions === false && currentStep === 5) || 
-            (wantsMedicalQuestions === true && currentStep === 9)) {
+        if (wantsMedicalQuestions === true && currentStep === 9) {
           return (
-          <div className="step-content preferences">
-            <h3>ما هي اهتماماتك في عالم التجميل؟</h3>
-            <p className="step-description">
-              (لإرسال العروض والإعلانات المناسبة لك)
-            </p>
-            
-            <div className="interests-grid">
-              {this.interestsList.map(interest => (
-                <div
-                  key={interest.id}
-                  className={`interest-card ${formData.interests.includes(interest.id) ? "selected" : ""}`}
-                  onClick={() => this.handleInterestToggle(interest.id)}
-                  style={{ borderColor: interest.color }}
-                >
-                  <div className="interest-icon" style={{ color: interest.color }}>
-                    {interest.icon}
+            <div className="step-content preferences">
+              <h3>ما هي اهتماماتك في عالم التجميل؟</h3>
+              <p className="step-description">
+                (لإرسال العروض والإعلانات المناسبة لك)
+              </p>
+              
+              <div className="interests-grid">
+                {this.interestsList.map(interest => (
+                  <div
+                    key={interest.id}
+                    className={`interest-card ${formData.interests.includes(interest.id) ? "selected" : ""}`}
+                    onClick={() => this.handleInterestToggle(interest.id)}
+                    style={{ borderColor: interest.color }}
+                  >
+                    <div className="interest-icon" style={{ color: interest.color }}>
+                      {interest.icon}
+                    </div>
+                    <div className="interest-label">{interest.label}</div>
                   </div>
-                  <div className="interest-label">{interest.label}</div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            {this.state.errors.interests && 
-              <div className="step-error">{this.state.errors.interests}</div>}
-          </div>
+              {this.state.errors.interests && 
+                <div className="step-error">{this.state.errors.interests}</div>}
+            </div>
           );
         }
         return null;
