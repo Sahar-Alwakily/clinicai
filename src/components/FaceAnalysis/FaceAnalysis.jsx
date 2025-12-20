@@ -1094,7 +1094,7 @@ class FaceAnalysis extends Component {
     const sagging = this.analyzeSagging(landmarks);
     const facialLines = this.analyzeFacialLines(landmarks, age);
     const eyebrows = this.analyzeEyebrows(landmarks);
-    const mouth = this.analyzeMouth(landmarks);
+    const mouth = this.analyzeMouth(landmarks) || { size: 'غير محدد', needsFiller: false, recommendation: '' };
     
     // === التحليلات المتقدمة ===
     let advancedSkin, skinProblems, facialProportions, specificRegions;
@@ -1211,7 +1211,7 @@ class FaceAnalysis extends Component {
     }
     
     // علاجات بناءً على الفم
-    if (mouth.needsFiller) {
+    if (mouth && mouth.needsFiller) {
       treatments.push({
         name: 'فيلر الشفاه',
         description: mouth.recommendation || 'زيادة حجم الشفاه',
@@ -1220,7 +1220,7 @@ class FaceAnalysis extends Component {
     }
     
     // علاجات بناءً على الحواجب
-    if (eyebrows.needsCorrection) {
+    if (eyebrows && eyebrows.needsCorrection) {
       treatments.push({
         name: 'تصحيح الحواجب',
         description: 'لتحسين تناسق الحواجب',
