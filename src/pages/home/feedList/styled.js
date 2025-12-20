@@ -97,7 +97,7 @@ const FeedListdiv = styled.div`
           
           .doctor-info {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.08rem;
             
             img {
@@ -107,12 +107,35 @@ const FeedListdiv = styled.div`
               border: 2px solid #fff;
               box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
               object-fit: cover;
+              flex-shrink: 0;
+              margin-top: 0.02rem;
             }
             
-            .doctor-name {
-              font-size: 0.16rem;
-              color: #4a5568;
-              font-weight: 500;
+            .doctor-details {
+              display: flex;
+              flex-direction: column;
+              gap: 0.04rem;
+              flex: 1;
+              min-width: 0;
+              
+              .doctor-name {
+                font-size: 0.16rem;
+                color: #4a5568;
+                font-weight: 600;
+                line-height: 1.3;
+              }
+              
+              .location {
+                font-size: 0.14rem;
+                color: #718096;
+                font-weight: 400;
+                line-height: 1.3;
+                display: -webkit-box;
+                -webkit-line-clamp: 1;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              }
             }
           }
           
@@ -180,8 +203,16 @@ const FeedListdiv = styled.div`
                 height: 0.32rem;
               }
               
-              .doctor-name {
-                font-size: 0.18rem;
+              .doctor-details {
+                gap: 0.05rem;
+                
+                .doctor-name {
+                  font-size: 0.18rem;
+                }
+                
+                .location {
+                  font-size: 0.16rem;
+                }
               }
             }
             
@@ -236,8 +267,16 @@ const FeedListdiv = styled.div`
                 height: 0.24rem;
               }
               
-              .doctor-name {
-                font-size: 0.14rem;
+              .doctor-details {
+                gap: 0.03rem;
+                
+                .doctor-name {
+                  font-size: 0.14rem;
+                }
+                
+                .location {
+                  font-size: 0.12rem;
+                }
               }
             }
             

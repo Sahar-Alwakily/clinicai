@@ -196,44 +196,44 @@ class Home extends Component {
     // بيانات العلاجات حسب المنطقة
     const treatmentsByRegion = {
       "nose": [
-        { treatment_name: "بوتوكس الأنف", doctor_name: "د. أحمد الخالدي", price: "800", region: "nose" },
-        { treatment_name: "فيلر الأنف", doctor_name: "د. سارة المنصور", price: "1200", region: "nose" },
-        { treatment_name: "تصغير الأنف", doctor_name: "د. محمد العلي", price: "5000", region: "nose" },
-        { treatment_name: "رفع طرف الأنف", doctor_name: "د. فاطمة النور", price: "3500", region: "nose" },
+        { treatment_name: "بوتوكس الأنف", doctor_name: "د. أحمد الخالدي", price: "800", location: "عيادة الجمال الحديث - الرياض", region: "nose" },
+        { treatment_name: "فيلر الأنف", doctor_name: "د. سارة المنصور", price: "1200", location: "مركز النخبة للتجميل - جدة", region: "nose" },
+        { treatment_name: "تصغير الأنف", doctor_name: "د. محمد العلي", price: "5000", location: "عيادة الجمال الحديث - الرياض", region: "nose" },
+        { treatment_name: "رفع طرف الأنف", doctor_name: "د. فاطمة النور", price: "3500", location: "عيادة الأناقة - الدمام", region: "nose" },
       ],
       "lips": [
-        { treatment_name: "فيلر الشفاه", doctor_name: "د. نورا العتيبي", price: "600", region: "lips" },
-        { treatment_name: "تكبير الشفاه", doctor_name: "د. أحمد الخالدي", price: "800", region: "lips" },
-        { treatment_name: "تجميل الشفاه", doctor_name: "د. سارة المنصور", price: "700", region: "lips" },
-        { treatment_name: "تصحيح شكل الشفاه", doctor_name: "د. محمد العلي", price: "900", region: "lips" },
+        { treatment_name: "فيلر الشفاه", doctor_name: "د. نورا العتيبي", price: "600", location: "عيادة الجمال الحديث - الرياض", region: "lips" },
+        { treatment_name: "تكبير الشفاه", doctor_name: "د. أحمد الخالدي", price: "800", location: "مركز النخبة للتجميل - جدة", region: "lips" },
+        { treatment_name: "تجميل الشفاه", doctor_name: "د. سارة المنصور", price: "700", location: "عيادة الجمال الحديث - الرياض", region: "lips" },
+        { treatment_name: "تصحيح شكل الشفاه", doctor_name: "د. محمد العلي", price: "900", location: "عيادة الأناقة - الدمام", region: "lips" },
       ],
       "eyes": [
-        { treatment_name: "بوتوكس العين", doctor_name: "د. فاطمة النور", price: "500", region: "eyes" },
-        { treatment_name: "إزالة الهالات", doctor_name: "د. نورا العتيبي", price: "400", region: "eyes" },
-        { treatment_name: "شد الجفون", doctor_name: "د. أحمد الخالدي", price: "2500", region: "eyes" },
-        { treatment_name: "تجميل العيون", doctor_name: "د. سارة المنصور", price: "3000", region: "eyes" },
+        { treatment_name: "بوتوكس العين", doctor_name: "د. فاطمة النور", price: "500", location: "عيادة الجمال الحديث - الرياض", region: "eyes" },
+        { treatment_name: "إزالة الهالات", doctor_name: "د. نورا العتيبي", price: "400", location: "مركز النخبة للتجميل - جدة", region: "eyes" },
+        { treatment_name: "شد الجفون", doctor_name: "د. أحمد الخالدي", price: "2500", location: "عيادة الجمال الحديث - الرياض", region: "eyes" },
+        { treatment_name: "تجميل العيون", doctor_name: "د. سارة المنصور", price: "3000", location: "عيادة الأناقة - الدمام", region: "eyes" },
       ],
       "forehead": [
-        { treatment_name: "بوتوكس الجبهة", doctor_name: "د. محمد العلي", price: "600", region: "forehead" },
-        { treatment_name: "فيلر الجبهة", doctor_name: "د. فاطمة النور", price: "800", region: "forehead" },
-        { treatment_name: "شد الجبهة", doctor_name: "د. نورا العتيبي", price: "2000", region: "forehead" },
+        { treatment_name: "بوتوكس الجبهة", doctor_name: "د. محمد العلي", price: "600", location: "عيادة الجمال الحديث - الرياض", region: "forehead" },
+        { treatment_name: "فيلر الجبهة", doctor_name: "د. فاطمة النور", price: "800", location: "مركز النخبة للتجميل - جدة", region: "forehead" },
+        { treatment_name: "شد الجبهة", doctor_name: "د. نورا العتيبي", price: "2000", location: "عيادة الأناقة - الدمام", region: "forehead" },
       ],
       "cheeks": [
-        { treatment_name: "فيلر الخدود", doctor_name: "د. أحمد الخالدي", price: "1000", region: "cheeks" },
-        { treatment_name: "نحت الخدود", doctor_name: "د. سارة المنصور", price: "1500", region: "cheeks" },
-        { treatment_name: "شد الخدود", doctor_name: "د. محمد العلي", price: "3000", region: "cheeks" },
+        { treatment_name: "فيلر الخدود", doctor_name: "د. أحمد الخالدي", price: "1000", location: "عيادة الجمال الحديث - الرياض", region: "cheeks" },
+        { treatment_name: "نحت الخدود", doctor_name: "د. سارة المنصور", price: "1500", location: "مركز النخبة للتجميل - جدة", region: "cheeks" },
+        { treatment_name: "شد الخدود", doctor_name: "د. محمد العلي", price: "3000", location: "عيادة الأناقة - الدمام", region: "cheeks" },
       ],
       "chin": [
-        { treatment_name: "فيلر الذقن", doctor_name: "د. فاطمة النور", price: "900", region: "chin" },
-        { treatment_name: "نحت الذقن", doctor_name: "د. نورا العتيبي", price: "1200", region: "chin" },
+        { treatment_name: "فيلر الذقن", doctor_name: "د. فاطمة النور", price: "900", location: "عيادة الجمال الحديث - الرياض", region: "chin" },
+        { treatment_name: "نحت الذقن", doctor_name: "د. نورا العتيبي", price: "1200", location: "مركز النخبة للتجميل - جدة", region: "chin" },
       ],
       "jawline": [
-        { treatment_name: "نحت الفكين", doctor_name: "د. أحمد الخالدي", price: "2000", region: "jawline" },
-        { treatment_name: "شد الفكين", doctor_name: "د. سارة المنصور", price: "3500", region: "jawline" },
+        { treatment_name: "نحت الفكين", doctor_name: "د. أحمد الخالدي", price: "2000", location: "عيادة الجمال الحديث - الرياض", region: "jawline" },
+        { treatment_name: "شد الفكين", doctor_name: "د. سارة المنصور", price: "3500", location: "مركز النخبة للتجميل - جدة", region: "jawline" },
       ],
       "neck": [
-        { treatment_name: "شد الرقبة", doctor_name: "د. محمد العلي", price: "2500", region: "neck" },
-        { treatment_name: "تجميل الرقبة", doctor_name: "د. فاطمة النور", price: "1800", region: "neck" },
+        { treatment_name: "شد الرقبة", doctor_name: "د. محمد العلي", price: "2500", location: "عيادة الجمال الحديث - الرياض", region: "neck" },
+        { treatment_name: "تجميل الرقبة", doctor_name: "د. فاطمة النور", price: "1800", location: "مركز النخبة للتجميل - جدة", region: "neck" },
       ],
     };
 
@@ -256,6 +256,7 @@ class Home extends Component {
         treatment_name: treatment.treatment_name,
         doctor_name: treatment.doctor_name,
         price: treatment.price,
+        location: treatment.location,
         imgs: {
           u: `https://img2.soyoung.com/origin/20200721/${(index % 7) + 1}/daf7ec3daf387fb0857ab8290fa77302_120_120.png`,
           w: 120,

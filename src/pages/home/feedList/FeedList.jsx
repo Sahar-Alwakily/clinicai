@@ -70,7 +70,12 @@ export default class FeedList extends Component {
                     e.target.style.display = 'none';
                   }}
                 />
-                <span className="doctor-name">{dataItem.data.doctor_name || user.user_name || ''}</span>
+                <div className="doctor-details">
+                  <span className="doctor-name">{dataItem.data.doctor_name || user.user_name || ''}</span>
+                  {dataItem.data.location && (
+                    <span className="location">📍 {dataItem.data.location}</span>
+                  )}
+                </div>
               </div>
               <div className="stats">
                 <span className="views">
