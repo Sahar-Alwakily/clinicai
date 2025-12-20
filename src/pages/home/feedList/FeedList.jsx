@@ -32,31 +32,13 @@ export default class FeedList extends Component {
       return (
         <div key={dataItem.data.id || Math.random()}>
           <div className="image-wrapper">
-            <div
-              style={{
-                height: "0.72rem",
-                paddingBottom: imgs.h && imgs.w 
-                  ? `${(imgs.h / imgs.w) * 100}%`
-                  : "56.25%",
-                position: "relative",
+            <img
+              src={imgs.u || imgs || ''}
+              alt={dataItem.data.summary || ''}
+              onError={(e) => {
+                e.target.style.display = 'none';
               }}
-            >
-              <img
-                src={imgs.u || imgs || ''}
-                alt={dataItem.data.summary || ''}
-                style={{ 
-                  width: "100%",
-                  height: "100%",
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  objectFit: "cover"
-                }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-            </div>
+            />
           </div>
 
           <div className="card-content">

@@ -62,11 +62,14 @@ const FeedListdiv = styled.div`
       .image-wrapper {
         position: relative;
         width: 100%;
+        height: 0.5rem;
         overflow: hidden;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        flex-shrink: 0;
         
         img {
           width: 100%;
+          height: 100%;
           display: block;
           transition: transform 0.3s ease;
           object-fit: cover;
@@ -75,6 +78,9 @@ const FeedListdiv = styled.div`
       
       .card-content {
         padding: 0.15rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
         
         .treatment-name {
           font-size: 0.22rem;
@@ -183,6 +189,10 @@ const FeedListdiv = styled.div`
       > div {
         border-radius: 0.24rem;
         
+        .image-wrapper {
+          height: 0.6rem;
+        }
+        
         .card-content {
           padding: 0.2rem;
           
@@ -246,6 +256,10 @@ const FeedListdiv = styled.div`
       
       > div {
         border-radius: 0.16rem;
+        
+        .image-wrapper {
+          height: 0.45rem;
+        }
         
         .card-content {
           padding: 0.12rem;
