@@ -275,7 +275,7 @@ class FaceAnalysis extends Component {
     canvas.height = displayHeight;
     
     // landmarks تم تعديلها بالفعل باستخدام faceapi.resizeResults
-    // لذا scaleX و scaleY = 1
+    // لذا scaleX و scaleY = 1 (الأبعاد مطابقة بالفعل)
     const scaleX = 1;
     const scaleY = 1;
     
