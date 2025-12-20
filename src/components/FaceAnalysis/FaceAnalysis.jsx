@@ -265,12 +265,12 @@ class FaceAnalysis extends Component {
     
     const ctx = canvas.getContext('2d');
     
-    // الحصول على أبعاد الصورة المعروضة
+    // الحصول على أبعاد الصورة المعروضة (الحجم الفعلي على الشاشة)
     const rect = image.getBoundingClientRect();
     const displayWidth = rect.width;
     const displayHeight = rect.height;
     
-    // الحصول على أبعاد الصورة الأصلية
+    // الحصول على أبعاد الصورة الأصلية (الحجم الفعلي للصورة)
     let sourceWidth, sourceHeight;
     if (image.naturalWidth && image.naturalHeight && image.naturalWidth > 0 && image.naturalHeight > 0) {
       sourceWidth = image.naturalWidth;
@@ -279,6 +279,7 @@ class FaceAnalysis extends Component {
       sourceWidth = image.videoWidth;
       sourceHeight = image.videoHeight;
     } else {
+      // إذا لم تكن هناك أبعاد أصلية، استخدم الأبعاد المعروضة
       sourceWidth = displayWidth;
       sourceHeight = displayHeight;
     }
@@ -288,7 +289,8 @@ class FaceAnalysis extends Component {
     canvas.height = displayHeight;
     
     // حساب نسبة التكبير/التصغير
-    // landmarks تأتي بأبعاد الصورة الأصلية، نحتاج لتعديلها لحجم العرض
+    // landmarks تأتي بأبعاد الصورة الأصلية (sourceWidth x sourceHeight)
+    // نحتاج لتعديلها لحجم العرض (displayWidth x displayHeight)
     const scaleX = displayWidth / sourceWidth;
     const scaleY = displayHeight / sourceHeight;
     
@@ -296,6 +298,7 @@ class FaceAnalysis extends Component {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // رسم FaceMesh كامل للوجه (يشمل جميع الخطوط)
+    // تطبيق scale على جميع النقاط
     this.drawFaceGrid(ctx, landmarks, scaleX, scaleY);
   };
 
