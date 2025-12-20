@@ -12,6 +12,7 @@ import Catalog from "pages/catalog/Catalog";
 import Trends from "pages/trends/Trends";
 import Bookings from "pages/bookings/Bookings";
 import Profile from "pages/profile/Profile";
+import Reminders from "pages/profile/Reminders";
 
 // المكونات الجديدة للتشخيص - نظام منفصل
 
@@ -66,6 +67,7 @@ class App extends Component {
           <Route path="/trends" component={Trends}></Route>
           <Route path="/bookings" component={Bookings}></Route>
           <Route path="/profile" component={Profile}></Route>
+          <Route path="/reminders" component={Reminders}></Route>
           
           <Redirect from="/" exact to="/home"></Redirect>
         </Switch>
