@@ -163,7 +163,6 @@ class FaceAnalysis extends Component {
     zoomRegion: null, // Current region being zoomed (eyes, brows, nose, mouth)
     zoomSequence: [], // Array of regions to zoom through
     zoomTransform: null // Transform values for zoom
-    showOverlay: false
   };
 
   componentDidMount() {
