@@ -2,7 +2,7 @@
   "name": "soyoung",
   "version": "1.0.0",
   "main": "index.js",
-  "sideEffects": false,
+  "sideEffects": ["*.css", "*.less"],
   "author": "hepin",
   "license": "MIT",
   "engines": {
@@ -47,8 +47,10 @@
   "dependencies": {
     "@react-three/drei": "7.2.1",
     "@react-three/fiber": "7.0.6",
+    "@tensorflow/tfjs": "^4.15.0",
     "antd-mobile": "^2.3.3",
     "axios": "^0.19.2",
+    "face-api.js": "^0.22.2",
     "lodash": "^4.17.19",
     "qs": "^6.9.4",
     "react": "^16.14.0",

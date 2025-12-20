@@ -145,6 +145,8 @@ class FaceAnalysis extends Component {
     try {
       this.setState({ modelsLoading: true, error: null });
       
+      // المكتبة محملة بالفعل من الاستيراد
+      
       // محاولة تحميل النماذج المحلية أولاً (إن وجدت)
       // ثم CDN كبديل
       const MODEL_URL = '/models/';
@@ -244,6 +246,8 @@ class FaceAnalysis extends Component {
       this.setState({ error: 'الرجاء الانتظار حتى يتم تحميل النماذج' });
       return;
     }
+
+    // المكتبة محملة بالفعل من الاستيراد
 
     const image = this.imageRef.current || this.videoRef.current;
     if (!image) return;

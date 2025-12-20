@@ -114,6 +114,14 @@ module.exports = {
     },
 
     extensions: [".js", ".jsx", ".css"],
+    modules: ["node_modules"],
+  },
+  
+  // إضافة node externals إذا لزم الأمر
+  node: {
+    fs: "empty",
+    net: "empty",
+    tls: "empty",
   },
 
   plugins: [
