@@ -59,25 +59,29 @@ export default class FeedList extends Component {
             </div>
           </div>
 
-          <p>{dataItem.data.summary || ''}</p>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <img
-                src={user.avatar?.u || user.avatar || ''}
-                alt={user.user_name || ''}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-              <i>{user.user_name || ''}</i>
+          <div className="card-content">
+            <h3 className="treatment-name">{dataItem.data.treatment_name || dataItem.data.summary || ''}</h3>
+            <div className="card-info">
+              <div className="doctor-info">
+                <img
+                  src={user.avatar?.u || user.avatar || ''}
+                  alt={user.user_name || ''}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+                <span className="doctor-name">{dataItem.data.doctor_name || user.user_name || ''}</span>
+              </div>
+              <div className="stats">
+                <span className="views">
+                  <span className="views-icon">👁️</span>
+                  {dataItem.data.view_cnt || 0}
+                </span>
+                {dataItem.data.price && (
+                  <span className="price">{dataItem.data.price} ر.س</span>
+                )}
+              </div>
             </div>
-            <em>{dataItem.data.view_cnt || 0}</em>
           </div>
         </div>
       );

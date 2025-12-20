@@ -7,6 +7,7 @@ import Head from "./header/Head";
 import Banner from "./banner/Banner";
 import Category from "./category/Category";
 import Nntry from "./entry/Nntry";
+import RegionFilter from "./regionFilter/RegionFilter";
 import Feedtab from "./feedtab/Feedtab";
 import FeedList from "./feedList/FeedList";
 import BottomNav from "../../components/bottomNav/BottomNav";
@@ -37,11 +38,54 @@ class Home extends Component {
     page: 1,
     hasmore: true,
     loading: false,
+    selectedTopic: null,
+    selectedRegion: "all",
   };
 
   handleTopicClick = async (topic) => {
     this.setState({
       feedname: topic,
+      data: [],
+      page: 1,
+      hasmore: true,
+      selectedTopic: topic,
+      selectedRegion: "all",
+    });
+    
+    if (!this.state.loading) {
+      this.setState({
+        loading: true,
+      });
+      try {
+        const result = await this.loaddata(1, topic, "all");
+
+        if (result && result.has_more !== "1") {
+          this.setState({
+            hasmore: false,
+          });
+        }
+        this.setState({
+          page: 2,
+          loading: false,
+        });
+
+        if (result) {
+          this.setState({
+            data: this.moddata(result),
+          });
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        this.setState({
+          loading: false,
+        });
+      }
+    }
+  };
+
+  handleRegionChange = async (regionId) => {
+    this.setState({
+      selectedRegion: regionId,
       data: [],
       page: 1,
       hasmore: true,
@@ -52,7 +96,7 @@ class Home extends Component {
         loading: true,
       });
       try {
-        const result = await this.loaddata(1, topic);
+        const result = await this.loaddata(1, this.state.selectedTopic || this.state.feedname, regionId);
 
         if (result && result.has_more !== "1") {
           this.setState({
@@ -135,6 +179,12 @@ class Home extends Component {
           <Banner></Banner>
           <Category></Category>
           <Nntry onTopicClick={this.handleTopicClick}></Nntry>
+          {this.state.selectedTopic === "مناطق الوجه" && (
+            <RegionFilter 
+              onRegionChange={this.handleRegionChange}
+              selectedRegion={this.state.selectedRegion}
+            />
+          )}
           <Feedtab {...this.props} changetype={this.changename}></Feedtab>
           <FeedList data={this.state.data}></FeedList>
         </div>
@@ -142,13 +192,94 @@ class Home extends Component {
       </>
     );
   }
-  getDefaultFeedData = (topic) => {
+  getDefaultFeedData = (topic, region = "all") => {
+    // بيانات العلاجات حسب المنطقة
+    const treatmentsByRegion = {
+      "nose": [
+        { treatment_name: "بوتوكس الأنف", doctor_name: "د. أحمد الخالدي", price: "800", region: "nose" },
+        { treatment_name: "فيلر الأنف", doctor_name: "د. سارة المنصور", price: "1200", region: "nose" },
+        { treatment_name: "تصغير الأنف", doctor_name: "د. محمد العلي", price: "5000", region: "nose" },
+        { treatment_name: "رفع طرف الأنف", doctor_name: "د. فاطمة النور", price: "3500", region: "nose" },
+      ],
+      "lips": [
+        { treatment_name: "فيلر الشفاه", doctor_name: "د. نورا العتيبي", price: "600", region: "lips" },
+        { treatment_name: "تكبير الشفاه", doctor_name: "د. أحمد الخالدي", price: "800", region: "lips" },
+        { treatment_name: "تجميل الشفاه", doctor_name: "د. سارة المنصور", price: "700", region: "lips" },
+        { treatment_name: "تصحيح شكل الشفاه", doctor_name: "د. محمد العلي", price: "900", region: "lips" },
+      ],
+      "eyes": [
+        { treatment_name: "بوتوكس العين", doctor_name: "د. فاطمة النور", price: "500", region: "eyes" },
+        { treatment_name: "إزالة الهالات", doctor_name: "د. نورا العتيبي", price: "400", region: "eyes" },
+        { treatment_name: "شد الجفون", doctor_name: "د. أحمد الخالدي", price: "2500", region: "eyes" },
+        { treatment_name: "تجميل العيون", doctor_name: "د. سارة المنصور", price: "3000", region: "eyes" },
+      ],
+      "forehead": [
+        { treatment_name: "بوتوكس الجبهة", doctor_name: "د. محمد العلي", price: "600", region: "forehead" },
+        { treatment_name: "فيلر الجبهة", doctor_name: "د. فاطمة النور", price: "800", region: "forehead" },
+        { treatment_name: "شد الجبهة", doctor_name: "د. نورا العتيبي", price: "2000", region: "forehead" },
+      ],
+      "cheeks": [
+        { treatment_name: "فيلر الخدود", doctor_name: "د. أحمد الخالدي", price: "1000", region: "cheeks" },
+        { treatment_name: "نحت الخدود", doctor_name: "د. سارة المنصور", price: "1500", region: "cheeks" },
+        { treatment_name: "شد الخدود", doctor_name: "د. محمد العلي", price: "3000", region: "cheeks" },
+      ],
+      "chin": [
+        { treatment_name: "فيلر الذقن", doctor_name: "د. فاطمة النور", price: "900", region: "chin" },
+        { treatment_name: "نحت الذقن", doctor_name: "د. نورا العتيبي", price: "1200", region: "chin" },
+      ],
+      "jawline": [
+        { treatment_name: "نحت الفكين", doctor_name: "د. أحمد الخالدي", price: "2000", region: "jawline" },
+        { treatment_name: "شد الفكين", doctor_name: "د. سارة المنصور", price: "3500", region: "jawline" },
+      ],
+      "neck": [
+        { treatment_name: "شد الرقبة", doctor_name: "د. محمد العلي", price: "2500", region: "neck" },
+        { treatment_name: "تجميل الرقبة", doctor_name: "د. فاطمة النور", price: "1800", region: "neck" },
+      ],
+    };
+
+    // الحصول على العلاجات حسب المنطقة المختارة
+    let treatments = [];
+    if (region === "all") {
+      // جمع جميع العلاجات من جميع المناطق
+      Object.values(treatmentsByRegion).forEach(regionTreatments => {
+        treatments.push(...regionTreatments);
+      });
+    } else {
+      treatments = treatmentsByRegion[region] || [];
+    }
+
+    // تحويل العلاجات إلى تنسيق feed_list
+    const feedList = treatments.map((treatment, index) => ({
+      data: {
+        id: `${region}-${index + 1}`,
+        summary: treatment.treatment_name,
+        treatment_name: treatment.treatment_name,
+        doctor_name: treatment.doctor_name,
+        price: treatment.price,
+        imgs: {
+          u: `https://img2.soyoung.com/origin/20200721/${(index % 7) + 1}/daf7ec3daf387fb0857ab8290fa77302_120_120.png`,
+          w: 120,
+          h: 120
+        },
+        user: {
+          user_name: treatment.doctor_name,
+          avatar: {
+            u: `https://img2.soyoung.com/origin/20200508/${(index % 4) + 1}/0a43bcece5358766e753fc491776c17a_120_120.png`
+          }
+        },
+        view_cnt: `${Math.floor(Math.random() * 5) + 1}.${Math.floor(Math.random() * 9)}k`
+      }
+    }));
+
     const topicData = {
-      "مناطق الوجه": [
+      "مناطق الوجه": feedList.length > 0 ? feedList : [
         {
           data: {
             id: "1",
             summary: "تحليل مناطق الوجه - تحديد المشاكل بدقة",
+            treatment_name: "تحليل شامل للوجه",
+            doctor_name: "د. سارة أحمد",
+            price: "200",
             imgs: {
               u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png",
               w: 120,
@@ -697,12 +828,12 @@ class Home extends Component {
     };
 
     return {
-      feed_list: topicData[topic] || topicData["مناطق الوجه"],
+      feed_list: topicData[topic] || topicData["مناطق الوجه"] || [],
       has_more: "1"
     };
   };
 
-  loaddata = async (page, name) => {
+  loaddata = async (page, name, region = "all") => {
     try {
       const result = await get({
         url: `/api/site/index-ajax-feed?page=${page}&menu_id=0&menu_name=${name}&part=2&cityId=9&newFeed=1`,
@@ -712,11 +843,11 @@ class Home extends Component {
         return result;
       }
       // If no data or error, return default data for the topic
-      return this.getDefaultFeedData(name);
+      return this.getDefaultFeedData(name, region);
     } catch (error) {
       console.error("Error loading feed data:", error);
       // Return default data on error for the topic
-      return this.getDefaultFeedData(name);
+      return this.getDefaultFeedData(name, region);
     }
   };
   moddata(data) {

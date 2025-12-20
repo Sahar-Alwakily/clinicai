@@ -73,63 +73,75 @@ const FeedListdiv = styled.div`
         }
       }
       
-      p {
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        display: -webkit-box;
-        max-height: 0.6rem;
-        font-size: 0.22rem;
-        line-height: 0.3rem;
-        color: #2d3748;
-        margin: 0.15rem;
-        overflow: hidden;
-        font-weight: 600;
-        text-overflow: ellipsis;
-      }
-      
-      > div:last-child {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.12rem 0.15rem;
-        border-top: 1px solid #f0f0f0;
-        background: rgba(248, 249, 250, 0.5);
+      .card-content {
+        padding: 0.15rem;
         
-        > div {
-          display: flex;
-          align-items: center;
-          gap: 0.1rem;
-          
-          img {
-            width: 0.32rem;
-            height: 0.32rem;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            object-fit: cover;
-          }
-          
-          i {
-            font-size: 0.18rem;
-            color: #4a5568;
-            font-style: normal;
-            font-weight: 500;
-          }
+        .treatment-name {
+          font-size: 0.22rem;
+          font-weight: 600;
+          color: #2d3748;
+          margin: 0 0 0.12rem 0;
+          line-height: 1.4;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          min-height: 0.6rem;
         }
         
-        em {
-          font-size: 0.18rem;
-          color: #718096;
-          font-style: normal;
+        .card-info {
           display: flex;
-          align-items: center;
-          gap: 0.05rem;
-          font-weight: 500;
+          flex-direction: column;
+          gap: 0.1rem;
           
-          &::before {
-            content: '👁️';
-            font-size: 0.16rem;
-            opacity: 0.7;
+          .doctor-info {
+            display: flex;
+            align-items: center;
+            gap: 0.08rem;
+            
+            img {
+              width: 0.28rem;
+              height: 0.28rem;
+              border-radius: 50%;
+              border: 2px solid #fff;
+              box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+              object-fit: cover;
+            }
+            
+            .doctor-name {
+              font-size: 0.16rem;
+              color: #4a5568;
+              font-weight: 500;
+            }
+          }
+          
+          .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 0.08rem;
+            border-top: 1px solid #f0f0f0;
+            
+            .views {
+              font-size: 0.16rem;
+              color: #718096;
+              display: flex;
+              align-items: center;
+              gap: 0.04rem;
+              font-weight: 500;
+              
+              .views-icon {
+                font-size: 0.14rem;
+                opacity: 0.7;
+              }
+            }
+            
+            .price {
+              font-size: 0.18rem;
+              color: #667eea;
+              font-weight: 700;
+            }
           }
         }
       }
@@ -148,34 +160,45 @@ const FeedListdiv = styled.div`
       > div {
         border-radius: 0.24rem;
         
-        p {
-          font-size: 0.24rem;
-          line-height: 0.32rem;
-          margin: 0.2rem;
-          max-height: 0.64rem;
-        }
-        
-        > div:last-child {
-          padding: 0.15rem 0.2rem;
+        .card-content {
+          padding: 0.2rem;
           
-          > div {
-            gap: 0.12rem;
-            
-            img {
-              width: 0.36rem;
-              height: 0.36rem;
-            }
-            
-            i {
-              font-size: 0.2rem;
-            }
+          .treatment-name {
+            font-size: 0.24rem;
+            margin-bottom: 0.15rem;
+            min-height: 0.64rem;
           }
           
-          em {
-            font-size: 0.2rem;
+          .card-info {
+            gap: 0.12rem;
             
-            &::before {
-              font-size: 0.18rem;
+            .doctor-info {
+              gap: 0.1rem;
+              
+              img {
+                width: 0.32rem;
+                height: 0.32rem;
+              }
+              
+              .doctor-name {
+                font-size: 0.18rem;
+              }
+            }
+            
+            .stats {
+              padding-top: 0.1rem;
+              
+              .views {
+                font-size: 0.18rem;
+                
+                .views-icon {
+                  font-size: 0.16rem;
+                }
+              }
+              
+              .price {
+                font-size: 0.2rem;
+              }
             }
           }
         }
@@ -193,34 +216,45 @@ const FeedListdiv = styled.div`
       > div {
         border-radius: 0.16rem;
         
-        p {
-          font-size: 0.2rem;
-          line-height: 0.28rem;
-          margin: 0.12rem;
-          max-height: 0.56rem;
-        }
-        
-        > div:last-child {
-          padding: 0.1rem 0.12rem;
+        .card-content {
+          padding: 0.12rem;
           
-          > div {
-            gap: 0.08rem;
-            
-            img {
-              width: 0.28rem;
-              height: 0.28rem;
-            }
-            
-            i {
-              font-size: 0.16rem;
-            }
+          .treatment-name {
+            font-size: 0.2rem;
+            margin-bottom: 0.1rem;
+            min-height: 0.56rem;
           }
           
-          em {
-            font-size: 0.16rem;
+          .card-info {
+            gap: 0.08rem;
             
-            &::before {
-              font-size: 0.14rem;
+            .doctor-info {
+              gap: 0.06rem;
+              
+              img {
+                width: 0.24rem;
+                height: 0.24rem;
+              }
+              
+              .doctor-name {
+                font-size: 0.14rem;
+              }
+            }
+            
+            .stats {
+              padding-top: 0.06rem;
+              
+              .views {
+                font-size: 0.14rem;
+                
+                .views-icon {
+                  font-size: 0.12rem;
+                }
+              }
+              
+              .price {
+                font-size: 0.16rem;
+              }
             }
           }
         }
