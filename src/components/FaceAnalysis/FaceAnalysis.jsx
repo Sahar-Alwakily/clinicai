@@ -270,35 +270,19 @@ class FaceAnalysis extends Component {
     const displayWidth = rect.width;
     const displayHeight = rect.height;
     
-    // الحصول على أبعاد الصورة الأصلية (الحجم الفعلي للصورة)
-    let sourceWidth, sourceHeight;
-    if (image.naturalWidth && image.naturalHeight && image.naturalWidth > 0 && image.naturalHeight > 0) {
-      sourceWidth = image.naturalWidth;
-      sourceHeight = image.naturalHeight;
-    } else if (image.videoWidth && image.videoHeight && image.videoWidth > 0 && image.videoHeight > 0) {
-      sourceWidth = image.videoWidth;
-      sourceHeight = image.videoHeight;
-    } else {
-      // إذا لم تكن هناك أبعاد أصلية، استخدم الأبعاد المعروضة
-      sourceWidth = displayWidth;
-      sourceHeight = displayHeight;
-    }
-    
     // ضبط حجم canvas ليطابق حجم الصورة المعروضة
     canvas.width = displayWidth;
     canvas.height = displayHeight;
     
-    // حساب نسبة التكبير/التصغير
-    // landmarks تأتي بأبعاد الصورة الأصلية (sourceWidth x sourceHeight)
-    // نحتاج لتعديلها لحجم العرض (displayWidth x displayHeight)
-    const scaleX = displayWidth / sourceWidth;
-    const scaleY = displayHeight / sourceHeight;
-    
     // مسح Canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // landmarks تم تعديلها بالفعل باستخدام faceapi.resizeResults
+    // لذا scaleX و scaleY = 1 (الأبعاد مطابقة بالفعل)
+    const scaleX = 1;
+    const scaleY = 1;
+    
     // رسم FaceMesh كامل للوجه (يشمل جميع الخطوط)
-    // تطبيق scale على جميع النقاط
     this.drawFaceGrid(ctx, landmarks, scaleX, scaleY);
   };
 
@@ -554,7 +538,24 @@ class FaceAnalysis extends Component {
       if (overlayCanvas && detection.landmarks) {
         // استخدام requestAnimationFrame للتأكد من تحميل الصورة
         requestAnimationFrame(() => {
-          this.drawFaceOverlay(detection.landmarks, overlayCanvas, image);
+          // الحصول على أبعاد الصورة المعروضة
+          const rect = image.getBoundingClientRect();
+          const displaySize = { width: rect.width, height: rect.height };
+          
+          // الحصول على أبعاد الصورة الأصلية (كما يراها face-api.js)
+          let sourceSize;
+          if (image.naturalWidth && image.naturalHeight && image.naturalWidth > 0 && image.naturalHeight > 0) {
+            sourceSize = { width: image.naturalWidth, height: image.naturalHeight };
+          } else if (image.videoWidth && image.videoHeight && image.videoWidth > 0 && image.videoHeight > 0) {
+            sourceSize = { width: image.videoWidth, height: image.videoHeight };
+          } else {
+            sourceSize = displaySize;
+          }
+          
+          // إعادة landmarks إلى أبعاد الصورة المعروضة
+          const resizedLandmarks = faceapi.resizeResults(detection.landmarks, displaySize);
+          
+          this.drawFaceOverlay(resizedLandmarks, overlayCanvas, image);
           this.setState({ showOverlay: true });
         });
       }
