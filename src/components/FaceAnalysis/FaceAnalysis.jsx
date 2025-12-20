@@ -540,7 +540,7 @@ class FaceAnalysis extends Component {
     }
     
     // === توليد التوصيات والعلاجات ===
-    const treatments = this.generateTreatments(advancedSkin, skinProblems, facialProportions, wrinkles, mouth, eyebrows);
+    const treatments = this.generateTreatments(advancedSkin, skinProblems, facialProportions, wrinkles, facialLines, mouth, eyebrows);
     
     return {
       age: Math.round(age),
@@ -575,7 +575,7 @@ class FaceAnalysis extends Component {
     };
   };
 
-  generateTreatments = (advancedSkin, skinProblems, facialProportions, wrinkles, mouth, eyebrows) => {
+  generateTreatments = (advancedSkin, skinProblems, facialProportions, wrinkles, facialLines, mouth, eyebrows) => {
     const treatments = [];
     
     // علاجات بناءً على نوع البشرة
