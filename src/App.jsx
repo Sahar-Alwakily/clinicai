@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { Route, Switch, Redirect, withRouter } from "react-router-dom";
 
 import Home from "pages/home/Home";
 import Newsearch from "pages/newsearch/Newsearch";
@@ -15,10 +15,45 @@ import Profile from "pages/profile/Profile";
 
 // المكونات الجديدة للتشخيص - نظام منفصل
 
-export default class App extends Component {
+// ScrollToTop component - يمرر الصفحة للأعلى عند تغيير الـ route
+class ScrollToTop extends Component {
+  componentDidUpdate(prevProps) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      window.scrollTo(0, 0);
+      // أيضاً تمرير document.body و document.documentElement للأعلى
+      if (document.body) {
+        document.body.scrollTop = 0;
+      }
+      if (document.documentElement) {
+        document.documentElement.scrollTop = 0;
+      }
+    }
+  }
+
+  render() {
+    return null;
+  }
+}
+
+const ScrollToTopWithRouter = withRouter(ScrollToTop);
+
+@withRouter
+class App extends Component {
+  componentDidMount() {
+    // تمرير للأعلى عند تحميل التطبيق
+    window.scrollTo(0, 0);
+    if (document.body) {
+      document.body.scrollTop = 0;
+    }
+    if (document.documentElement) {
+      document.documentElement.scrollTop = 0;
+    }
+  }
+
   render() {
     return (
       <>
+        <ScrollToTopWithRouter />
         <Switch>
           <Route path="/home" component={Home}></Route>
           <Route path="/newsearch" component={Newsearch}></Route>
@@ -38,3 +73,5 @@ export default class App extends Component {
     );
   }
 }
+
+export default App;
