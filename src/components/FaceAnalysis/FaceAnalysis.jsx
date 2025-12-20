@@ -270,14 +270,27 @@ class FaceAnalysis extends Component {
     const displayWidth = rect.width;
     const displayHeight = rect.height;
     
+    // الحصول على أبعاد الصورة الأصلية
+    let sourceWidth, sourceHeight;
+    if (image.naturalWidth && image.naturalHeight && image.naturalWidth > 0 && image.naturalHeight > 0) {
+      sourceWidth = image.naturalWidth;
+      sourceHeight = image.naturalHeight;
+    } else if (image.videoWidth && image.videoHeight && image.videoWidth > 0 && image.videoHeight > 0) {
+      sourceWidth = image.videoWidth;
+      sourceHeight = image.videoHeight;
+    } else {
+      sourceWidth = displayWidth;
+      sourceHeight = displayHeight;
+    }
+    
     // ضبط حجم canvas ليطابق حجم الصورة المعروضة
     canvas.width = displayWidth;
     canvas.height = displayHeight;
     
-    // landmarks تم تعديلها بالفعل باستخدام faceapi.resizeResults
-    // لذا scaleX و scaleY = 1 (الأبعاد مطابقة بالفعل)
-    const scaleX = 1;
-    const scaleY = 1;
+    // حساب نسبة التكبير/التصغير
+    // landmarks تأتي بأبعاد الصورة الأصلية، نحتاج لتعديلها لحجم العرض
+    const scaleX = displayWidth / sourceWidth;
+    const scaleY = displayHeight / sourceHeight;
     
     // مسح Canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -538,24 +551,7 @@ class FaceAnalysis extends Component {
       if (overlayCanvas && detection.landmarks) {
         // استخدام requestAnimationFrame للتأكد من تحميل الصورة
         requestAnimationFrame(() => {
-          // الحصول على أبعاد الصورة المعروضة
-          const rect = image.getBoundingClientRect();
-          const displaySize = { width: rect.width, height: rect.height };
-          
-          // الحصول على أبعاد الصورة الأصلية
-          let sourceSize;
-          if (image.naturalWidth && image.naturalHeight && image.naturalWidth > 0 && image.naturalHeight > 0) {
-            sourceSize = { width: image.naturalWidth, height: image.naturalHeight };
-          } else if (image.videoWidth && image.videoHeight && image.videoWidth > 0 && image.videoHeight > 0) {
-            sourceSize = { width: image.videoWidth, height: image.videoHeight };
-          } else {
-            sourceSize = displaySize;
-          }
-          
-          // تعديل أبعاد landmarks لتطابق حجم العرض
-          const resizedLandmarks = faceapi.resizeResults(detection.landmarks, displaySize);
-          
-          this.drawFaceOverlay(resizedLandmarks, overlayCanvas, image);
+          this.drawFaceOverlay(detection.landmarks, overlayCanvas, image);
           this.setState({ showOverlay: true });
         });
       }
