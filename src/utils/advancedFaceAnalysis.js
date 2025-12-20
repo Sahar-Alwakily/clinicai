@@ -415,20 +415,20 @@ function analyzeAcne(ctx, positions, width, height) {
   const totalScarSpots = tzoneAnalysis.scarSpots + cheekAnalysis.scarSpots;
   const avgVariation = (tzoneAnalysis.variation + cheekAnalysis.variation) / 2;
   
-  // تحديد النشاط
-  const active = totalActiveSpots > 0 || avgVariation > 30;
-  const scars = totalScarSpots > 0 || (avgVariation > 20 && avgVariation <= 30);
+  // تحديد النشاط - معايير أكثر حساسية
+  const active = totalActiveSpots > 0 || avgVariation > 20; // خفضت العتبة من 30 إلى 20
+  const scars = totalScarSpots > 0 || (avgVariation > 15 && avgVariation <= 25);
   
-  // تحديد الشدة
+  // تحديد الشدة - معايير محسّنة
   let severity = 'لا يوجد';
   let severityLevel = 0;
-  if (totalActiveSpots > 5 || avgVariation > 45) {
+  if (totalActiveSpots > 8 || avgVariation > 40) {
     severity = 'شديد';
     severityLevel = 3;
-  } else if (totalActiveSpots > 2 || avgVariation > 35) {
+  } else if (totalActiveSpots > 3 || avgVariation > 28) {
     severity = 'متوسط';
     severityLevel = 2;
-  } else if (totalActiveSpots > 0 || avgVariation > 25) {
+  } else if (totalActiveSpots > 0 || avgVariation > 20) {
     severity = 'خفيف';
     severityLevel = 1;
   }
@@ -486,44 +486,105 @@ function analyzeAcneInRegion(ctx, region, width, height) {
   let activeSpots = 0;
   let scarSpots = 0;
   let count = 0;
-  const sampleRadius = 2;
+  const sampleRadius = 3; // زيادة حجم العينة لتحليل أدق
+  const scanDensity = 0.7; // تقليل الكثافة لتحليل أسرع ولكن أكثر شمولية
   
-  region.forEach(point => {
+  // تحليل أكثر شمولية - أخذ عينات من جميع أنحاء المنطقة
+  for (let i = 0; i < region.length; i += Math.max(1, Math.floor(1 / scanDensity))) {
+    const point = region[i];
     const x = Math.floor(point.x);
     const y = Math.floor(point.y);
     
     if (x >= sampleRadius && x < width - sampleRadius && y >= sampleRadius && y < height - sampleRadius) {
-      // أخذ عينة أكبر (5x5) لتحليل أدق
+      // أخذ عينة أكبر (7x7) لتحليل أدق
       const imgData = ctx.getImageData(x - sampleRadius, y - sampleRadius, sampleRadius * 2 + 1, sampleRadius * 2 + 1);
       const variation = calculateVariation(imgData);
       
       variationSum += variation;
       count++;
       
-      // تحديد البقع النشطة (تباين عالي = بثور ملتهبة)
-      if (variation > 35) {
-        activeSpots++;
-      }
-      // تحديد الندوب (تباين متوسط = آثار)
-      else if (variation > 25 && variation <= 35) {
-        scarSpots++;
-      }
-      
-      // تحليل إضافي للبقع الداكنة (رؤوس سوداء)
+      // تحليل البيانات
       const data = imgData.data;
       let darkPixels = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-        if (brightness < 80) darkPixels++;
+      let redPixels = 0; // للبثور الملتهبة (حمراء)
+      let maxB = 0, minB = 255;
+      
+      for (let j = 0; j < data.length; j += 4) {
+        const r = data[j];
+        const g = data[j + 1];
+        const b = data[j + 2];
+        const brightness = (r + g + b) / 3;
+        
+        maxB = Math.max(maxB, brightness);
+        minB = Math.min(minB, brightness);
+        
+        // كشف البقع الداكنة (رؤوس سوداء)
+        if (brightness < 90) {
+          darkPixels++;
+        }
+        
+        // كشف البقع الحمراء (بثور ملتهبة) - الأحمر أعلى من الأخضر والأزرق
+        if (r > g + 20 && r > b + 20 && brightness < 150) {
+          redPixels++;
+        }
       }
       
-      // إذا كان هناك بكسل داكن كثير مع تباين متوسط = رأس أسود
-      const darkRatio = darkPixels / (data.length / 4);
-      if (darkRatio > 0.1 && variation > 20 && variation <= 35) {
+      const pixelCount = data.length / 4;
+      const darkRatio = darkPixels / pixelCount;
+      const redRatio = redPixels / pixelCount;
+      const contrast = maxB - minB; // التباين
+      
+      // كشف البقع النشطة - معايير أكثر حساسية
+      // 1. تباين عالي = بثور ملتهبة
+      if (variation > 25 || contrast > 60) {
         activeSpots++;
       }
+      // 2. بقع حمراء = التهاب
+      else if (redRatio > 0.08) {
+        activeSpots++;
+      }
+      // 3. بقع داكنة مع تباين متوسط = رؤوس سوداء
+      else if (darkRatio > 0.08 && variation > 18) {
+        activeSpots++;
+      }
+      // 4. تباين متوسط = آثار
+      else if (variation > 18 && variation <= 25) {
+        scarSpots++;
+      }
     }
-  });
+  }
+  
+  // إضافة تحليل إضافي - مسح المنطقة بالكامل
+  if (region.length > 0) {
+    const minX = Math.max(sampleRadius, Math.min(...region.map(p => Math.floor(p.x))));
+    const maxX = Math.min(width - sampleRadius, Math.max(...region.map(p => Math.floor(p.x))));
+    const minY = Math.max(sampleRadius, Math.min(...region.map(p => Math.floor(p.y))));
+    const maxY = Math.min(height - sampleRadius, Math.max(...region.map(p => Math.floor(p.y))));
+    
+    // مسح شبكي للمنطقة
+    const step = 5; // خطوة المسح
+    for (let x = minX; x < maxX; x += step) {
+      for (let y = minY; y < maxY; y += step) {
+        if (x >= sampleRadius && x < width - sampleRadius && y >= sampleRadius && y < height - sampleRadius) {
+          const imgData = ctx.getImageData(x - sampleRadius, y - sampleRadius, sampleRadius * 2 + 1, sampleRadius * 2 + 1);
+          const variation = calculateVariation(imgData);
+          const data = imgData.data;
+          
+          let redCount = 0;
+          for (let j = 0; j < data.length; j += 4) {
+            const r = data[j];
+            const g = data[j + 1];
+            const b = data[j + 2];
+            if (r > g + 25 && r > b + 25) redCount++;
+          }
+          
+          if (variation > 22 || (redCount / (data.length / 4)) > 0.1) {
+            activeSpots++;
+          }
+        }
+      }
+    }
+  }
   
   const avgVariation = count > 0 ? variationSum / count : 0;
   

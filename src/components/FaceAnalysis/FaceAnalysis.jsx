@@ -282,17 +282,8 @@ class FaceAnalysis extends Component {
     // مسح Canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // رسم الشبكة على الوجه
+    // رسم FaceMesh كامل للوجه (يشمل جميع الخطوط)
     this.drawFaceGrid(ctx, landmarks, scaleX, scaleY);
-    
-    // رسم الحواجب
-    this.drawEyebrows(ctx, landmarks, scaleX, scaleY);
-    
-    // رسم الفم
-    this.drawMouth(ctx, landmarks, scaleX, scaleY);
-    
-    // رسم نقاط الوجه الرئيسية
-    this.drawFacePoints(ctx, landmarks, scaleX, scaleY);
   };
 
   drawFaceGrid = (ctx, landmarks, scaleX, scaleY) => {
@@ -301,38 +292,119 @@ class FaceAnalysis extends Component {
     const positions = landmarks.positions;
     if (positions.length < 68) return;
     
-    // الحصول على حدود الوجه
-    const jawline = positions.slice(0, 17);
-    const foreheadTop = positions[27]; // أعلى الأنف
-    const leftCheek = positions[1];
-    const rightCheek = positions[15];
-    
-    const minX = Math.min(...jawline.map(p => p.x * scaleX));
-    const maxX = Math.max(...jawline.map(p => p.x * scaleX));
-    const minY = foreheadTop.y * scaleY - 50;
-    const maxY = Math.max(...jawline.map(p => p.y * scaleY));
-    
-    // رسم شبكة زرقاء شفافة
-    ctx.strokeStyle = 'rgba(66, 153, 225, 0.3)';
+    // رسم FaceMesh كامل - شبكة ثلاثية الأبعاد للوجه
+    ctx.strokeStyle = 'rgba(66, 153, 225, 0.4)';
+    ctx.fillStyle = 'rgba(66, 153, 225, 0.1)';
     ctx.lineWidth = 1;
     
-    // خطوط عمودية
-    const verticalLines = 8;
-    for (let i = 0; i <= verticalLines; i++) {
-      const x = minX + (maxX - minX) * (i / verticalLines);
-      ctx.beginPath();
-      ctx.moveTo(x, minY);
-      ctx.lineTo(x, maxY);
-      ctx.stroke();
+    // رسم خط الفك (0-16)
+    const jawline = positions.slice(0, 17);
+    ctx.beginPath();
+    ctx.moveTo(jawline[0].x * scaleX, jawline[0].y * scaleY);
+    for (let i = 1; i < jawline.length; i++) {
+      ctx.lineTo(jawline[i].x * scaleX, jawline[i].y * scaleY);
     }
+    ctx.stroke();
     
-    // خطوط أفقية
-    const horizontalLines = 10;
-    for (let i = 0; i <= horizontalLines; i++) {
-      const y = minY + (maxY - minY) * (i / horizontalLines);
+    // رسم الحاجب الأيمن (17-21)
+    const rightEyebrow = positions.slice(17, 22);
+    ctx.beginPath();
+    ctx.moveTo(rightEyebrow[0].x * scaleX, rightEyebrow[0].y * scaleY);
+    for (let i = 1; i < rightEyebrow.length; i++) {
+      ctx.lineTo(rightEyebrow[i].x * scaleX, rightEyebrow[i].y * scaleY);
+    }
+    ctx.stroke();
+    
+    // رسم الحاجب الأيسر (22-26)
+    const leftEyebrow = positions.slice(22, 27);
+    ctx.beginPath();
+    ctx.moveTo(leftEyebrow[0].x * scaleX, leftEyebrow[0].y * scaleY);
+    for (let i = 1; i < leftEyebrow.length; i++) {
+      ctx.lineTo(leftEyebrow[i].x * scaleX, leftEyebrow[i].y * scaleY);
+    }
+    ctx.stroke();
+    
+    // رسم الأنف (27-35)
+    const nose = positions.slice(27, 36);
+    ctx.beginPath();
+    ctx.moveTo(nose[0].x * scaleX, nose[0].y * scaleY);
+    for (let i = 1; i < nose.length; i++) {
+      ctx.lineTo(nose[i].x * scaleX, nose[i].y * scaleY);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // رسم العين اليمنى (36-41)
+    const rightEye = positions.slice(36, 42);
+    ctx.beginPath();
+    ctx.moveTo(rightEye[0].x * scaleX, rightEye[0].y * scaleY);
+    for (let i = 1; i < rightEye.length; i++) {
+      ctx.lineTo(rightEye[i].x * scaleX, rightEye[i].y * scaleY);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // رسم العين اليسرى (42-47)
+    const leftEye = positions.slice(42, 48);
+    ctx.beginPath();
+    ctx.moveTo(leftEye[0].x * scaleX, leftEye[0].y * scaleY);
+    for (let i = 1; i < leftEye.length; i++) {
+      ctx.lineTo(leftEye[i].x * scaleX, leftEye[i].y * scaleY);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // رسم الفم الخارجي (48-59)
+    const mouthOuter = positions.slice(48, 60);
+    ctx.beginPath();
+    ctx.moveTo(mouthOuter[0].x * scaleX, mouthOuter[0].y * scaleY);
+    for (let i = 1; i < mouthOuter.length; i++) {
+      ctx.lineTo(mouthOuter[i].x * scaleX, mouthOuter[i].y * scaleY);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // رسم الفم الداخلي (60-67)
+    const mouthInner = positions.slice(60, 68);
+    ctx.beginPath();
+    ctx.moveTo(mouthInner[0].x * scaleX, mouthInner[0].y * scaleY);
+    for (let i = 1; i < mouthInner.length; i++) {
+      ctx.lineTo(mouthInner[i].x * scaleX, mouthInner[i].y * scaleY);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // رسم خطوط الاتصال بين المناطق (Face Mesh)
+    ctx.strokeStyle = 'rgba(66, 153, 225, 0.2)';
+    
+    // ربط الأنف بالعينين
+    ctx.beginPath();
+    ctx.moveTo(nose[0].x * scaleX, nose[0].y * scaleY);
+    ctx.lineTo(rightEye[3].x * scaleX, rightEye[3].y * scaleY);
+    ctx.moveTo(nose[0].x * scaleX, nose[0].y * scaleY);
+    ctx.lineTo(leftEye[3].x * scaleX, leftEye[3].y * scaleY);
+    ctx.stroke();
+    
+    // ربط الحواجب بالأنف
+    ctx.beginPath();
+    ctx.moveTo(rightEyebrow[2].x * scaleX, rightEyebrow[2].y * scaleY);
+    ctx.lineTo(nose[0].x * scaleX, nose[0].y * scaleY);
+    ctx.moveTo(leftEyebrow[2].x * scaleX, leftEyebrow[2].y * scaleY);
+    ctx.lineTo(nose[0].x * scaleX, nose[0].y * scaleY);
+    ctx.stroke();
+    
+    // ربط الأنف بالفم
+    ctx.beginPath();
+    ctx.moveTo(nose[6].x * scaleX, nose[6].y * scaleY);
+    ctx.lineTo(mouthOuter[2].x * scaleX, mouthOuter[2].y * scaleY);
+    ctx.stroke();
+    
+    // ربط الفك بالخدود
+    for (let i = 1; i < jawline.length - 1; i += 3) {
+      const cheekPoint = positions[Math.min(16 - i, positions.length - 1)];
       ctx.beginPath();
-      ctx.moveTo(minX, y);
-      ctx.lineTo(maxX, y);
+      ctx.moveTo(jawline[i].x * scaleX, jawline[i].y * scaleY);
+      ctx.lineTo(cheekPoint.x * scaleX, cheekPoint.y * scaleY);
       ctx.stroke();
     }
   };
