@@ -236,133 +236,59 @@ export default class Head extends Component {
             <NotificationOverlay onClick={this.handleCloseNotificationList} />
             <NotificationList>
               <div className="notification-header">
-                <div className="header-top">
-                  <h2>الإشعارات</h2>
-                  <div className="filter-btn" onClick={(e) => e.stopPropagation()}>
-                    <div className="filter-icon">
-                      <div className="dot"></div>
-                      <div className="dot"></div>
-                      <div className="dot"></div>
-                      <div className="dot"></div>
-                    </div>
+                <div className="header-content">
+                  <div className="notification-logo">
+                    <img src="/icon.svg" alt="ClinicAI Logo" />
                   </div>
+                  <h3>الإشعارات</h3>
                 </div>
-                <div className="header-subtitle">
-                  لديك <span className="highlight">{unreadCount} إشعارات</span> اليوم
-                </div>
+                <button className="close-btn" onClick={this.handleCloseNotificationList}>
+                  <Icon type="cross" size="xs" />
+                </button>
               </div>
-              <div className="notification-content-wrapper">
+              <div className="notification-items">
                 {notificationList.length === 0 ? (
                   <div className="empty-state">
                     <Icon type="bell" size="lg" />
                     <p>لا توجد إشعارات</p>
                   </div>
                 ) : (
-                  <>
-                    {/* قسم اليوم */}
-                    {notificationList.filter(n => n.date === "اليوم").length > 0 && (
-                      <div className="notification-section">
-                        <div className="section-title">اليوم</div>
-                        {notificationList
-                          .filter(n => n.date === "اليوم")
-                          .map(notif => (
-                            <NotificationListItem
-                              key={notif.id}
-                              onClick={() => this.handleNotificationItemClick(notif.id)}
-                              unread={!notif.read}
-                              notifType={notif.type}
-                            >
-                              <div className="status-dot" />
-                              <div className="avatar-container">
-                                <div className="avatar">
-                                  {notif.avatar && !notif.avatar.includes('http') ? (
-                                    <span>{notif.avatar}</span>
-                                  ) : (
-                                    <img src={notif.avatar || "https://via.placeholder.com/60/667eea/ffffff?text=U"} alt={notif.userName} />
-                                  )}
-                                </div>
-                                <div className={`avatar-badge ${notif.type}`}>
-                                  {notif.type === "like" && "❤️"}
-                                  {notif.type === "comment" && "💬"}
-                                  {notif.type === "follow" && "👤"}
-                                  {notif.type === "mention" && "💬"}
-                                </div>
-                              </div>
-                              <div className="notification-content">
-                                <p className="notification-text">
-                                  <span className="user-name">{notif.userName}</span> {notif.action}
-                                </p>
-                                <span className="notification-subtitle">{notif.subtitle} - {notif.time}</span>
-                              </div>
-                              {notif.thumbnail && (
-                                <div className="notification-thumbnail">
-                                  <img src={notif.thumbnail} alt="Thumbnail" />
-                                </div>
-                              )}
-                              {!notif.thumbnail && notif.type === "like" && (
-                                <div className="notification-thumbnail">
-                                  <div className="thumbnail-placeholder" style={{ background: '#ffebee' }}>
-                                    <span style={{ color: '#ff4757', fontSize: '0.16rem' }}>❤️</span>
-                                  </div>
-                                </div>
-                              )}
-                            </NotificationListItem>
-                          ))}
+                  notificationList.map(notif => (
+                    <NotificationListItem
+                      key={notif.id}
+                      onClick={() => this.handleNotificationItemClick(notif.id)}
+                      unread={!notif.read}
+                      notifType={notif.type}
+                    >
+                      <div className="notification-icon">
+                        <Icon 
+                          type={
+                            notif.type === "offer" ? "check-circle" :
+                            notif.type === "success" ? "check-circle-o" :
+                            notif.type === "reminder" ? "clock-circle" :
+                            notif.type === "like" ? "like" :
+                            notif.type === "comment" ? "message" :
+                            notif.type === "follow" ? "user" :
+                            notif.type === "mention" ? "message" :
+                            "info-circle"
+                          } 
+                          size="xs" 
+                        />
                       </div>
-                    )}
-                    
-                    {/* قسم هذا الأسبوع */}
-                    {notificationList.filter(n => n.date === "هذا الأسبوع").length > 0 && (
-                      <div className="notification-section">
-                        <div className="section-title">هذا الأسبوع</div>
-                        {notificationList
-                          .filter(n => n.date === "هذا الأسبوع")
-                          .map(notif => (
-                            <NotificationListItem
-                              key={notif.id}
-                              onClick={() => this.handleNotificationItemClick(notif.id)}
-                              unread={!notif.read}
-                              notifType={notif.type}
-                            >
-                              <div className="status-dot" />
-                              <div className="avatar-container">
-                                <div className="avatar">
-                                  {notif.avatar && !notif.avatar.includes('http') ? (
-                                    <span>{notif.avatar}</span>
-                                  ) : (
-                                    <img src={notif.avatar || "https://via.placeholder.com/60/667eea/ffffff?text=U"} alt={notif.userName} />
-                                  )}
-                                </div>
-                                <div className={`avatar-badge ${notif.type}`}>
-                                  {notif.type === "like" && "❤️"}
-                                  {notif.type === "comment" && "💬"}
-                                  {notif.type === "follow" && "👤"}
-                                  {notif.type === "mention" && "💬"}
-                                </div>
-                              </div>
-                              <div className="notification-content">
-                                <p className="notification-text">
-                                  <span className="user-name">{notif.userName}</span> {notif.action}
-                                </p>
-                                <span className="notification-subtitle">{notif.subtitle} - {notif.time}</span>
-                              </div>
-                              {notif.thumbnail && (
-                                <div className="notification-thumbnail">
-                                  <img src={notif.thumbnail} alt="Thumbnail" />
-                                </div>
-                              )}
-                              {!notif.thumbnail && notif.type === "like" && (
-                                <div className="notification-thumbnail">
-                                  <div className="thumbnail-placeholder" style={{ background: '#4A90E2' }}>
-                                    <span style={{ color: '#fff', fontSize: '0.16rem' }}>●</span>
-                                  </div>
-                                </div>
-                              )}
-                            </NotificationListItem>
-                          ))}
+                      <div className="notification-content">
+                        <p className="notification-text">
+                          {notif.userName && (
+                            <>
+                              <span style={{ color: '#667eea', fontWeight: 600 }}>{notif.userName}</span> {notif.action || notif.text}
+                            </>
+                          )}
+                          {!notif.userName && notif.text}
+                        </p>
+                        <span className="notification-time">{notif.subtitle || notif.time}</span>
                       </div>
-                    )}
-                  </>
+                      {!notif.read && <div className="unread-dot" />}
+                    </NotificationListItem>
+                  ))
                 )}
               </div>
             </NotificationList>

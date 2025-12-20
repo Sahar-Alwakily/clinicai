@@ -403,108 +403,100 @@ const NotificationOverlay = styled.div`
 
 const NotificationList = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100vh;
-  background: #4A90E2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 6rem;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 0.2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   z-index: 201;
   display: flex;
   flex-direction: column;
-  animation: slideIn 0.3s ease;
-  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
   
-  @keyframes slideIn {
+  @keyframes slideUp {
     from {
-      transform: translateX(100%);
+      transform: translate(-50%, -40%);
+      opacity: 0;
     }
     to {
-      transform: translateX(0);
+      transform: translate(-50%, -50%);
+      opacity: 1;
     }
   }
   
   .notification-header {
-    padding: 0.5rem 0.3rem 0.3rem;
-    background: #4A90E2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.2rem 0.25rem;
+    border-bottom: 1px solid #f0f0f0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     
-    .header-top {
+    .header-content {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.15rem;
+      gap: 0.12rem;
+      flex: 1;
       
-      h2 {
-        margin: 0;
-        font-size: 0.48rem;
-        font-weight: 700;
-        color: #fff;
-      }
-      
-      .filter-btn {
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.1);
+      .notification-logo {
+        width: 0.4rem;
+        height: 0.4rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        padding: 0.05rem;
+        flex-shrink: 0;
         
-        .filter-icon {
-          width: 0.24rem;
-          height: 0.24rem;
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0.02rem;
-          
-          .dot {
-            width: 0.08rem;
-            height: 0.08rem;
-            background: #fff;
-            border-radius: 1px;
-          }
-        }
-        
-        &:hover {
-          background: rgba(255, 255, 255, 0.2);
-          border-color: rgba(255, 255, 255, 0.5);
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
         }
       }
-    }
-    
-    .header-subtitle {
-      font-size: 0.22rem;
-      color: rgba(255, 255, 255, 0.9);
       
-      .highlight {
-        color: #fff;
+      h3 {
+        margin: 0;
+        font-size: 0.24rem;
         font-weight: 600;
+        color: #fff;
+      }
+    }
+    
+    .close-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0.05rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      
+      .am-icon {
+        color: #fff;
+        font-size: 0.2rem;
+        opacity: 0.9;
+      }
+      
+      &:hover {
+        opacity: 1;
+        transform: scale(1.1);
       }
     }
   }
   
-  .notification-content-wrapper {
+  .notification-items {
     flex: 1;
-    background: #fff;
-    border-radius: 0.3rem 0.3rem 0 0;
-    padding: 0.3rem 0.25rem 0.5rem;
     overflow-y: auto;
-  }
-  
-  .notification-section {
-    margin-bottom: 0.3rem;
-    
-    .section-title {
-      font-size: 0.24rem;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 0.2rem;
-      padding: 0 0.1rem;
-    }
+    padding: 0.1rem 0;
   }
   
   .empty-state {
@@ -512,7 +504,7 @@ const NotificationList = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1rem;
+    padding: 1rem;
     color: #999;
     
     .am-icon {
@@ -528,20 +520,16 @@ const NotificationList = styled.div`
   }
   
   @media (max-width: 480px) {
-    .notification-header {
-      padding: 0.4rem 0.25rem 0.25rem;
-      
-      .header-top h2 {
-        font-size: 0.42rem;
-      }
-      
-      .header-subtitle {
-        font-size: 0.2rem;
-      }
-    }
+    width: 95%;
+    max-width: none;
+    max-height: 70vh;
     
-    .notification-content-wrapper {
-      padding: 0.25rem 0.2rem 0.4rem;
+    .notification-header {
+      padding: 0.15rem 0.2rem;
+      
+      h3 {
+        font-size: 0.22rem;
+      }
     }
   }
 `;
@@ -550,94 +538,44 @@ const NotificationListItem = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 0.15rem;
-  padding: 0.15rem 0.1rem;
+  padding: 0.15rem 0.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #fff;
+  background: ${props => props.unread ? '#f8f9ff' : '#fff'};
+  border-right: ${props => props.unread ? '3px solid #EC4899' : '3px solid transparent'};
   position: relative;
-  border-radius: 0.1rem;
-  margin-bottom: 0.1rem;
   
   &:hover {
-    background: #f8f9fa;
+    background: #f5f5f5;
   }
   
   &:active {
     background: #f0f0f0;
   }
   
-  .status-dot {
-    position: absolute;
-    right: 0.05rem;
-    top: 0.2rem;
-    width: 0.1rem;
-    height: 0.1rem;
+  .notification-icon {
+    flex-shrink: 0;
+    width: 0.4rem;
+    height: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: ${props => 
+      props.notifType === "offer" ? "rgba(236, 72, 153, 0.1)" :
+      props.notifType === "success" ? "rgba(34, 197, 94, 0.1)" :
+      props.notifType === "reminder" ? "rgba(251, 191, 36, 0.1)" :
+      "rgba(102, 126, 234, 0.1)"
+    };
     border-radius: 50%;
-    background: ${props => props.unread ? '#ff4757' : '#22c55e'};
-    flex-shrink: 0;
-  }
-  
-  .avatar-container {
-    position: relative;
-    flex-shrink: 0;
-    margin-right: 0.12rem;
     
-    .avatar {
-      width: 0.6rem;
-      height: 0.6rem;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.35rem;
-      overflow: hidden;
-      
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-    
-    .avatar-badge {
-      position: absolute;
-      bottom: -0.02rem;
-      right: -0.02rem;
-      width: 0.2rem;
-      height: 0.2rem;
-      border-radius: 50%;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1.5px solid #fff;
-      font-size: 0.12rem;
-      
-      &.heart {
-        background: #ff4757;
-        color: #fff;
-      }
-      
-      &.comment {
-        background: #4A90E2;
-        color: #fff;
-      }
-      
-      &.follow {
-        background: #22c55e;
-        color: #fff;
-      }
-      
-      &.like {
-        background: #ff4757;
-        color: #fff;
-      }
-      
-      &.mention {
-        background: #4A90E2;
-        color: #fff;
-      }
+    .am-icon {
+      color: ${props => 
+        props.notifType === "offer" ? "#EC4899" :
+        props.notifType === "success" ? "#22c55e" :
+        props.notifType === "reminder" ? "#fbbf24" :
+        "#667eea"
+      };
+      font-size: 0.2rem;
     }
   }
   
@@ -650,79 +588,57 @@ const NotificationListItem = styled.div`
     
     .notification-text {
       margin: 0;
-      font-size: 0.2rem;
-      color: #666;
-      line-height: 1.5;
-      font-weight: 400;
-      
-      .user-name {
-        color: #4A90E2;
-        font-weight: 600;
-      }
+      font-size: 0.18rem;
+      color: #333;
+      line-height: 1.4;
+      font-weight: ${props => props.unread ? '600' : '400'};
     }
     
-    .notification-subtitle {
-      font-size: 0.16rem;
+    .notification-time {
+      font-size: 0.14rem;
       color: #999;
-      margin-top: 0.02rem;
     }
   }
   
-  .notification-thumbnail {
+  .unread-dot {
+    position: absolute;
+    top: 0.15rem;
+    left: 0.15rem;
+    width: 0.12rem;
+    height: 0.12rem;
+    background: #EC4899;
+    border-radius: 50%;
     flex-shrink: 0;
-    width: 0.6rem;
-    height: 0.6rem;
-    border-radius: 0.08rem;
-    overflow: hidden;
-    background: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .thumbnail-placeholder {
-      width: 100%;
-      height: 100%;
-      background: ${props => 
-        props.color || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      };
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 0.18rem;
-      font-weight: 600;
-    }
   }
   
   @media (max-width: 480px) {
-    padding: 0.12rem 0.08rem;
+    padding: 0.12rem 0.2rem;
     gap: 0.12rem;
     
-    .avatar-container .avatar {
-      width: 0.5rem;
-      height: 0.5rem;
-      font-size: 0.3rem;
+    .notification-icon {
+      width: 0.35rem;
+      height: 0.35rem;
+      
+      .am-icon {
+        font-size: 0.18rem;
+      }
     }
     
     .notification-content {
       .notification-text {
-        font-size: 0.18rem;
+        font-size: 0.16rem;
       }
       
-      .notification-subtitle {
-        font-size: 0.14rem;
+      .notification-time {
+        font-size: 0.12rem;
       }
     }
     
-    .notification-thumbnail {
-      width: 0.5rem;
-      height: 0.5rem;
+    .unread-dot {
+      width: 0.1rem;
+      height: 0.1rem;
+      top: 0.12rem;
+      left: 0.12rem;
     }
   }
 `;
