@@ -17,10 +17,102 @@ export default class Head extends Component {
     showNotifications: true,
     showNotificationList: false,
     notificationList: [
-      { id: 1, text: "خصم 30% على جميع الخدمات اليوم فقط!", type: "offer", time: "منذ ساعتين", read: false },
-      { id: 2, text: "جديد: خدمة استشارة مجانية متاحة الآن", type: "info", time: "منذ 5 ساعات", read: false },
-      { id: 3, text: "تم تأكيد حجزك بنجاح", type: "success", time: "أمس", read: true },
-      { id: 4, text: "تذكير: موعدك غداً الساعة 10 صباحاً", type: "reminder", time: "منذ يومين", read: true }
+      { 
+        id: 1, 
+        userName: "سارة أحمد", 
+        action: "أعجبت بحجزك", 
+        type: "like", 
+        time: "منذ ساعتين", 
+        date: "اليوم",
+        read: false,
+        avatar: "👩",
+        thumbnail: null,
+        subtitle: "حجز ليزر إزالة الشعر"
+      },
+      { 
+        id: 2, 
+        userName: "محمد علي", 
+        action: "أعجبه منشورك", 
+        type: "like", 
+        time: "منذ 4 ساعات", 
+        date: "اليوم",
+        read: false,
+        avatar: "👨",
+        thumbnail: null,
+        subtitle: "قبل وبعد - ليزر فراكشنال"
+      },
+      { 
+        id: 3, 
+        userName: "فاطمة خالد", 
+        action: "علق على منشورك", 
+        type: "comment", 
+        time: "منذ 6 ساعات", 
+        date: "اليوم",
+        read: false,
+        avatar: "👩‍🦰",
+        thumbnail: "https://via.placeholder.com/60x60/667eea/ffffff?text=UI",
+        subtitle: "تجربتي مع البوتوكس"
+      },
+      { 
+        id: 4, 
+        userName: "أحمد سالم", 
+        action: "أعجبه منشورك", 
+        type: "like", 
+        time: "منذ 6 ساعات", 
+        date: "اليوم",
+        read: false,
+        avatar: "👨‍🦱",
+        thumbnail: "https://via.placeholder.com/60x60/764ba2/ffffff?text=Menu",
+        subtitle: "قائمة الخدمات"
+      },
+      { 
+        id: 5, 
+        userName: "نورا العتيبي", 
+        action: "أعجبت بحجزك", 
+        type: "like", 
+        time: "30 أكتوبر", 
+        date: "هذا الأسبوع",
+        read: true,
+        avatar: "👩‍💼",
+        thumbnail: "https://via.placeholder.com/60x60/EC4899/ffffff?text=UI",
+        subtitle: "قائمة الطعام - 30 أكتوبر"
+      },
+      { 
+        id: 6, 
+        userName: "عيادة الجمال", 
+        action: "بدأت متابعتك", 
+        type: "follow", 
+        time: "30 أغسطس", 
+        date: "هذا الأسبوع",
+        read: true,
+        avatar: "🏥",
+        thumbnail: "https://via.placeholder.com/60x60/22c55e/ffffff?text=Design",
+        subtitle: "عملك - 30 أغسطس"
+      },
+      { 
+        id: 7, 
+        userName: "جستن بولت", 
+        action: "ذكرك في", 
+        type: "mention", 
+        time: "5 نوفمبر", 
+        date: "هذا الأسبوع",
+        read: true,
+        avatar: "👤",
+        thumbnail: null,
+        subtitle: "منشورك - 5 نوفمبر"
+      },
+      { 
+        id: 8, 
+        userName: "جستن بولت", 
+        action: "أعجب بمنشورك", 
+        type: "like", 
+        time: "5 نوفمبر", 
+        date: "هذا الأسبوع",
+        read: true,
+        avatar: "👨",
+        thumbnail: "https://via.placeholder.com/60x60/667eea/ffffff?text=Post",
+        subtitle: "منشورك - 5 نوفمبر"
+      }
     ],
     isScrolled: false
   };
@@ -144,48 +236,133 @@ export default class Head extends Component {
             <NotificationOverlay onClick={this.handleCloseNotificationList} />
             <NotificationList>
               <div className="notification-header">
-                <div className="header-content">
-                  <div className="notification-logo">
-                    <img src="/icon.svg" alt="ClinicAI Logo" />
+                <div className="header-top">
+                  <h2>الإشعارات</h2>
+                  <div className="filter-btn" onClick={(e) => e.stopPropagation()}>
+                    <div className="filter-icon">
+                      <div className="dot"></div>
+                      <div className="dot"></div>
+                      <div className="dot"></div>
+                      <div className="dot"></div>
+                    </div>
                   </div>
-                  <h3>الإشعارات</h3>
                 </div>
-                <button className="close-btn" onClick={this.handleCloseNotificationList}>
-                  <Icon type="cross" size="xs" />
-                </button>
+                <div className="header-subtitle">
+                  لديك <span className="highlight">{unreadCount} إشعارات</span> اليوم
+                </div>
               </div>
-              <div className="notification-items">
+              <div className="notification-content-wrapper">
                 {notificationList.length === 0 ? (
                   <div className="empty-state">
                     <Icon type="bell" size="lg" />
                     <p>لا توجد إشعارات</p>
                   </div>
                 ) : (
-                  notificationList.map(notif => (
-                    <NotificationListItem
-                      key={notif.id}
-                      onClick={() => this.handleNotificationItemClick(notif.id)}
-                      unread={!notif.read}
-                      notifType={notif.type}
-                    >
-                      <div className="notification-icon">
-                        <Icon 
-                          type={
-                            notif.type === "offer" ? "check-circle" :
-                            notif.type === "success" ? "check-circle-o" :
-                            notif.type === "reminder" ? "clock-circle" :
-                            "info-circle"
-                          } 
-                          size="xs" 
-                        />
+                  <>
+                    {/* قسم اليوم */}
+                    {notificationList.filter(n => n.date === "اليوم").length > 0 && (
+                      <div className="notification-section">
+                        <div className="section-title">اليوم</div>
+                        {notificationList
+                          .filter(n => n.date === "اليوم")
+                          .map(notif => (
+                            <NotificationListItem
+                              key={notif.id}
+                              onClick={() => this.handleNotificationItemClick(notif.id)}
+                              unread={!notif.read}
+                              notifType={notif.type}
+                            >
+                              <div className="status-dot" />
+                              <div className="avatar-container">
+                                <div className="avatar">
+                                  {notif.avatar && !notif.avatar.includes('http') ? (
+                                    <span>{notif.avatar}</span>
+                                  ) : (
+                                    <img src={notif.avatar || "https://via.placeholder.com/60/667eea/ffffff?text=U"} alt={notif.userName} />
+                                  )}
+                                </div>
+                                <div className={`avatar-badge ${notif.type}`}>
+                                  {notif.type === "like" && "❤️"}
+                                  {notif.type === "comment" && "💬"}
+                                  {notif.type === "follow" && "👤"}
+                                  {notif.type === "mention" && "💬"}
+                                </div>
+                              </div>
+                              <div className="notification-content">
+                                <p className="notification-text">
+                                  <span className="user-name">{notif.userName}</span> {notif.action}
+                                </p>
+                                <span className="notification-subtitle">{notif.subtitle} - {notif.time}</span>
+                              </div>
+                              {notif.thumbnail && (
+                                <div className="notification-thumbnail">
+                                  <img src={notif.thumbnail} alt="Thumbnail" />
+                                </div>
+                              )}
+                              {!notif.thumbnail && notif.type === "like" && (
+                                <div className="notification-thumbnail">
+                                  <div className="thumbnail-placeholder" style={{ background: '#ffebee' }}>
+                                    <span style={{ color: '#ff4757', fontSize: '0.16rem' }}>❤️</span>
+                                  </div>
+                                </div>
+                              )}
+                            </NotificationListItem>
+                          ))}
                       </div>
-                      <div className="notification-content">
-                        <p className="notification-text">{notif.text}</p>
-                        <span className="notification-time">{notif.time}</span>
+                    )}
+                    
+                    {/* قسم هذا الأسبوع */}
+                    {notificationList.filter(n => n.date === "هذا الأسبوع").length > 0 && (
+                      <div className="notification-section">
+                        <div className="section-title">هذا الأسبوع</div>
+                        {notificationList
+                          .filter(n => n.date === "هذا الأسبوع")
+                          .map(notif => (
+                            <NotificationListItem
+                              key={notif.id}
+                              onClick={() => this.handleNotificationItemClick(notif.id)}
+                              unread={!notif.read}
+                              notifType={notif.type}
+                            >
+                              <div className="status-dot" />
+                              <div className="avatar-container">
+                                <div className="avatar">
+                                  {notif.avatar && !notif.avatar.includes('http') ? (
+                                    <span>{notif.avatar}</span>
+                                  ) : (
+                                    <img src={notif.avatar || "https://via.placeholder.com/60/667eea/ffffff?text=U"} alt={notif.userName} />
+                                  )}
+                                </div>
+                                <div className={`avatar-badge ${notif.type}`}>
+                                  {notif.type === "like" && "❤️"}
+                                  {notif.type === "comment" && "💬"}
+                                  {notif.type === "follow" && "👤"}
+                                  {notif.type === "mention" && "💬"}
+                                </div>
+                              </div>
+                              <div className="notification-content">
+                                <p className="notification-text">
+                                  <span className="user-name">{notif.userName}</span> {notif.action}
+                                </p>
+                                <span className="notification-subtitle">{notif.subtitle} - {notif.time}</span>
+                              </div>
+                              {notif.thumbnail && (
+                                <div className="notification-thumbnail">
+                                  <img src={notif.thumbnail} alt="Thumbnail" />
+                                </div>
+                              )}
+                              {!notif.thumbnail && notif.type === "like" && (
+                                <div className="notification-thumbnail">
+                                  <div className="thumbnail-placeholder" style={{ background: '#4A90E2' }}>
+                                    <span style={{ color: '#fff', fontSize: '0.16rem' }}>●</span>
+                                  </div>
+                                </div>
+                              )}
+                            </NotificationListItem>
+                          ))}
                       </div>
-                      {!notif.read && <div className="unread-dot" />}
-                    </NotificationListItem>
-                  ))
+                    )}
+                  </>
                 )}
               </div>
             </NotificationList>
