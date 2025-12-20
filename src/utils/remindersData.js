@@ -203,3 +203,4 @@ export const getTreatmentIcon = (treatmentName) => {
   return "🔬";
 };
 
+
