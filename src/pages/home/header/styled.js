@@ -89,9 +89,13 @@ const Topbar = styled.div`
   left: 0;
   width: 100%;
   z-index: 1000;
-  background: transparent;
-  box-shadow: none;
-  transition: top 0.3s ease;
+  background: ${props => props.isScrolled 
+    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" 
+    : "transparent"};
+  box-shadow: ${props => props.isScrolled 
+    ? "0 2px 10px rgba(0, 0, 0, 0.1)" 
+    : "none"};
+  transition: all 0.3s ease;
   
   @media (max-width: 480px) {
     top: ${props => props.hasNotification ? "0.45rem" : "0"};
@@ -104,6 +108,7 @@ const Header = styled.header`
   background: transparent;
   padding: 0.15rem 0.25rem 0.25rem;
   box-sizing: border-box;
+  transition: all 0.3s ease;
   
   @media (min-width: 769px) {
     padding: 0.2rem 0.4rem 0.3rem;

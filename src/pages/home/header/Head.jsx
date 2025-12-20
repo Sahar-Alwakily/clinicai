@@ -21,7 +21,8 @@ export default class Head extends Component {
       { id: 2, text: "جديد: خدمة استشارة مجانية متاحة الآن", type: "info", time: "منذ 5 ساعات", read: false },
       { id: 3, text: "تم تأكيد حجزك بنجاح", type: "success", time: "أمس", read: true },
       { id: 4, text: "تذكير: موعدك غداً الساعة 10 صباحاً", type: "reminder", time: "منذ يومين", read: true }
-    ]
+    ],
+    isScrolled: false
   };
 
   getGreeting = () => {
@@ -67,16 +68,33 @@ export default class Head extends Component {
         }));
       }, 4000);
     }
+
+    // إضافة event listener للـ scroll
+    this.handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const shouldBeScrolled = scrollTop > 50; // تغيير اللون بعد 50px من التمرير
+      
+      if (shouldBeScrolled !== this.state.isScrolled) {
+        this.setState({ isScrolled: shouldBeScrolled });
+      }
+    };
+
+    window.addEventListener('scroll', this.handleScroll);
   }
 
   componentWillUnmount() {
     if (this.notificationInterval) {
       clearInterval(this.notificationInterval);
     }
+    
+    // إزالة event listener للـ scroll
+    if (this.handleScroll) {
+      window.removeEventListener('scroll', this.handleScroll);
+    }
   }
 
   render() {
-    const { notifications, currentNotification, showNotifications, showNotificationList, notificationList } = this.state;
+    const { notifications, currentNotification, showNotifications, showNotificationList, notificationList, isScrolled } = this.state;
     const currentNotif = notifications[currentNotification];
     const unreadCount = notificationList.filter(n => !n.read).length;
 
@@ -93,8 +111,8 @@ export default class Head extends Component {
             </button>
           </NotificationBar>
         )}
-        <Topbar hasNotification={showNotifications && currentNotif}>
-          <Header>
+        <Topbar hasNotification={showNotifications && currentNotif} isScrolled={isScrolled}>
+          <Header isScrolled={isScrolled}>
             <HeaderContent>
               <div className="left-section">
                 <Greeting>{this.getGreeting()}</Greeting>
