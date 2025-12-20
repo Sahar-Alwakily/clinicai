@@ -445,13 +445,73 @@ class SkinAnalysis extends Component {
                     <div className="item-label">حب الشباب</div>
                     <div className="item-value">
                       {aiAnalysis.skinProblems.acne.active ? (
-                        <Badge type="danger">نشط</Badge>
+                        <>
+                          <Badge type="danger">نشط</Badge>
+                          <Badge type={aiAnalysis.skinProblems.acne.severity === 'شديد' ? 'danger' : aiAnalysis.skinProblems.acne.severity === 'متوسط' ? 'warning' : 'success'} style={{ marginRight: '0.05rem' }}>
+                            {aiAnalysis.skinProblems.acne.severity}
+                          </Badge>
+                        </>
                       ) : aiAnalysis.skinProblems.acne.scars ? (
                         <Badge type="warning">آثار</Badge>
                       ) : (
                         <Badge type="success">لا يوجد</Badge>
                       )}
                     </div>
+                    {aiAnalysis.skinProblems.acne.active && (
+                      <>
+                        {aiAnalysis.skinProblems.acne.types && aiAnalysis.skinProblems.acne.types.length > 0 && (
+                          <div className="item-description">
+                            الأنواع: {aiAnalysis.skinProblems.acne.types.join('، ')}
+                          </div>
+                        )}
+                        {aiAnalysis.skinProblems.acne.location && (
+                          <div className="item-description">
+                            المواقع: 
+                            {aiAnalysis.skinProblems.acne.location.tzone && aiAnalysis.skinProblems.acne.location.tzone.present && (
+                              <span> T-zone ({aiAnalysis.skinProblems.acne.location.tzone.count})</span>
+                            )}
+                            {aiAnalysis.skinProblems.acne.location.cheeks && aiAnalysis.skinProblems.acne.location.cheeks.present && (
+                              <span> الخدود ({aiAnalysis.skinProblems.acne.location.cheeks.count})</span>
+                            )}
+                          </div>
+                        )}
+                        {aiAnalysis.skinProblems.acne.totalSpots && (
+                          <div className="item-description">
+                            العدد الإجمالي: {aiAnalysis.skinProblems.acne.totalSpots} بقعة
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </AnalysisItem>
+                )}
+
+                {/* التحليل الطبي لحب الشباب */}
+                {aiAnalysis.skinProblems.medicalAcne && aiAnalysis.skinProblems.medicalAcne.types && aiAnalysis.skinProblems.medicalAcne.types.length > 0 && (
+                  <AnalysisItem>
+                    <div className="item-label">التشخيص الطبي</div>
+                    <div style={{ marginTop: '0.08rem' }}>
+                      {aiAnalysis.skinProblems.medicalAcne.types.map((type, index) => (
+                        <div key={index} className="item-description" style={{ marginBottom: '0.08rem' }}>
+                          <strong>{type.arabicName}</strong> ({type.name})
+                          <div style={{ fontSize: '0.14rem', color: '#718096', marginTop: '0.03rem' }}>
+                            {type.description}
+                          </div>
+                          {type.severity && (
+                            <Badge type={type.severity === 'شديد' ? 'danger' : type.severity === 'متوسط' ? 'warning' : 'success'} style={{ marginTop: '0.03rem' }}>
+                              {type.severity}
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {aiAnalysis.skinProblems.medicalAcne.recommendations && aiAnalysis.skinProblems.medicalAcne.recommendations.length > 0 && (
+                      <div className="item-description" style={{ marginTop: '0.1rem', padding: '0.1rem', background: '#fff3cd', borderRadius: '0.05rem' }}>
+                        <strong>التوصيات الطبية:</strong>
+                        {aiAnalysis.skinProblems.medicalAcne.recommendations.map((rec, index) => (
+                          <div key={index} style={{ marginTop: '0.05rem' }}>• {rec}</div>
+                        ))}
+                      </div>
+                    )}
                   </AnalysisItem>
                 )}
 

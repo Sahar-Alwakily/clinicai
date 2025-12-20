@@ -84,13 +84,13 @@ export const analyzeAdvancedSkin = (imageElement, landmarks, ctx) => {
  */
 export const analyzeSkinProblems = (imageElement, landmarks, age) => {
   if (!landmarks || !landmarks.positions) {
-    return {
-      acne: { active: false, scars: false },
-      pigmentation: { level: 'لا يوجد', types: [] },
-      darkCircles: { present: false, severity: 'لا يوجد' },
-      wrinkles: { total: 0, details: {} },
-      scars: { present: false, count: 0 }
-    };
+  return {
+    acne: { active: false, scars: false, types: [], severity: 'لا يوجد', location: {} },
+    pigmentation: { level: 'لا يوجد', types: [] },
+    darkCircles: { present: false, severity: 'لا يوجد' },
+    wrinkles: { total: 0, details: {} },
+    scars: { present: false, count: 0 }
+  };
   }
 
   const positions = landmarks.positions;
@@ -120,7 +120,8 @@ export const analyzeSkinProblems = (imageElement, landmarks, age) => {
     pigmentation: pigmentationAnalysis,
     darkCircles: darkCirclesAnalysis,
     wrinkles: wrinklesAnalysis,
-    scars: scarsAnalysis
+    scars: scarsAnalysis,
+    medicalAcne: analyzeMedicalAcneTypes(ctx, positions, canvas.width, canvas.height, acneAnalysis)
   };
 };
 
@@ -393,27 +394,145 @@ function analyzeHydration(ctx, region, width, height) {
 }
 
 function analyzeAcne(ctx, positions, width, height) {
-  // تحليل بسيط لحب الشباب (بناءً على التباين)
-  const tzone = [...positions.slice(27, 36), positions[8]];
-  let variationSum = 0;
-  let count = 0;
+  // تحليل محسّن لحب الشباب - يشمل جميع المناطق والأنواع
+  
+  // تحليل منطقة T-zone (الجبهة، الأنف، الذقن)
+  const tzonePoints = [
+    ...positions.slice(27, 36), // الأنف
+    positions[8], // الذقن
+    ...positions.slice(17, 27) // الجبهة (من خلال الحواجب)
+  ];
+  
+  // تحليل منطقة الخدود (أهم منطقة لحب الشباب)
+  const cheekRegion = positions.slice(1, 15);
+  
+  // تحليل مناطق مختلفة
+  const tzoneAnalysis = analyzeAcneInRegion(ctx, tzonePoints, width, height);
+  const cheekAnalysis = analyzeAcneInRegion(ctx, cheekRegion, width, height);
+  
+  // حساب الإجمالي
+  const totalActiveSpots = tzoneAnalysis.activeSpots + cheekAnalysis.activeSpots;
+  const totalScarSpots = tzoneAnalysis.scarSpots + cheekAnalysis.scarSpots;
+  const avgVariation = (tzoneAnalysis.variation + cheekAnalysis.variation) / 2;
+  
+  // تحديد النشاط
+  const active = totalActiveSpots > 0 || avgVariation > 30;
+  const scars = totalScarSpots > 0 || (avgVariation > 20 && avgVariation <= 30);
+  
+  // تحديد الشدة
+  let severity = 'لا يوجد';
+  let severityLevel = 0;
+  if (totalActiveSpots > 5 || avgVariation > 45) {
+    severity = 'شديد';
+    severityLevel = 3;
+  } else if (totalActiveSpots > 2 || avgVariation > 35) {
+    severity = 'متوسط';
+    severityLevel = 2;
+  } else if (totalActiveSpots > 0 || avgVariation > 25) {
+    severity = 'خفيف';
+    severityLevel = 1;
+  }
+  
+  // تحديد أنواع حب الشباب المكتشفة
+  const types = [];
+  if (active) {
+    // حب الشباب الالتهابي (بثور حمراء ملتهبة)
+    if (avgVariation > 35 && totalActiveSpots > 2) {
+      types.push('التهابي');
+    }
+    // حب الشباب الكوميدوني (رؤوس سوداء وبيضاء)
+    if (avgVariation > 25 && avgVariation <= 40) {
+      types.push('كوميدوني');
+    }
+    // حب الشباب الكيسي (كيسات كبيرة)
+    if (avgVariation > 50 && totalActiveSpots > 3) {
+      types.push('كيسي');
+    }
+  }
+  
+  // إذا لم يتم اكتشاف أي نوع ولكن هناك تباين عالي، أضف "عام"
+  if (active && types.length === 0) {
+    types.push('عام');
+  }
+  
+  // تحديد المواقع
+  const location = {
+    tzone: {
+      present: tzoneAnalysis.activeSpots > 0,
+      count: tzoneAnalysis.activeSpots,
+      severity: tzoneAnalysis.variation > 35 ? 'متوسط' : tzoneAnalysis.variation > 25 ? 'خفيف' : 'لا يوجد'
+    },
+    cheeks: {
+      present: cheekAnalysis.activeSpots > 0,
+      count: cheekAnalysis.activeSpots,
+      severity: cheekAnalysis.variation > 35 ? 'متوسط' : cheekAnalysis.variation > 25 ? 'خفيف' : 'لا يوجد'
+    }
+  };
+  
+  return { 
+    active, 
+    scars, 
+    severity,
+    severityLevel,
+    types,
+    location,
+    totalSpots: totalActiveSpots,
+    totalScars: totalScarSpots
+  };
+}
 
-  tzone.forEach(point => {
+function analyzeAcneInRegion(ctx, region, width, height) {
+  let variationSum = 0;
+  let activeSpots = 0;
+  let scarSpots = 0;
+  let count = 0;
+  const sampleRadius = 2;
+  
+  region.forEach(point => {
     const x = Math.floor(point.x);
     const y = Math.floor(point.y);
-    if (x >= 2 && x < width - 2 && y >= 2 && y < height - 2) {
-      const imgData = ctx.getImageData(x - 1, y - 1, 3, 3);
+    
+    if (x >= sampleRadius && x < width - sampleRadius && y >= sampleRadius && y < height - sampleRadius) {
+      // أخذ عينة أكبر (5x5) لتحليل أدق
+      const imgData = ctx.getImageData(x - sampleRadius, y - sampleRadius, sampleRadius * 2 + 1, sampleRadius * 2 + 1);
       const variation = calculateVariation(imgData);
+      
       variationSum += variation;
       count++;
+      
+      // تحديد البقع النشطة (تباين عالي = بثور ملتهبة)
+      if (variation > 35) {
+        activeSpots++;
+      }
+      // تحديد الندوب (تباين متوسط = آثار)
+      else if (variation > 25 && variation <= 35) {
+        scarSpots++;
+      }
+      
+      // تحليل إضافي للبقع الداكنة (رؤوس سوداء)
+      const data = imgData.data;
+      let darkPixels = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        if (brightness < 80) darkPixels++;
+      }
+      
+      // إذا كان هناك بكسل داكن كثير مع تباين متوسط = رأس أسود
+      const darkRatio = darkPixels / (data.length / 4);
+      if (darkRatio > 0.1 && variation > 20 && variation <= 35) {
+        activeSpots++;
+      }
     }
   });
-
+  
   const avgVariation = count > 0 ? variationSum / count : 0;
-  const active = avgVariation > 35;
-  const scars = avgVariation > 25 && avgVariation < 35;
-
-  return { active, scars, severity: active ? 'متوسط' : scars ? 'خفيف' : 'لا يوجد' };
+  
+  return {
+    variation: avgVariation,
+    activeSpots,
+    scarSpots,
+    count
+  };
 }
 
 function analyzePigmentation(ctx, positions, width, height) {
@@ -465,6 +584,63 @@ function analyzeDarkCircles(ctx, positions, width, height) {
   const severity = avgBrightness < 100 ? 'واضح' : avgBrightness < 130 ? 'متوسط' : 'خفيف';
 
   return { present, severity };
+}
+
+function analyzeMedicalAcneTypes(ctx, positions, width, height, acneAnalysis) {
+  // تحليل طبي لأنواع حب الشباب
+  const medicalTypes = [];
+  
+  if (!acneAnalysis.active) {
+    return {
+      types: [],
+      recommendations: ['لا يوجد حب شباب نشط'],
+      severity: 'لا يوجد'
+    };
+  }
+  
+  // Acne Vulgaris (حب الشباب الشائع)
+  if (acneAnalysis.types.includes('التهابي') || acneAnalysis.types.includes('كوميدوني')) {
+    medicalTypes.push({
+      name: 'Acne Vulgaris',
+      arabicName: 'حب الشباب الشائع',
+      description: 'نوع شائع من حب الشباب يظهر على شكل بثور ورؤوس سوداء وبيضاء',
+      severity: acneAnalysis.severity
+    });
+  }
+  
+  // Acne Cystic (حب الشباب الكيسي)
+  if (acneAnalysis.types.includes('كيسي')) {
+    medicalTypes.push({
+      name: 'Acne Cystic',
+      arabicName: 'حب الشباب الكيسي',
+      description: 'نوع شديد من حب الشباب يظهر على شكل كيسات كبيرة وملتهبة تحت الجلد',
+      severity: 'شديد'
+    });
+  }
+  
+  // تحديد التوصيات الطبية
+  const recommendations = [];
+  if (acneAnalysis.severityLevel >= 2) {
+    recommendations.push('مراجعة طبيب جلدية للعلاج الطبي');
+    recommendations.push('استخدام مضادات حيوية موضعية');
+    recommendations.push('تجنب العبث بالبثور');
+  } else if (acneAnalysis.severityLevel === 1) {
+    recommendations.push('استخدام منتجات تنظيف لطيفة');
+    recommendations.push('استخدام مرطبات خالية من الزيوت');
+    recommendations.push('استخدام واقي شمس خالي من الزيوت');
+  }
+  
+  if (acneAnalysis.location && acneAnalysis.location.cheeks && acneAnalysis.location.cheeks.present) {
+    recommendations.push('تنظيف الهاتف والوسادة بانتظام (خاصة عند الخدود)');
+    recommendations.push('تجنب لمس الوجه باليدين');
+  }
+  
+  return {
+    types: medicalTypes,
+    recommendations,
+    severity: acneAnalysis.severity,
+    totalSpots: acneAnalysis.totalSpots || 0
+  };
 }
 
 function analyzeDetailedWrinkles(positions, age) {
