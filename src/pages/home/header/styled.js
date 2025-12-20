@@ -33,6 +33,31 @@ const NotificationBar = styled.div`
     }
   }
   
+  .notification-logo {
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-left: 0.1rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    padding: 0.05rem;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+    
+    @media (max-width: 480px) {
+      width: 0.35rem;
+      height: 0.35rem;
+    }
+  }
+  
   .notification-content {
     display: flex;
     align-items: center;
@@ -201,6 +226,21 @@ const NotificationIcon = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   
+  .notification-logo {
+    width: 0.35rem;
+    height: 0.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+  }
+  
   .am-icon {
     color: #fff;
     font-size: 0.28rem;
@@ -231,6 +271,11 @@ const NotificationIcon = styled.div`
   @media (min-width: 769px) {
     width: 0.7rem;
     height: 0.7rem;
+    
+    .notification-logo {
+      width: 0.4rem;
+      height: 0.4rem;
+    }
     
     .am-icon {
       font-size: 0.32rem;
@@ -390,12 +435,39 @@ const NotificationList = styled.div`
     justify-content: space-between;
     padding: 0.2rem 0.25rem;
     border-bottom: 1px solid #f0f0f0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     
-    h3 {
-      margin: 0;
-      font-size: 0.24rem;
-      font-weight: 600;
-      color: #333;
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 0.12rem;
+      flex: 1;
+      
+      .notification-logo {
+        width: 0.4rem;
+        height: 0.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        padding: 0.05rem;
+        flex-shrink: 0;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+        }
+      }
+      
+      h3 {
+        margin: 0;
+        font-size: 0.24rem;
+        font-weight: 600;
+        color: #fff;
+      }
     }
     
     .close-btn {
@@ -409,14 +481,14 @@ const NotificationList = styled.div`
       transition: all 0.2s ease;
       
       .am-icon {
-        color: #999;
+        color: #fff;
         font-size: 0.2rem;
+        opacity: 0.9;
       }
       
       &:hover {
-        .am-icon {
-          color: #333;
-        }
+        opacity: 1;
+        transform: scale(1.1);
       }
     }
   }

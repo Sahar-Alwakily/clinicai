@@ -102,6 +102,9 @@ export default class Head extends Component {
       <>
         {showNotifications && currentNotif && (
           <NotificationBar type={currentNotif.type}>
+            <div className="notification-logo">
+              <img src="/icon.svg" alt="ClinicAI Logo" />
+            </div>
             <div className="notification-content">
               <Icon type={currentNotif.type === "offer" ? "check-circle" : "info-circle"} size="xs" />
               <span className="notification-text">{currentNotif.text}</span>
@@ -120,7 +123,9 @@ export default class Head extends Component {
               </div>
               <div className="right-section">
                 <NotificationIcon onClick={this.handleNotificationClick}>
-                  <Icon type="bell" size="xs" />
+                  <div className="notification-logo">
+                    <img src="/icon.svg" alt="ClinicAI Logo" />
+                  </div>
                   {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
                 </NotificationIcon>
             <Mine></Mine>
@@ -139,7 +144,12 @@ export default class Head extends Component {
             <NotificationOverlay onClick={this.handleCloseNotificationList} />
             <NotificationList>
               <div className="notification-header">
-                <h3>الإشعارات</h3>
+                <div className="header-content">
+                  <div className="notification-logo">
+                    <img src="/icon.svg" alt="ClinicAI Logo" />
+                  </div>
+                  <h3>الإشعارات</h3>
+                </div>
                 <button className="close-btn" onClick={this.handleCloseNotificationList}>
                   <Icon type="cross" size="xs" />
                 </button>
