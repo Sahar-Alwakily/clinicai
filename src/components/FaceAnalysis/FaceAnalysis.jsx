@@ -51,6 +51,16 @@ const CapturedImage = styled.img`
   width: 100%;
   display: ${props => props.show ? 'block' : 'none'};
   border-radius: 0.15rem;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transform-origin: center center;
+  ${props => {
+    if (!props.zoomRegion || !props.zoomTransform) return '';
+    
+    const { scale, translateX, translateY } = props.zoomTransform;
+    return `
+      transform: scale(${scale}) translate(${translateX}%, ${translateY}%);
+    `;
+  }}
 `;
 
 const Controls = styled.div`
@@ -149,6 +159,10 @@ class FaceAnalysis extends Component {
     isAnalyzing: false,
     error: null,
     modelsLoading: false,
+    showOverlay: false, // Added to control overlay visibility
+    zoomRegion: null, // Current region being zoomed (eyes, brows, nose, mouth)
+    zoomSequence: [], // Array of regions to zoom through
+    zoomTransform: null // Transform values for zoom
     showOverlay: false
   };
 
@@ -557,6 +571,11 @@ class FaceAnalysis extends Component {
           this.drawFaceOverlay(detection.landmarks, overlayCanvas, image);
           this.setState({ showOverlay: true });
         });
+      }
+      
+      // استخراج المناطق وبدء تسلسل التكبير
+      if (detection.landmarks) {
+        this.extractRegionsAndAnimate(detection.landmarks, image);
       }
       
       // تحليل الوجه
@@ -1115,8 +1134,117 @@ class FaceAnalysis extends Component {
     };
   };
 
+  extractRegionsAndAnimate = (landmarks, image) => {
+    if (!landmarks || !landmarks.positions) return;
+    
+    const positions = landmarks.positions;
+    
+    // استخراج المناطق الرئيسية
+    const regions = {
+      eyes: {
+        left: positions.slice(36, 42),
+        right: positions.slice(42, 48),
+        name: 'eyes'
+      },
+      brows: {
+        left: positions.slice(17, 22),
+        right: positions.slice(22, 27),
+        name: 'brows'
+      },
+      nose: {
+        points: positions.slice(27, 36),
+        name: 'nose'
+      },
+      mouth: {
+        outer: positions.slice(48, 60),
+        inner: positions.slice(60, 68),
+        name: 'mouth'
+      }
+    };
+    
+    // حساب مراكز المناطق
+    const regionsWithCenters = Object.keys(regions).map(key => {
+      const region = regions[key];
+      let centerX = 0, centerY = 0, count = 0;
+      
+      if (region.left && region.right) {
+        // للمناطق المزدوجة (العينين، الحواجب)
+        region.left.forEach(p => { centerX += p.x; centerY += p.y; count++; });
+        region.right.forEach(p => { centerX += p.x; centerY += p.y; count++; });
+      } else if (region.points) {
+        // للأنف
+        region.points.forEach(p => { centerX += p.x; centerY += p.y; count++; });
+      } else if (region.outer && region.inner) {
+        // للفم
+        region.outer.forEach(p => { centerX += p.x; centerY += p.y; count++; });
+        region.inner.forEach(p => { centerX += p.x; centerY += p.y; count++; });
+      }
+      
+      centerX = count > 0 ? centerX / count : 0;
+      centerY = count > 0 ? centerY / count : 0;
+      
+      return {
+        ...region,
+        centerX,
+        centerY
+      };
+    });
+    
+    // حساب أبعاد الصورة
+    const rect = image.getBoundingClientRect();
+    const imageWidth = image.naturalWidth || image.videoWidth || rect.width;
+    const imageHeight = image.naturalHeight || image.videoHeight || rect.height;
+    
+    // تحويل إحداثيات المركز إلى نسبة مئوية من الصورة
+    const regionsWithPercentages = regionsWithCenters.map(region => ({
+      ...region,
+      centerXPercent: (region.centerX / imageWidth) * 100,
+      centerYPercent: (region.centerY / imageHeight) * 100
+    }));
+    
+    // بدء تسلسل التكبير
+    this.setState({ zoomSequence: regionsWithPercentages }, () => {
+      this.startZoomSequence(0);
+    });
+  };
+
+  startZoomSequence = (index) => {
+    const { zoomSequence } = this.state;
+    if (index >= zoomSequence.length) {
+      // انتهى التسلسل - إعادة إلى الوضع الطبيعي
+      setTimeout(() => {
+        this.setState({ zoomRegion: null, zoomTransform: null });
+      }, 500);
+      return;
+    }
+    
+    const region = zoomSequence[index];
+    
+    // حساب transform للتكبير على المنطقة
+    const scale = 2.5; // تكبير 2.5x
+    // حساب translate لجعل المنطقة في المركز
+    const translateX = (50 - region.centerXPercent) / scale;
+    const translateY = (50 - region.centerYPercent) / scale;
+    
+    this.setState({
+      zoomRegion: region.name,
+      zoomTransform: { scale, translateX, translateY }
+    });
+    
+    // الانتقال إلى المنطقة التالية بعد 1.5 ثانية
+    setTimeout(() => {
+      this.startZoomSequence(index + 1);
+    }, 1500);
+  };
+
   handleRetake = () => {
-    this.setState({ capturedImage: null, showOverlay: false });
+    this.setState({ 
+      capturedImage: null, 
+      showOverlay: false,
+      zoomRegion: null,
+      zoomTransform: null,
+      zoomSequence: []
+    });
     if (this.overlayCanvasRef.current) {
       const ctx = this.overlayCanvasRef.current.getContext('2d');
       ctx.clearRect(0, 0, this.overlayCanvasRef.current.width, this.overlayCanvasRef.current.height);
@@ -1145,6 +1273,8 @@ class FaceAnalysis extends Component {
             src={capturedImage}
             alt="Captured face"
             show={showImage}
+            zoomRegion={this.state.zoomRegion}
+            zoomTransform={this.state.zoomTransform}
           />
           <OverlayCanvas 
             ref={this.overlayCanvasRef}
