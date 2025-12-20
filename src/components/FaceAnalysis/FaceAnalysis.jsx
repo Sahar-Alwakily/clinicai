@@ -1,6 +1,12 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import * as faceapi from "face-api.js";
+import { 
+  analyzeAdvancedSkin, 
+  analyzeSkinProblems, 
+  analyzeFacialProportions,
+  analyzeSpecificRegions 
+} from "../../utils/advancedFaceAnalysis";
 
 const Container = styled.div`
   width: 100%;
@@ -258,9 +264,20 @@ class FaceAnalysis extends Component {
     if (!canvas || !landmarks || !image) return;
     
     const ctx = canvas.getContext('2d');
+    
+    // الحصول على أبعاد الصورة المعروضة
     const rect = image.getBoundingClientRect();
-    const scaleX = canvas.width / (image.width || image.videoWidth || rect.width);
-    const scaleY = canvas.height / (image.height || image.videoHeight || rect.height);
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+    
+    // ضبط حجم canvas ليطابق حجم الصورة المعروضة
+    canvas.width = displayWidth;
+    canvas.height = displayHeight;
+    
+    // landmarks تم تعديلها بالفعل باستخدام faceapi.resizeResults
+    // لذا scaleX و scaleY = 1
+    const scaleX = 1;
+    const scaleY = 1;
     
     // مسح Canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -447,12 +464,28 @@ class FaceAnalysis extends Component {
       
       // رسم الشبكة والخطوط على الوجه
       if (overlayCanvas && detection.landmarks) {
-        const imgWidth = image.width || image.videoWidth || image.offsetWidth || image.clientWidth;
-        const imgHeight = image.height || image.videoHeight || image.offsetHeight || image.clientHeight;
-        overlayCanvas.width = imgWidth;
-        overlayCanvas.height = imgHeight;
-        this.drawFaceOverlay(detection.landmarks, overlayCanvas, image);
-        this.setState({ showOverlay: true });
+        // استخدام requestAnimationFrame للتأكد من تحميل الصورة
+        requestAnimationFrame(() => {
+          // الحصول على أبعاد الصورة المعروضة
+          const rect = image.getBoundingClientRect();
+          const displaySize = { width: rect.width, height: rect.height };
+          
+          // الحصول على أبعاد الصورة الأصلية
+          let sourceSize;
+          if (image.naturalWidth && image.naturalHeight && image.naturalWidth > 0 && image.naturalHeight > 0) {
+            sourceSize = { width: image.naturalWidth, height: image.naturalHeight };
+          } else if (image.videoWidth && image.videoHeight && image.videoWidth > 0 && image.videoHeight > 0) {
+            sourceSize = { width: image.videoWidth, height: image.videoHeight };
+          } else {
+            sourceSize = displaySize;
+          }
+          
+          // تعديل أبعاد landmarks لتطابق حجم العرض
+          const resizedLandmarks = faceapi.resizeResults(detection.landmarks, displaySize);
+          
+          this.drawFaceOverlay(resizedLandmarks, overlayCanvas, image);
+          this.setState({ showOverlay: true });
+        });
       }
       
       // تحليل الوجه
@@ -475,33 +508,61 @@ class FaceAnalysis extends Component {
   performAnalysis = (detection, imageElement) => {
     const { age, gender, expressions, landmarks } = detection;
     
-    // تحليل نوع البشرة بناءً على نسيج الجلد
-    const skinType = this.analyzeSkinType(imageElement, landmarks);
+    // إنشاء canvas للتحليل
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = imageElement.width || imageElement.videoWidth || imageElement.naturalWidth || imageElement.clientWidth;
+    canvas.height = imageElement.height || imageElement.videoHeight || imageElement.naturalHeight || imageElement.clientHeight;
+    ctx.drawImage(imageElement, 0, 0);
     
-    // تحليل التجاعيد
+    // === التحليلات الأساسية ===
+    const basicSkinType = this.analyzeSkinType(imageElement, landmarks);
     const wrinkles = this.analyzeWrinkles(landmarks, expressions);
-    
-    // تحليل الترهل
     const sagging = this.analyzeSagging(landmarks);
-    
-    // تحليل خطوط الوجه
     const facialLines = this.analyzeFacialLines(landmarks, age);
-    
-    // تحليل الحواجب (التناسق)
     const eyebrows = this.analyzeEyebrows(landmarks);
-    
-    // تحليل الفم (الحجم - إذا يحتاج فيلر)
     const mouth = this.analyzeMouth(landmarks);
+    
+    // === التحليلات المتقدمة ===
+    let advancedSkin, skinProblems, facialProportions, specificRegions;
+    try {
+      advancedSkin = analyzeAdvancedSkin(imageElement, landmarks, ctx);
+      skinProblems = analyzeSkinProblems(imageElement, landmarks, age);
+      facialProportions = analyzeFacialProportions(landmarks);
+      specificRegions = analyzeSpecificRegions(imageElement, landmarks);
+    } catch (error) {
+      console.error('Error in advanced analysis:', error);
+      // استخدام قيم افتراضية في حالة الخطأ
+      advancedSkin = { type: 'مختلطة', hydration: 'طبيعي', sebum: 'متوسط', pores: 'متوسطة', texture: 'متوسطة' };
+      skinProblems = { acne: { active: false }, pigmentation: { level: 'لا يوجد' }, darkCircles: { present: false } };
+      facialProportions = { symmetry: 100, goldenRatio: 100, faceShape: 'بيضاوي' };
+      specificRegions = {};
+    }
+    
+    // === توليد التوصيات والعلاجات ===
+    const treatments = this.generateTreatments(advancedSkin, skinProblems, facialProportions, wrinkles, mouth, eyebrows);
     
     return {
       age: Math.round(age),
       gender: gender === 'male' ? 'ذكر' : 'أنثى',
-      skinType,
+      
+      // التحليلات الأساسية
+      skinType: advancedSkin, // استخدام التحليل المتقدم
       wrinkles,
       sagging,
       facialLines,
       eyebrows,
       mouth,
+      
+      // التحليلات المتقدمة
+      advancedSkin,
+      skinProblems,
+      facialProportions,
+      specificRegions,
+      
+      // التوصيات
+      treatments,
+      
       expressions: {
         happy: Math.round(expressions.happy * 100),
         sad: Math.round(expressions.sad * 100),
@@ -512,6 +573,89 @@ class FaceAnalysis extends Component {
         neutral: Math.round(expressions.neutral * 100)
       }
     };
+  };
+
+  generateTreatments = (advancedSkin, skinProblems, facialProportions, wrinkles, mouth, eyebrows) => {
+    const treatments = [];
+    
+    // علاجات بناءً على نوع البشرة
+    if (advancedSkin.type === 'دهنية') {
+      treatments.push({
+        name: 'تنظيف عميق',
+        description: 'تنظيف عميق لإزالة الدهون الزائدة',
+        priority: 'متوسط'
+      });
+    }
+    
+    if (advancedSkin.poresScore > 60) {
+      treatments.push({
+        name: 'تقشير كيميائي',
+        description: 'لتقليل حجم المسام',
+        priority: 'عالٍ'
+      });
+    }
+    
+    // علاجات بناءً على المشاكل الجلدية
+    if (skinProblems.acne.active) {
+      treatments.push({
+        name: 'علاج حب الشباب',
+        description: 'علاج طبي لحب الشباب النشط',
+        priority: 'عالٍ'
+      });
+    }
+    
+    if (skinProblems.pigmentation.level !== 'لا يوجد') {
+      treatments.push({
+        name: 'تقشير كيميائي',
+        description: 'لعلاج التصبغات والبقع',
+        priority: 'عالٍ'
+      });
+    }
+    
+    if (skinProblems.darkCircles.present) {
+      treatments.push({
+        name: 'فيلر تحت العين',
+        description: 'لإزالة الهالات السوداء والفراغات',
+        priority: 'متوسط'
+      });
+    }
+    
+    // علاجات بناءً على التجاعيد
+    if (wrinkles.severity === 'عالي') {
+      treatments.push({
+        name: 'بوتوكس الجبهة',
+        description: 'لتقليل التجاعيد في الجبهة',
+        priority: 'عالٍ'
+      });
+    }
+    
+    if (facialLines.severity === 'واضح') {
+      treatments.push({
+        name: 'فيلر خطوط الأنف-الشفاه',
+        description: 'لتعبئة خطوط الأنف-الشفاه',
+        priority: 'عالٍ'
+      });
+    }
+    
+    // علاجات بناءً على الفم
+    if (mouth.needsFiller) {
+      treatments.push({
+        name: 'فيلر الشفاه',
+        description: mouth.recommendation || 'زيادة حجم الشفاه',
+        priority: 'متوسط'
+      });
+    }
+    
+    // علاجات بناءً على الحواجب
+    if (eyebrows.needsCorrection) {
+      treatments.push({
+        name: 'تصحيح الحواجب',
+        description: 'لتحسين تناسق الحواجب',
+        priority: 'منخفض'
+      });
+    }
+    
+    return treatments;
   };
 
   analyzeSkinType = (imageElement, landmarks) => {
@@ -753,151 +897,6 @@ class FaceAnalysis extends Component {
     const distance = Math.abs(avgCornerY - jawBottom.y);
     
     return Math.round(distance / 15); // تحويل تقريبي
-  };
-
-  analyzeEyebrows = (landmarks) => {
-    // تحليل تناسق الحواجب
-    if (!landmarks || !landmarks.positions) {
-      return { symmetry: 'غير محدد', needsCorrection: false };
-    }
-    
-    const positions = landmarks.positions;
-    
-    // الحواجب: نقاط 17-21 (اليسار) و 22-26 (اليمين)
-    const leftEyebrow = positions.slice(17, 22);
-    const rightEyebrow = positions.slice(22, 27);
-    
-    if (leftEyebrow.length === 0 || rightEyebrow.length === 0) {
-      return { symmetry: 'غير محدد', needsCorrection: false };
-    }
-    
-    // حساب متوسط ارتفاع كل حاجب
-    const leftAvgY = leftEyebrow.reduce((sum, p) => sum + p.y, 0) / leftEyebrow.length;
-    const rightAvgY = rightEyebrow.reduce((sum, p) => sum + p.y, 0) / rightEyebrow.length;
-    
-    // حساب الفرق في الارتفاع
-    const heightDiff = Math.abs(leftAvgY - rightAvgY);
-    const avgHeight = (leftAvgY + rightAvgY) / 2;
-    const heightDiffPercent = (heightDiff / avgHeight) * 100;
-    
-    // حساب الانحناء (curvature)
-    const leftCurve = this.calculateEyebrowCurve(leftEyebrow);
-    const rightCurve = this.calculateEyebrowCurve(rightEyebrow);
-    const curveDiff = Math.abs(leftCurve - rightCurve);
-    
-    let symmetry = 'متناسقة';
-    let needsCorrection = false;
-    let score = 100;
-    
-    if (heightDiffPercent > 5 || curveDiff > 0.3) {
-      symmetry = 'غير متناسقة';
-      needsCorrection = true;
-      score = 60;
-    } else if (heightDiffPercent > 3 || curveDiff > 0.15) {
-      symmetry = 'شبه متناسقة';
-      score = 80;
-    }
-    
-    return {
-      symmetry,
-      needsCorrection,
-      score,
-      heightDifference: heightDiffPercent.toFixed(1),
-      leftHeight: leftAvgY.toFixed(1),
-      rightHeight: rightAvgY.toFixed(1)
-    };
-  };
-
-  calculateEyebrowCurve = (eyebrowPoints) => {
-    if (eyebrowPoints.length < 3) return 0;
-    
-    // حساب الانحناء بناءً على الفرق بين النقاط
-    const firstPoint = eyebrowPoints[0];
-    const middlePoint = eyebrowPoints[Math.floor(eyebrowPoints.length / 2)];
-    const lastPoint = eyebrowPoints[eyebrowPoints.length - 1];
-    
-    // حساب المسافة العمودية من النقطة الوسطى إلى الخط الواصل بين الأول والأخير
-    const lineSlope = (lastPoint.y - firstPoint.y) / (lastPoint.x - firstPoint.x);
-    const lineY = firstPoint.y + lineSlope * (middlePoint.x - firstPoint.x);
-    const curve = Math.abs(middlePoint.y - lineY);
-    
-    return curve;
-  };
-
-  analyzeMouth = (landmarks) => {
-    // تحليل حجم الفم (إذا يحتاج فيلر)
-    if (!landmarks || !landmarks.positions) {
-      return { size: 'غير محدد', needsFiller: false };
-    }
-    
-    const positions = landmarks.positions;
-    
-    // الفم: نقاط 48-67
-    const mouth = positions.slice(48, 68);
-    
-    if (mouth.length < 20) {
-      return { size: 'غير محدد', needsFiller: false };
-    }
-    
-    // حساب عرض الفم
-    const mouthLeft = positions[48];
-    const mouthRight = positions[54];
-    const mouthWidth = Math.sqrt(
-      Math.pow(mouthRight.x - mouthLeft.x, 2) + 
-      Math.pow(mouthRight.y - mouthLeft.y, 2)
-    );
-    
-    // حساب ارتفاع الفم
-    const mouthTop = positions[51];
-    const mouthBottom = positions[57];
-    const mouthHeight = Math.sqrt(
-      Math.pow(mouthBottom.x - mouthTop.x, 2) + 
-      Math.pow(mouthBottom.y - mouthTop.y, 2)
-    );
-    
-    // حساب نسبة العرض إلى الارتفاع
-    const aspectRatio = mouthWidth / mouthHeight;
-    
-    // حساب سماكة الشفاه
-    const upperLipThickness = Math.sqrt(
-      Math.pow(positions[51].x - positions[62].x, 2) + 
-      Math.pow(positions[51].y - positions[62].y, 2)
-    );
-    const lowerLipThickness = Math.sqrt(
-      Math.pow(positions[57].x - positions[66].x, 2) + 
-      Math.pow(positions[57].y - positions[66].y, 2)
-    );
-    const avgLipThickness = (upperLipThickness + lowerLipThickness) / 2;
-    
-    // معايير التحليل (قيم تقريبية)
-    let size = 'متوسط';
-    let needsFiller = false;
-    let recommendation = '';
-    
-    if (aspectRatio < 2.5) {
-      size = 'صغير';
-      if (avgLipThickness < 8) {
-        needsFiller = true;
-        recommendation = 'يُنصح باستخدام فيلر لزيادة حجم الشفاه';
-      }
-    } else if (aspectRatio > 3.5) {
-      size = 'كبير';
-    }
-    
-    if (avgLipThickness < 6 && !needsFiller) {
-      needsFiller = true;
-      recommendation = 'يُنصح باستخدام فيلر لزيادة سماكة الشفاه';
-    }
-    
-    return {
-      size,
-      needsFiller,
-      recommendation,
-      width: mouthWidth.toFixed(1),
-      height: mouthHeight.toFixed(1),
-      thickness: avgLipThickness.toFixed(1),
-      aspectRatio: aspectRatio.toFixed(2)
-    };
   };
 
   analyzeEyebrows = (landmarks) => {
