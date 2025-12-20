@@ -251,7 +251,7 @@ class Profile extends Component {
           <div className="avatar">{user.avatar}</div>
           <div className="name">{user.name}</div>
           <div className="email">{user.email}</div>
-          <button className="edit-profile">تعديل الملف الشخصي</button>
+          <button className="edit-profile" onClick={() => this.props.history.push("/edit-profile")}>تعديل الملف الشخصي</button>
         </ProfileHeader>
 
         <StatsRow>
