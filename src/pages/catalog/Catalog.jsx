@@ -222,7 +222,7 @@ class Catalog extends Component {
                   key={service.id}
                   onClick={() => this.handleServiceClick(service)}
                 >
-                  <ServiceIcon>{service.icon}</ServiceIcon>
+                  <ServiceIcon className="service-icon">{service.icon}</ServiceIcon>
                   <div className="service-name">{service.name}</div>
                 </ServiceCard>
               ))}
