@@ -249,6 +249,26 @@ class Reminders extends Component {
     
     // إذا لم توجد حجوزات محفوظة، استخدم البيانات الافتراضية
     if (bookingsData.length === 0) {
+      // إنشاء تاريخ قبل يومين لليزر فراكشنال
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      const twoDaysAgoString = twoDaysAgo.toLocaleDateString('ar-SA', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      // إنشاء تاريخ قبل 5 ساعات لليزر إزالة الشعر
+      const fiveHoursAgo = new Date();
+      fiveHoursAgo.setHours(fiveHoursAgo.getHours() - 5);
+      const fiveHoursAgoString = fiveHoursAgo.toLocaleDateString('ar-SA', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
       bookingsData = [
         {
           id: 1,
@@ -290,18 +310,42 @@ class Reminders extends Component {
           id: 6,
           clinicName: "مركز النخبة للتجميل",
           treatment: "ليزر فراكشنال",
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          }),
+          date: twoDaysAgoString,
           time: "2:00 مساءً",
           doctor: "د. سارة المنصور",
           status: "completed",
           statusText: "مكتمل",
           price: "1200 ر.س",
           emoji: "✨"
+        },
+        {
+          id: 7,
+          clinicName: "عيادة الجمال الحديث",
+          treatment: "ليزر إزالة الشعر",
+          date: fiveHoursAgoString,
+          time: fiveHoursAgo.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
+          doctor: "د. أحمد الخالدي",
+          status: "completed",
+          statusText: "مكتمل",
+          price: "600 ر.س",
+          emoji: "💫"
+        },
+        {
+          id: 3,
+          clinicName: "عيادة الجمال الحديث",
+          treatment: "بوتكس الجبهة",
+          date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          time: "11:00 صباحاً",
+          doctor: "د. أحمد الخالدي",
+          status: "completed",
+          statusText: "مكتمل",
+          price: "800 ر.س",
+          emoji: "💆"
         }
       ];
     }
@@ -311,20 +355,32 @@ class Reminders extends Component {
     const bookingsWithReminders = bookingsData
       .filter(booking => booking.status === "completed")
       .map(booking => {
-        const bookingDate = parseArabicDate(booking.date, booking.time);
-        const reminders = getRemindersForTreatment(booking.treatment);
-        const serviceIcon = booking.emoji || getTreatmentIcon(booking.treatment);
-        
-        return {
-          id: booking.id,
-          serviceName: booking.treatment,
-          serviceIcon: serviceIcon,
-          bookingDate: bookingDate,
-          clinicName: booking.clinicName,
-          doctor: booking.doctor,
-          reminders: reminders
-        };
-      });
+        try {
+          const bookingDate = parseArabicDate(booking.date, booking.time);
+          const reminders = getRemindersForTreatment(booking.treatment);
+          const serviceIcon = booking.emoji || getTreatmentIcon(booking.treatment);
+          
+          // التحقق من أن التاريخ صحيح
+          if (isNaN(bookingDate.getTime())) {
+            console.error('Invalid date for booking:', booking);
+            return null;
+          }
+          
+          return {
+            id: booking.id,
+            serviceName: booking.treatment,
+            serviceIcon: serviceIcon,
+            bookingDate: bookingDate,
+            clinicName: booking.clinicName,
+            doctor: booking.doctor,
+            reminders: reminders
+          };
+        } catch (e) {
+          console.error('Error processing booking:', booking, e);
+          return null;
+        }
+      })
+      .filter(booking => booking !== null);
     
     this.setState({ bookings: bookingsWithReminders });
   };
@@ -365,6 +421,10 @@ class Reminders extends Component {
     const now = new Date();
     const activeBookings = bookings
       .filter(booking => {
+        // التحقق من أن bookingDate هو Date object صحيح
+        if (!booking.bookingDate || !(booking.bookingDate instanceof Date)) {
+          return false;
+        }
         // فقط الحجوزات التي تمت (في الماضي)
         return booking.bookingDate < now;
       })

@@ -113,6 +113,13 @@ export const getRemindersForTreatment = (treatmentName) => {
 
 // دالة لتحويل التاريخ النصي إلى Date object
 export const parseArabicDate = (dateString, timeString) => {
+  if (!dateString) {
+    // إذا لم يكن هناك تاريخ، استخدم تاريخ افتراضي (قبل ساعة)
+    const oneHourAgo = new Date();
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+    return oneHourAgo;
+  }
+  
   // إذا كان التاريخ يحتوي على "بكرا" أو "غداً"
   if (dateString.includes("بكرا") || dateString.includes("غداً") || dateString.includes("غدا")) {
     const tomorrow = new Date();
@@ -146,7 +153,8 @@ export const parseArabicDate = (dateString, timeString) => {
   };
   
   // البحث عن اليوم والشهر والسنة
-  const dayMatch = dateString.match(/(\d+)/);
+  // البحث عن أول رقم (اليوم)
+  const dayMatch = dateString.match(/(\d{1,2})/);
   const monthMatch = dateString.match(/(يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/);
   const yearMatch = dateString.match(/(\d{4})/);
   
@@ -171,13 +179,46 @@ export const parseArabicDate = (dateString, timeString) => {
       }
     }
     
-    return new Date(year, month, day, hours, minutes, 0, 0);
+    const date = new Date(year, month, day, hours, minutes, 0, 0);
+    
+    // التحقق من صحة التاريخ
+    if (isNaN(date.getTime())) {
+      console.error('Invalid date parsed:', dateString, timeString);
+      // إذا فشل، استخدم تاريخ قبل ساعة
+      const oneHourAgo = new Date();
+      oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+      return oneHourAgo;
+    }
+    
+    return date;
   }
   
-  // إذا فشل التحليل، استخدم تاريخ افتراضي (غداً)
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow;
+  // إذا فشل التحليل، حاول استخدام Date.parse
+  try {
+    const parsed = Date.parse(dateString);
+    if (!isNaN(parsed)) {
+      const date = new Date(parsed);
+      if (timeString) {
+        const timeMatch = timeString.match(/(\d+):(\d+)/);
+        if (timeMatch) {
+          let hours = parseInt(timeMatch[1]);
+          let minutes = parseInt(timeMatch[2]);
+          if (timeString.includes("مساءً") || timeString.includes("مساء")) {
+            if (hours < 12) hours += 12;
+          }
+          date.setHours(hours, minutes, 0, 0);
+        }
+      }
+      return date;
+    }
+  } catch (e) {
+    console.error('Error parsing date:', dateString, e);
+  }
+  
+  // إذا فشل كل شيء، استخدم تاريخ قبل ساعة (لضمان ظهور التذكيرات)
+  const oneHourAgo = new Date();
+  oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+  return oneHourAgo;
 };
 
 // دالة للحصول على أيقونة العلاج
