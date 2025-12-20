@@ -47,20 +47,183 @@ const OverlayCanvas = styled.canvas`
   z-index: 5;
 `;
 
+const ImageWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.15rem;
+`;
+
 const CapturedImage = styled.img`
   width: 100%;
   display: ${props => props.show ? 'block' : 'none'};
   border-radius: 0.15rem;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-  transform-origin: center center;
+  transition: transform ${props => props.transitionDuration || 0.8}s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transform-origin: ${props => props.transformOrigin || 'center center'};
   ${props => {
-    if (!props.zoomRegion || !props.zoomTransform) return '';
+    if (!props.zoomTransform) return '';
     
-    const { scale, translateX, translateY } = props.zoomTransform;
+    const { scale = 1, translateX = 0, translateY = 0 } = props.zoomTransform;
     return `
       transform: scale(${scale}) translate(${translateX}%, ${translateY}%);
     `;
   }}
+`;
+
+const DarkOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: ${props => props.visible ? 'rgba(0, 0, 0, 0.3)' : 'transparent'};
+  transition: background 0.3s ease;
+  pointer-events: none;
+  z-index: 3;
+  border-radius: 0.15rem;
+  display: ${props => props.show ? 'block' : 'none'};
+`;
+
+const AnalysisStatusText = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.24rem;
+  font-weight: 600;
+  text-align: center;
+  z-index: 4;
+  pointer-events: none;
+  display: ${props => props.visible ? 'block' : 'none'};
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+`;
+
+const FaceDetectionBox = styled.div`
+  position: absolute;
+  border: 2px solid rgba(102, 126, 234, 0.6);
+  border-radius: 0.1rem;
+  pointer-events: none;
+  z-index: 6;
+  transition: opacity 0.3s ease;
+  opacity: ${props => props.visible ? 1 : 0};
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  ${props => props.boxStyle ? `
+    left: ${props.boxStyle.left}%;
+    top: ${props.boxStyle.top}%;
+    width: ${props.boxStyle.width}%;
+    height: ${props.boxStyle.height}%;
+  ` : ''}
+`;
+
+const GridOverlay = styled.canvas`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  opacity: ${props => props.visible ? 0.35 : 0};
+  transition: opacity 0.2s ease;
+  display: ${props => props.show ? 'block' : 'none'};
+`;
+
+const EyeHighlight = styled.div`
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 6;
+  opacity: ${props => props.visible ? 1 : 0};
+  transition: opacity 0.3s ease;
+  ${props => props.style ? `
+    left: ${props.style.left}%;
+    top: ${props.style.top}%;
+    width: ${props.style.width}%;
+    height: ${props.style.height}%;
+    transform: translate(-50%, -50%);
+  ` : ''}
+`;
+
+const EyebrowGuidelines = styled.div`
+  position: absolute;
+  height: 1px;
+  background: rgba(102, 126, 234, 0.4);
+  pointer-events: none;
+  z-index: 7;
+  opacity: ${props => props.visible ? 1 : 0};
+  transition: opacity 0.3s ease;
+  ${props => props.style ? `
+    left: ${props.style.left}%;
+    top: ${props.style.top}%;
+    width: ${props.style.width}%;
+  ` : ''}
+`;
+
+const RegionLabel = styled.div`
+  position: absolute;
+  background: rgba(102, 126, 234, 0.9);
+  color: white;
+  padding: 0.08rem 0.16rem;
+  border-radius: 0.08rem;
+  font-size: 0.16rem;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 8;
+  opacity: ${props => props.visible ? 1 : 0};
+  transition: opacity 0.3s ease;
+  ${props => props.style ? `
+    left: ${props.style.left}%;
+    top: ${props.style.top}%;
+    transform: translate(-50%, 0);
+  ` : ''}
+`;
+
+const NoseGuidelines = styled.div`
+  position: absolute;
+  width: 1px;
+  background: rgba(102, 126, 234, 0.4);
+  pointer-events: none;
+  z-index: 7;
+  opacity: ${props => props.visible ? 1 : 0};
+  transition: opacity 0.3s ease;
+  ${props => props.style ? `
+    left: ${props.style.left}%;
+    top: ${props.style.top}%;
+    height: ${props.style.height}%;
+  ` : ''}
+`;
+
+const MouthOutline = styled.div`
+  position: absolute;
+  border: 2px dashed rgba(236, 72, 153, 0.5);
+  border-radius: 0.05rem;
+  pointer-events: none;
+  z-index: 7;
+  opacity: ${props => props.visible ? 1 : 0};
+  transition: opacity 0.3s ease;
+  ${props => props.style ? `
+    left: ${props.style.left}%;
+    top: ${props.style.top}%;
+    width: ${props.style.width}%;
+    height: ${props.style.height}%;
+  ` : ''}
+`;
+
+const ResultsCard = styled.div`
+  position: fixed;
+  bottom: ${props => props.visible ? '0' : '-100%'};
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 0.2rem 0.2rem 0 0;
+  padding: 0.3rem;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 60vh;
+  overflow-y: auto;
 `;
 
 const Controls = styled.div`
@@ -159,10 +322,34 @@ class FaceAnalysis extends Component {
     isAnalyzing: false,
     error: null,
     modelsLoading: false,
-    showOverlay: false, // Added to control overlay visibility
-    zoomRegion: null, // Current region being zoomed (eyes, brows, nose, mouth)
-    zoomSequence: [], // Array of regions to zoom through
-    zoomTransform: null // Transform values for zoom
+    showOverlay: false,
+    
+    // Animation states
+    animationStep: 0, // Current step in animation sequence
+    showDarkOverlay: false,
+    statusText: '',
+    showFaceBox: false,
+    faceBoxStyle: null,
+    showGrid: false,
+    showEyeHighlight: false,
+    eyeHighlightStyle: null,
+    showEyebrowGuidelines: false,
+    eyebrowGuidelinesStyle: null,
+    showEyeLabel: false,
+    eyeLabelStyle: null,
+    showNoseGuidelines: false,
+    noseGuidelinesStyle: null,
+    showNoseLabel: false,
+    noseLabelStyle: null,
+    showMouthOutline: false,
+    mouthOutlineStyle: null,
+    showMouthLabel: false,
+    mouthLabelStyle: null,
+    zoomTransform: null,
+    showResultsCard: false,
+    
+    // Detected regions data
+    detectedRegions: null
   };
 
   componentDidMount() {
@@ -563,26 +750,18 @@ class FaceAnalysis extends Component {
 
       const detection = detections[0]; // استخدام أول وجه مكتشف
       
-      // رسم الشبكة والخطوط على الوجه
-      if (overlayCanvas && detection.landmarks) {
-        // استخدام requestAnimationFrame للتأكد من تحميل الصورة
-        requestAnimationFrame(() => {
-          this.drawFaceOverlay(detection.landmarks, overlayCanvas, image);
-          this.setState({ showOverlay: true });
-        });
-      }
+      // حفظ landmarks للاستخدام في رسم الشبكة
+      this.detectedLandmarks = detection.landmarks;
+      this.detectedImage = image;
       
       // استخراج المناطق وبدء تسلسل التكبير
       if (detection.landmarks) {
-        this.extractRegionsAndAnimate(detection.landmarks, image);
+        this.extractRegionsAndAnimate(detection.landmarks, image, detection);
       }
       
-      // تحليل الوجه
+      // تحليل الوجه (يتم في الخلفية، سيتم إرسال النتائج بعد انتهاء الرسوم المتحركة)
       const analysis = this.performAnalysis(detection, image);
-      
-      if (this.props.onAnalysisComplete) {
-        this.props.onAnalysisComplete(analysis);
-      }
+      this.pendingAnalysis = analysis; // حفظ النتائج لاستخدامها لاحقاً
 
       this.setState({ isAnalyzing: false });
     } catch (error) {
@@ -1133,13 +1312,26 @@ class FaceAnalysis extends Component {
     };
   };
 
-  extractRegionsAndAnimate = (landmarks, image) => {
+  extractRegionsAndAnimate = (landmarks, image, detection) => {
     if (!landmarks || !landmarks.positions) return;
     
     const positions = landmarks.positions;
     
+    // حساب أبعاد الصورة
+    const rect = image.getBoundingClientRect();
+    const imageWidth = image.naturalWidth || image.videoWidth || rect.width;
+    const imageHeight = image.naturalHeight || image.videoHeight || rect.height;
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+    const scaleX = displayWidth / imageWidth;
+    const scaleY = displayHeight / imageHeight;
+    
     // استخراج المناطق الرئيسية
     const regions = {
+      face: {
+        box: detection.detection.box, // bounding box
+        name: 'face'
+      },
       eyes: {
         left: positions.slice(36, 42),
         right: positions.slice(42, 48),
@@ -1161,78 +1353,272 @@ class FaceAnalysis extends Component {
       }
     };
     
-    // حساب مراكز المناطق
-    const regionsWithCenters = Object.keys(regions).map(key => {
-      const region = regions[key];
-      let centerX = 0, centerY = 0, count = 0;
+    // حساب مراكز وأحجام المناطق
+    const calculateRegionBounds = (region) => {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      let points = [];
       
       if (region.left && region.right) {
-        // للمناطق المزدوجة (العينين، الحواجب)
-        region.left.forEach(p => { centerX += p.x; centerY += p.y; count++; });
-        region.right.forEach(p => { centerX += p.x; centerY += p.y; count++; });
+        points = [...region.left, ...region.right];
       } else if (region.points) {
-        // للأنف
-        region.points.forEach(p => { centerX += p.x; centerY += p.y; count++; });
+        points = region.points;
       } else if (region.outer && region.inner) {
-        // للفم
-        region.outer.forEach(p => { centerX += p.x; centerY += p.y; count++; });
-        region.inner.forEach(p => { centerX += p.x; centerY += p.y; count++; });
+        points = [...region.outer, ...region.inner];
       }
       
-      centerX = count > 0 ? centerX / count : 0;
-      centerY = count > 0 ? centerY / count : 0;
+      points.forEach(p => {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+      });
+      
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+      const width = maxX - minX;
+      const height = maxY - minY;
       
       return {
-        ...region,
-        centerX,
-        centerY
+        centerX: (centerX / imageWidth) * 100,
+        centerY: (centerY / imageHeight) * 100,
+        width: (width / imageWidth) * 100,
+        height: (height / imageHeight) * 100,
+        left: (minX / imageWidth) * 100,
+        top: (minY / imageHeight) * 100,
+        points
       };
-    });
+    };
     
-    // حساب أبعاد الصورة
-    const rect = image.getBoundingClientRect();
-    const imageWidth = image.naturalWidth || image.videoWidth || rect.width;
-    const imageHeight = image.naturalHeight || image.videoHeight || rect.height;
+    const faceBox = detection.detection.box;
+    const detectedRegions = {
+      face: {
+        left: (faceBox.x / imageWidth) * 100,
+        top: (faceBox.y / imageHeight) * 100,
+        width: (faceBox.width / imageWidth) * 100,
+        height: (faceBox.height / imageHeight) * 100
+      },
+      eyes: calculateRegionBounds(regions.eyes),
+      brows: {
+        left: calculateRegionBounds({ points: regions.brows.left }),
+        right: calculateRegionBounds({ points: regions.brows.right })
+      },
+      nose: calculateRegionBounds(regions.nose),
+      mouth: calculateRegionBounds(regions.mouth)
+    };
     
-    // تحويل إحداثيات المركز إلى نسبة مئوية من الصورة
-    const regionsWithPercentages = regionsWithCenters.map(region => ({
-      ...region,
-      centerXPercent: (region.centerX / imageWidth) * 100,
-      centerYPercent: (region.centerY / imageHeight) * 100
-    }));
-    
-    // بدء تسلسل التكبير
-    this.setState({ zoomSequence: regionsWithPercentages }, () => {
-      this.startZoomSequence(0);
+    this.setState({ detectedRegions }, () => {
+      this.startAnimationSequence();
     });
   };
 
-  startZoomSequence = (index) => {
-    const { zoomSequence } = this.state;
-    if (index >= zoomSequence.length) {
-      // انتهى التسلسل - إعادة إلى الوضع الطبيعي
-      setTimeout(() => {
-        this.setState({ zoomRegion: null, zoomTransform: null });
-      }, 500);
-      return;
-    }
-    
-    const region = zoomSequence[index];
-    
-    // حساب transform للتكبير على المنطقة
-    const scale = 2.5; // تكبير 2.5x
-    // حساب translate لجعل المنطقة في المركز
-    const translateX = (50 - region.centerXPercent) / scale;
-    const translateY = (50 - region.centerYPercent) / scale;
-    
+  startAnimationSequence = () => {
+    // Step 1: Initial state (0-800ms)
     this.setState({
-      zoomRegion: region.name,
-      zoomTransform: { scale, translateX, translateY }
+      showDarkOverlay: true,
+      statusText: 'جار تحليل الوجه.....'
     });
     
-    // الانتقال إلى المنطقة التالية بعد 1.5 ثانية
     setTimeout(() => {
-      this.startZoomSequence(index + 1);
+      // Step 2: Face detection box (600ms)
+      this.setState({ 
+        showFaceBox: true,
+        faceBoxStyle: this.state.detectedRegions.face
+      });
+      
+      setTimeout(() => {
+        // Step 3: Grid flash (400ms)
+        this.setState({ showGrid: true, showOverlay: true });
+        
+        // رسم الشبكة على overlay canvas
+        if (this.overlayCanvasRef.current && this.detectedLandmarks && this.detectedImage) {
+          requestAnimationFrame(() => {
+            this.drawFaceOverlay(this.detectedLandmarks, this.overlayCanvasRef.current, this.detectedImage);
+          });
+        }
+        
+        setTimeout(() => {
+          this.setState({ showGrid: false });
+          // مسح الشبكة بعد الاختفاء
+          if (this.overlayCanvasRef.current) {
+            const ctx = this.overlayCanvasRef.current.getContext('2d');
+            ctx.clearRect(0, 0, this.overlayCanvasRef.current.width, this.overlayCanvasRef.current.height);
+          }
+          
+          setTimeout(() => {
+            // Step 4: Focus on eyes (1200ms)
+            this.focusOnEyes();
+          }, 100);
+        }, 400);
+      }, 600);
+    }, 800);
+  };
+
+  focusOnEyes = () => {
+    const { detectedRegions } = this.state;
+    const eyes = detectedRegions.eyes;
+    
+    // Calculate zoom transform
+    const scale = 2.2;
+    const translateX = (50 - eyes.centerX) / scale;
+    const translateY = (50 - eyes.centerY) / scale;
+    
+    // Calculate eye highlight (larger circle covering both eyes)
+    const eyeHighlightWidth = Math.max(eyes.width * 1.5, 25);
+    const eyeHighlightHeight = eyes.height * 2;
+    
+    // Calculate eyebrow guidelines
+    const leftBrow = detectedRegions.brows.left;
+    const rightBrow = detectedRegions.brows.right;
+    
+    this.setState({
+      zoomTransform: { scale, translateX, translateY, transitionDuration: 1.2 },
+      showEyeHighlight: true,
+      eyeHighlightStyle: {
+        left: eyes.centerX,
+        top: eyes.centerY,
+        width: eyeHighlightWidth,
+        height: eyeHighlightHeight
+      },
+      showEyebrowGuidelines: true,
+      eyebrowGuidelinesStyle: [
+        {
+          left: leftBrow.left,
+          top: leftBrow.top + leftBrow.height / 2,
+          width: leftBrow.width
+        },
+        {
+          left: rightBrow.left,
+          top: rightBrow.top + rightBrow.height / 2,
+          width: rightBrow.width
+        }
+      ],
+      showEyeLabel: true,
+      eyeLabelStyle: {
+        left: eyes.centerX,
+        top: eyes.top - 5
+      },
+      statusText: 'جار تحليل العينين والحاجبين'
+    });
+    
+    setTimeout(() => {
+      // Step 5: Hold (400ms)
+      setTimeout(() => {
+        // Step 6: Transition to nose (800ms)
+        this.transitionToNose();
+      }, 400);
+    }, 1200);
+  };
+
+  transitionToNose = () => {
+    const { detectedRegions } = this.state;
+    const nose = detectedRegions.nose;
+    
+    const scale = 2.5;
+    const translateX = (50 - nose.centerX) / scale;
+    const translateY = (50 - nose.centerY) / scale;
+    
+    this.setState({
+      zoomTransform: { scale, translateX, translateY, transitionDuration: 0.8 },
+      showEyeHighlight: false,
+      showEyebrowGuidelines: false,
+      showEyeLabel: false
+    });
+    
+    setTimeout(() => {
+      // Step 7: Analyze nose (1000ms)
+      this.setState({
+        showNoseGuidelines: true,
+        noseGuidelinesStyle: [
+          {
+            left: nose.centerX - 3,
+            top: nose.top,
+            height: nose.height
+          },
+          {
+            left: nose.centerX,
+            top: nose.top,
+            height: nose.height
+          },
+          {
+            left: nose.centerX + 3,
+            top: nose.top,
+            height: nose.height
+          }
+        ],
+        showNoseLabel: true,
+        noseLabelStyle: {
+          left: nose.centerX,
+          top: nose.top - 5
+        },
+        statusText: 'تحليل الأنف والمسام'
+      });
+      
+      setTimeout(() => {
+        // Step 8: Transition to mouth (700ms)
+        this.transitionToMouth();
+      }, 1000);
+    }, 800);
+  };
+
+  transitionToMouth = () => {
+    const { detectedRegions } = this.state;
+    const mouth = detectedRegions.mouth;
+    
+    const scale = 2.3;
+    const translateX = (50 - mouth.centerX) / scale;
+    const translateY = (50 - mouth.centerY) / scale;
+    
+    this.setState({
+      zoomTransform: { scale, translateX, translateY, transitionDuration: 0.7 },
+      showNoseGuidelines: false,
+      showNoseLabel: false
+    });
+    
+    setTimeout(() => {
+      // Step 9: Analyze mouth (1000ms)
+      this.setState({
+        showMouthOutline: true,
+        mouthOutlineStyle: {
+          left: mouth.left - 2,
+          top: mouth.top - 2,
+          width: mouth.width + 4,
+          height: mouth.height + 4
+        },
+        showMouthLabel: true,
+        mouthLabelStyle: {
+          left: mouth.centerX,
+          top: mouth.top - 5
+        },
+        statusText: 'تحليل حالة الشفاه'
+      });
+      
+      setTimeout(() => {
+        // Step 10: Zoom out to full face (1500ms)
+        this.zoomOutToFullFace();
+      }, 1000);
+    }, 700);
+  };
+
+  zoomOutToFullFace = () => {
+    this.setState({
+      zoomTransform: { scale: 1, translateX: 0, translateY: 0, transitionDuration: 1.5 },
+      showMouthOutline: false,
+      showMouthLabel: false,
+      showFaceBox: false,
+      statusText: '',
+      showDarkOverlay: false
+    });
+    
+    setTimeout(() => {
+      // Step 11: Show results card
+      this.setState({
+        showResultsCard: true
+      });
+      
+      // إرسال نتائج التحليل بعد انتهاء الرسوم المتحركة
+      if (this.props.onAnalysisComplete && this.pendingAnalysis) {
+        this.props.onAnalysisComplete(this.pendingAnalysis);
+      }
     }, 1500);
   };
 
@@ -1240,9 +1626,22 @@ class FaceAnalysis extends Component {
     this.setState({ 
       capturedImage: null, 
       showOverlay: false,
-      zoomRegion: null,
       zoomTransform: null,
-      zoomSequence: []
+      animationStep: 0,
+      showDarkOverlay: false,
+      statusText: '',
+      showFaceBox: false,
+      faceBoxStyle: null,
+      showGrid: false,
+      showEyeHighlight: false,
+      showEyebrowGuidelines: false,
+      showEyeLabel: false,
+      showNoseGuidelines: false,
+      showNoseLabel: false,
+      showMouthOutline: false,
+      showMouthLabel: false,
+      showResultsCard: false,
+      detectedRegions: null
     });
     if (this.overlayCanvasRef.current) {
       const ctx = this.overlayCanvasRef.current.getContext('2d');
@@ -1267,18 +1666,85 @@ class FaceAnalysis extends Component {
             show={showVideo}
           />
           <Canvas ref={this.canvasRef} show={false} />
-          <CapturedImage 
-            ref={this.imageRef}
-            src={capturedImage}
-            alt="Captured face"
-            show={showImage}
-            zoomRegion={this.state.zoomRegion}
-            zoomTransform={this.state.zoomTransform}
-          />
-          <OverlayCanvas 
-            ref={this.overlayCanvasRef}
-            show={showImage && (isAnalyzing || this.state.showOverlay)}
-          />
+          <ImageWrapper>
+            <CapturedImage 
+              ref={this.imageRef}
+              src={capturedImage}
+              alt="Captured face"
+              show={showImage}
+              zoomTransform={this.state.zoomTransform}
+              transitionDuration={this.state.zoomTransform?.transitionDuration || 0.8}
+              transformOrigin="center center"
+            />
+            <DarkOverlay 
+              show={showImage}
+              visible={this.state.showDarkOverlay}
+            />
+            <AnalysisStatusText 
+              visible={!!this.state.statusText}
+            >
+              {this.state.statusText}
+            </AnalysisStatusText>
+            <FaceDetectionBox
+              visible={this.state.showFaceBox}
+              boxStyle={this.state.faceBoxStyle}
+            />
+            <GridOverlay
+              ref={this.overlayCanvasRef}
+              show={showImage && (isAnalyzing || this.state.showOverlay)}
+              visible={this.state.showGrid}
+            />
+            {this.state.showEyeHighlight && (
+              <EyeHighlight
+                visible={this.state.showEyeHighlight}
+                style={this.state.eyeHighlightStyle}
+              />
+            )}
+            {this.state.showEyebrowGuidelines && this.state.eyebrowGuidelinesStyle?.map((style, idx) => (
+              <EyebrowGuidelines
+                key={idx}
+                visible={this.state.showEyebrowGuidelines}
+                style={style}
+              />
+            ))}
+            {this.state.showEyeLabel && (
+              <RegionLabel
+                visible={this.state.showEyeLabel}
+                style={this.state.eyeLabelStyle}
+              >
+                جار تحليل العينين والحاجبين
+              </RegionLabel>
+            )}
+            {this.state.showNoseGuidelines && this.state.noseGuidelinesStyle?.map((style, idx) => (
+              <NoseGuidelines
+                key={idx}
+                visible={this.state.showNoseGuidelines}
+                style={style}
+              />
+            ))}
+            {this.state.showNoseLabel && (
+              <RegionLabel
+                visible={this.state.showNoseLabel}
+                style={this.state.noseLabelStyle}
+              >
+                تحليل الأنف والمسام
+              </RegionLabel>
+            )}
+            {this.state.showMouthOutline && (
+              <MouthOutline
+                visible={this.state.showMouthOutline}
+                style={this.state.mouthOutlineStyle}
+              />
+            )}
+            {this.state.showMouthLabel && (
+              <RegionLabel
+                visible={this.state.showMouthLabel}
+                style={this.state.mouthLabelStyle}
+              >
+                تحليل حالة الشفاه
+              </RegionLabel>
+            )}
+          </ImageWrapper>
           {(isAnalyzing || modelsLoading) && (
             <LoadingOverlay>
               {modelsLoading ? 'جاري تحميل النماذج...' : 'جاري تحليل الوجه...'}
@@ -1325,6 +1791,15 @@ class FaceAnalysis extends Component {
             </>
           )}
         </Controls>
+        
+        <ResultsCard visible={this.state.showResultsCard}>
+          <div style={{ textAlign: 'center', padding: '0.2rem' }}>
+            <h2 style={{ margin: '0 0 0.1rem 0', color: '#667eea' }}>✓ اكتمل تحليل البشرة</h2>
+            <p style={{ margin: 0, color: '#666', fontSize: '0.16rem' }}>
+              تم تحليل جميع المناطق بنجاح
+            </p>
+          </div>
+        </ResultsCard>
       </Container>
     );
   }
