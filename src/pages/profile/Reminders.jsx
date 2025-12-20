@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import styled from "styled-components";
 import BottomNav from "../../components/bottomNav/BottomNav";
+import { getRemindersForTreatment, parseArabicDate, getTreatmentIcon } from "../../utils/remindersData";
 
 const RemindersContainer = styled.div`
   min-height: 100vh;
@@ -225,102 +226,107 @@ const EmptyState = styled.div`
 @withRouter
 class Reminders extends Component {
   state = {
-    bookings: [
-      {
-        id: 1,
-        serviceName: "ليزر إزالة الشعر",
-        serviceIcon: "💫",
-        bookingDate: new Date("2025-01-15T10:00:00"),
-        reminders: [
-          {
-            id: 1,
-            text: "لا تستخدمي كريم خلال 24 ساعة",
-            duration: 24, // ساعات
-            type: "restriction",
-            active: true
-          },
-          {
-            id: 2,
-            text: "لا استحمام ساخن خلال 24 ساعة",
-            duration: 24,
-            type: "restriction",
-            active: true
-          },
-          {
-            id: 3,
-            text: "لا تقشير خلال 3 أيام",
-            duration: 72, // ساعات (3 أيام)
-            type: "restriction",
-            active: true
-          }
-        ]
-      },
-      {
-        id: 2,
-        serviceName: "ليزر فراكشنال",
-        serviceIcon: "✨",
-        bookingDate: new Date("2025-01-14T14:00:00"),
-        reminders: [
-          {
-            id: 1,
-            text: "استخدمي واقي الشمس SPF 50+",
-            duration: 168, // 7 أيام
-            type: "care",
-            active: true
-          },
-          {
-            id: 2,
-            text: "تجنبي التعرض المباشر للشمس",
-            duration: 168,
-            type: "restriction",
-            active: true
-          },
-          {
-            id: 3,
-            text: "لا تقشير أو استخدام منتجات حامضية",
-            duration: 120, // 5 أيام
-            type: "restriction",
-            active: true
-          },
-          {
-            id: 4,
-            text: "استخدمي مرطب خفيف فقط",
-            duration: 72, // 3 أيام
-            type: "care",
-            active: true
-          }
-        ]
-      },
-      {
-        id: 3,
-        serviceName: "بوتوكس الجبهة",
-        serviceIcon: "💉",
-        bookingDate: new Date("2025-01-10T11:00:00"),
-        reminders: [
-          {
-            id: 1,
-            text: "لا تلمسي المنطقة المحقونة",
-            duration: 4, // ساعات
-            type: "restriction",
-            active: false // مكتمل
-          },
-          {
-            id: 2,
-            text: "لا تميلي رأسك للأسفل",
-            duration: 4,
-            type: "restriction",
-            active: false
-          },
-          {
-            id: 3,
-            text: "تجنبي التمارين الرياضية",
-            duration: 24,
-            type: "restriction",
-            active: false
-          }
-        ]
+    bookings: []
+  };
+
+  componentDidMount() {
+    // جلب الحجوزات من localStorage أو استخدام بيانات افتراضية
+    this.loadBookings();
+  }
+
+  loadBookings = () => {
+    // محاولة جلب الحجوزات من localStorage
+    const savedBookings = localStorage.getItem('userBookings');
+    let bookingsData = [];
+    
+    if (savedBookings) {
+      try {
+        bookingsData = JSON.parse(savedBookings);
+      } catch (e) {
+        console.error('Error parsing saved bookings:', e);
       }
-    ]
+    }
+    
+    // إذا لم توجد حجوزات محفوظة، استخدم البيانات الافتراضية
+    if (bookingsData.length === 0) {
+      bookingsData = [
+        {
+          id: 1,
+          clinicName: "عيادة الجمال الحديث",
+          treatment: "فيلر الشفاه",
+          date: "الأربعاء، 18 ديسمبر 2025",
+          time: "10:30 صباحاً",
+          doctor: "د. أحمد الخالدي",
+          status: "confirmed",
+          statusText: "مؤكد",
+          price: "500 ر.س",
+          emoji: "💉"
+        },
+        {
+          id: 2,
+          clinicName: "مركز النخبة للتجميل",
+          treatment: "تنظيف البشرة العميق",
+          date: "السبت، 21 ديسمبر 2025",
+          time: "2:00 مساءً",
+          doctor: "د. سارة المنصور",
+          status: "pending",
+          statusText: "بانتظار التأكيد",
+          price: "350 ر.س",
+          emoji: "✨"
+        },
+        {
+          id: 5,
+          clinicName: "عيادة الجمال الحديث",
+          treatment: "ليزر إزالة الشعر",
+          date: "بكرا",
+          time: "10:00 صباحاً",
+          doctor: "د. أحمد الخالدي",
+          status: "confirmed",
+          statusText: "مؤكد",
+          price: "600 ر.س",
+          emoji: "💫"
+        },
+        {
+          id: 6,
+          clinicName: "مركز النخبة للتجميل",
+          treatment: "ليزر فراكشنال",
+          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString('ar-SA', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          time: "2:00 مساءً",
+          doctor: "د. سارة المنصور",
+          status: "completed",
+          statusText: "مكتمل",
+          price: "1200 ر.س",
+          emoji: "✨"
+        }
+      ];
+    }
+    
+    // تحويل الحجوزات إلى تذكيرات
+    // فقط الحجوزات المكتملة (completed) لها تذكيرات
+    const bookingsWithReminders = bookingsData
+      .filter(booking => booking.status === "completed")
+      .map(booking => {
+        const bookingDate = parseArabicDate(booking.date, booking.time);
+        const reminders = getRemindersForTreatment(booking.treatment);
+        const serviceIcon = booking.emoji || getTreatmentIcon(booking.treatment);
+        
+        return {
+          id: booking.id,
+          serviceName: booking.treatment,
+          serviceIcon: serviceIcon,
+          bookingDate: bookingDate,
+          clinicName: booking.clinicName,
+          doctor: booking.doctor,
+          reminders: reminders
+        };
+      });
+    
+    this.setState({ bookings: bookingsWithReminders });
   };
 
   getReminderStatus = (bookingDate, duration) => {
@@ -355,17 +361,25 @@ class Reminders extends Component {
     const { bookings } = this.state;
     
     // فلترة التذكيرات النشطة فقط
-    const activeBookings = bookings.map(booking => {
-      const activeReminders = booking.reminders.filter(reminder => {
-        const status = this.getReminderStatus(booking.bookingDate, reminder.duration);
-        return status.active;
-      });
-      
-      return {
-        ...booking,
-        reminders: activeReminders
-      };
-    }).filter(booking => booking.reminders.length > 0);
+    // فقط الحجوزات التي تمت (bookingDate في الماضي) لها تذكيرات
+    const now = new Date();
+    const activeBookings = bookings
+      .filter(booking => {
+        // فقط الحجوزات التي تمت (في الماضي)
+        return booking.bookingDate < now;
+      })
+      .map(booking => {
+        const activeReminders = booking.reminders.filter(reminder => {
+          const status = this.getReminderStatus(booking.bookingDate, reminder.duration);
+          return status.active;
+        });
+        
+        return {
+          ...booking,
+          reminders: activeReminders
+        };
+      })
+      .filter(booking => booking.reminders.length > 0);
 
     return (
       <RemindersContainer>
@@ -379,7 +393,12 @@ class Reminders extends Component {
         {activeBookings.length === 0 ? (
           <EmptyState>
             <div className="empty-icon">📭</div>
-            <div className="empty-text">لا توجد تذكيرات نشطة حالياً</div>
+            <div className="empty-text" style={{ fontSize: '0.22rem', color: '#999', marginTop: '0.15rem' }}>
+              لا توجد تذكيرات نشطة حالياً
+            </div>
+            <div style={{ fontSize: '0.18rem', color: '#bbb', marginTop: '0.1rem' }}>
+              ستظهر التذكيرات بعد إتمام الحجوزات
+            </div>
           </EmptyState>
         ) : (
           activeBookings.map((booking) => {
@@ -410,6 +429,11 @@ class Reminders extends Component {
                 
                 <div className="booking-date">
                   تاريخ الحجز: {this.formatDate(booking.bookingDate)}
+                  {booking.clinicName && (
+                    <span style={{ marginRight: '0.1rem', color: '#999' }}>
+                      • {booking.clinicName}
+                    </span>
+                  )}
                 </div>
 
                 <div className="reminders-list">

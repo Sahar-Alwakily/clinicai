@@ -656,6 +656,18 @@ class Bookings extends Component {
           statusText: "بانتظار التأكيد",
           price: "350 ر.س",
           emoji: "✨"
+        },
+        {
+          id: 5,
+          clinicName: "عيادة الجمال الحديث",
+          treatment: "ليزر إزالة الشعر",
+          date: "بكرا",
+          time: "10:00 صباحاً",
+          doctor: "د. أحمد الخالدي",
+          status: "confirmed",
+          statusText: "مؤكد",
+          price: "600 ر.س",
+          emoji: "💫"
         }
       ],
       completed: [
@@ -670,6 +682,26 @@ class Bookings extends Component {
           statusText: "مكتمل",
           price: "800 ر.س",
           emoji: "💆"
+        },
+        {
+          id: 6,
+          clinicName: "مركز النخبة للتجميل",
+          treatment: "ليزر فراكشنال",
+          date: (() => {
+            const date = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+            return date.toLocaleDateString('ar-SA', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            });
+          })(),
+          time: "2:00 مساءً",
+          doctor: "د. سارة المنصور",
+          status: "completed",
+          statusText: "مكتمل",
+          price: "1200 ر.س",
+          emoji: "✨"
         }
       ],
       cancelled: [
@@ -689,9 +721,36 @@ class Bookings extends Component {
     },
     stats: {
       total: 12,
-      upcoming: 2,
-      completed: 8,
+      upcoming: 3,
+      completed: 9,
       cancelled: 2
+    }
+  };
+
+  componentDidMount() {
+    // حفظ الحجوزات في localStorage لمشاركتها مع Reminders
+    this.saveBookingsToStorage();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    // حفظ الحجوزات عند التحديث
+    if (prevState.bookings !== this.state.bookings) {
+      this.saveBookingsToStorage();
+    }
+  }
+
+  saveBookingsToStorage = () => {
+    // دمج جميع الحجوزات في مصفوفة واحدة
+    const allBookings = [
+      ...this.state.bookings.upcoming,
+      ...this.state.bookings.completed,
+      ...this.state.bookings.cancelled
+    ];
+    
+    try {
+      localStorage.setItem('userBookings', JSON.stringify(allBookings));
+    } catch (e) {
+      console.error('Error saving bookings to localStorage:', e);
     }
   };
 
