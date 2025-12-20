@@ -219,6 +219,16 @@ class SkinAnalysis extends Component {
       recommendations.push("حماية إضافية من أشعة الشمس");
     }
     
+    // توصيات بناءً على الحواجب
+    if (analysis.eyebrows && analysis.eyebrows.needsCorrection) {
+      recommendations.push("تصحيح شكل الحواجب لتحسين التناسق");
+    }
+    
+    // توصيات بناءً على الفم
+    if (analysis.mouth && analysis.mouth.needsFiller) {
+      recommendations.push(analysis.mouth.recommendation || "استخدام فيلر للشفاه");
+    }
+    
     if (recommendations.length === 0) {
       recommendations.push("المحافظة على نظام عناية يومي منتظم");
       recommendations.push("شرب الماء بكميات كافية");
@@ -328,6 +338,50 @@ class SkinAnalysis extends Component {
                 خطوط الجبهة: {aiAnalysis.facialLines.forehead}
               </div>
             </AnalysisItem>
+
+            {aiAnalysis.eyebrows && (
+              <AnalysisItem>
+                <div className="item-label">الحواجب</div>
+                <div className="item-value">
+                  <Badge type={aiAnalysis.eyebrows.needsCorrection ? 'warning' : 'success'}>
+                    {aiAnalysis.eyebrows.symmetry}
+                  </Badge>
+                  {aiAnalysis.eyebrows.needsCorrection && (
+                    <Badge type="danger" style={{ marginRight: '0.05rem' }}>
+                      تحتاج تصحيح
+                    </Badge>
+                  )}
+                </div>
+                <div className="item-description">
+                  الفرق في الارتفاع: {aiAnalysis.eyebrows.heightDifference}% | 
+                  النتيجة: {aiAnalysis.eyebrows.score}/100
+                </div>
+              </AnalysisItem>
+            )}
+
+            {aiAnalysis.mouth && (
+              <AnalysisItem>
+                <div className="item-label">الفم</div>
+                <div className="item-value">
+                  الحجم: {aiAnalysis.mouth.size}
+                  {aiAnalysis.mouth.needsFiller && (
+                    <Badge type="warning" style={{ marginRight: '0.05rem' }}>
+                      يحتاج فيلر
+                    </Badge>
+                  )}
+                </div>
+                <div className="item-description">
+                  العرض: {aiAnalysis.mouth.width} | 
+                  الارتفاع: {aiAnalysis.mouth.height} | 
+                  السماكة: {aiAnalysis.mouth.thickness}
+                  {aiAnalysis.mouth.recommendation && (
+                    <div style={{ marginTop: '0.05rem', color: '#c62828', fontWeight: 500 }}>
+                      💡 {aiAnalysis.mouth.recommendation}
+                    </div>
+                  )}
+                </div>
+              </AnalysisItem>
+            )}
 
             <AnalysisItem>
               <div className="item-label">التوصيات</div>
