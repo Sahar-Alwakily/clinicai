@@ -37,14 +37,32 @@ export const analyzeAdvancedSkin = (imageElement, landmarks, ctx) => {
   const sebumAnalysis = analyzeSebum(canvasCtx, tzonePoints, canvas.width, canvas.height);
   const hydrationAnalysis = analyzeHydration(canvasCtx, cheekRegion, canvas.width, canvas.height);
 
-  // تحديد نوع البشرة
+  // تحديد نوع البشرة - منطق محسّن يعطي الأولوية للزهم في T-zone
   let skinType = 'مختلطة';
-  if (sebumAnalysis.level === 'عالي') {
+  const sebumScore = sebumAnalysis.score || 0;
+  const hydrationScore = hydrationAnalysis.score || 0;
+  const poreScore = poreAnalysis.score || 0;
+  
+  // المعايير المحسّنة:
+  // 1. البشرة الدهنية: زهم عالي في T-zone + مسام كبيرة
+  if (sebumScore > 65 || (sebumScore > 55 && poreScore > 50)) {
     skinType = 'دهنية';
-  } else if (hydrationAnalysis.level === 'جاف') {
+  } 
+  // 2. البشرة الجافة: زهم منخفض جداً + ترطيب منخفض + نسيج خشن
+  else if (sebumScore < 35 && hydrationScore < 40 && textureAnalysis.score < 50) {
     skinType = 'جافة';
-  } else if (textureAnalysis.sensitivity > 70) {
+  }
+  // 3. البشرة الحساسة: حساسية عالية
+  else if (textureAnalysis.sensitivity > 70) {
     skinType = 'حساسة';
+  }
+  // 4. البشرة المختلطة: زهم متوسط في T-zone وترطيب متوسط في الخدود
+  else if ((sebumScore > 45 && sebumScore < 65) && (hydrationScore > 40 && hydrationScore < 70)) {
+    skinType = 'مختلطة';
+  }
+  // 5. البشرة العادية: توازن جيد
+  else if (sebumScore > 40 && sebumScore < 60 && hydrationScore > 50 && hydrationScore < 75) {
+    skinType = 'عادية';
   }
 
   return {
@@ -226,39 +244,152 @@ function analyzePores(ctx, region, width, height) {
 }
 
 function analyzeSebum(ctx, region, width, height) {
-  // تحليل إفراز الزهم (الدهون)
+  // تحليل إفراز الزهم (الدهون) - محسّن
   let totalBrightness = 0;
+  let totalSaturation = 0;
+  let totalVariation = 0;
   let count = 0;
-  const sampleSize = Math.min(15, region.length);
+  const sampleSize = Math.min(20, region.length);
+  const sampleRadius = 3; // عينة أكبر للمنطقة المحيطة
 
   for (let i = 0; i < sampleSize; i++) {
     const point = region[i];
     const x = Math.floor(point.x);
     const y = Math.floor(point.y);
     
-    if (x >= 0 && x < width && y >= 0 && y < height) {
-      const imgData = ctx.getImageData(x, y, 1, 1);
-      const brightness = (imgData.data[0] + imgData.data[1] + imgData.data[2]) / 3;
-      totalBrightness += brightness;
+    if (x >= sampleRadius && x < width - sampleRadius && y >= sampleRadius && y < height - sampleRadius) {
+      // أخذ عينة أكبر (3x3) لتحليل أفضل
+      const imgData = ctx.getImageData(x - sampleRadius, y - sampleRadius, sampleRadius * 2 + 1, sampleRadius * 2 + 1);
+      const data = imgData.data;
+      
+      let regionBrightness = 0;
+      let regionSaturation = 0;
+      let maxB = 0, minB = 255;
+      
+      for (let j = 0; j < data.length; j += 4) {
+        const r = data[j];
+        const g = data[j + 1];
+        const b = data[j + 2];
+        const brightness = (r + g + b) / 3;
+        
+        regionBrightness += brightness;
+        maxB = Math.max(maxB, brightness);
+        minB = Math.min(minB, brightness);
+        
+        // حساب التشبع (saturation) - البشرة الدهنية لها لمعان أعلى
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const saturation = max === 0 ? 0 : (max - min) / max;
+        regionSaturation += saturation;
+      }
+      
+      const pixelCount = (sampleRadius * 2 + 1) * (sampleRadius * 2 + 1);
+      const avgBrightness = regionBrightness / pixelCount;
+      const avgSaturation = regionSaturation / pixelCount;
+      const variation = (maxB - minB); // التباين في اللمعان
+      
+      totalBrightness += avgBrightness;
+      totalSaturation += avgSaturation;
+      totalVariation += variation;
       count++;
     }
   }
 
-  const avgBrightness = count > 0 ? totalBrightness / count : 128;
-  // البشرة الدهنية تكون أكثر إشراقاً
-  const level = avgBrightness > 180 ? 'عالي' : avgBrightness > 150 ? 'متوسط' : 'منخفض';
-  const score = Math.round((avgBrightness / 255) * 100);
+  if (count === 0) {
+    return { level: 'متوسط', score: 50 };
+  }
 
-  return { level, score };
+  const avgBrightness = totalBrightness / count;
+  const avgSaturation = totalSaturation / count;
+  const avgVariation = totalVariation / count;
+  
+  // حساب معقد للزهم: 
+  // البشرة الدهنية = سطوع عالي + تشبع منخفض (لمعان) + تباين منخفض (سطح أملس لامع)
+  // معاملات مرجحة
+  const brightnessFactor = (avgBrightness / 255) * 40; // حتى 40 نقطة
+  const saturationFactor = (1 - avgSaturation) * 30; // حتى 30 نقطة (التشبع المنخفض = لمعان أعلى)
+  const variationFactor = Math.max(0, 30 - (avgVariation / 255) * 30); // حتى 30 نقطة (التباين المنخفض = سطح أملس)
+  
+  const sebumScore = Math.min(100, Math.round(brightnessFactor + saturationFactor + variationFactor));
+  
+  // تحديد المستوى بناءً على النتيجة المحسوبة
+  let level = 'متوسط';
+  if (sebumScore > 65) {
+    level = 'عالي';
+  } else if (sebumScore > 45) {
+    level = 'متوسط';
+  } else {
+    level = 'منخفض';
+  }
+
+  return { level, score: sebumScore };
 }
 
 function analyzeHydration(ctx, region, width, height) {
-  // تحليل الترطيب (تقريبي بناءً على النعومة)
-  const texture = analyzeTexture(ctx, region, width, height);
-  const level = texture.score > 70 ? 'رطب' : texture.score > 40 ? 'طبيعي' : 'جاف';
-  const score = texture.score;
+  // تحليل الترطيب - محسّن بناءً على السطوع والنسيج
+  let totalBrightness = 0;
+  let totalSmoothness = 0;
+  let count = 0;
+  const sampleSize = Math.min(20, region.length);
+  const sampleRadius = 2;
 
-  return { level, score };
+  for (let i = 0; i < sampleSize; i++) {
+    const point = region[i];
+    const x = Math.floor(point.x);
+    const y = Math.floor(point.y);
+    
+    if (x >= sampleRadius && x < width - sampleRadius && y >= sampleRadius && y < height - sampleRadius) {
+      const imgData = ctx.getImageData(x - sampleRadius, y - sampleRadius, sampleRadius * 2 + 1, sampleRadius * 2 + 1);
+      const data = imgData.data;
+      
+      let regionBrightness = 0;
+      let maxB = 0, minB = 255;
+      
+      for (let j = 0; j < data.length; j += 4) {
+        const r = data[j];
+        const g = data[j + 1];
+        const b = data[j + 2];
+        const brightness = (r + g + b) / 3;
+        
+        regionBrightness += brightness;
+        maxB = Math.max(maxB, brightness);
+        minB = Math.min(minB, brightness);
+      }
+      
+      const pixelCount = (sampleRadius * 2 + 1) * (sampleRadius * 2 + 1);
+      const avgBrightness = regionBrightness / pixelCount;
+      const smoothness = 255 - (maxB - minB); // النعومة (التناسق في السطوع)
+      
+      totalBrightness += avgBrightness;
+      totalSmoothness += smoothness;
+      count++;
+    }
+  }
+
+  if (count === 0) {
+    return { level: 'طبيعي', score: 50 };
+  }
+
+  const avgBrightness = totalBrightness / count;
+  const avgSmoothness = totalSmoothness / count;
+  
+  // البشرة الرطبة = سطوع جيد + نعومة عالية (سطح أملس)
+  // البشرة الجافة = سطوع منخفض + خشونة (سطح خشن)
+  const brightnessFactor = (avgBrightness / 255) * 50;
+  const smoothnessFactor = (avgSmoothness / 255) * 50;
+  
+  const hydrationScore = Math.min(100, Math.round((brightnessFactor + smoothnessFactor) / 2));
+  
+  let level = 'طبيعي';
+  if (hydrationScore > 70) {
+    level = 'رطب';
+  } else if (hydrationScore > 40) {
+    level = 'طبيعي';
+  } else {
+    level = 'جاف';
+  }
+
+  return { level, score: hydrationScore };
 }
 
 function analyzeAcne(ctx, positions, width, height) {
