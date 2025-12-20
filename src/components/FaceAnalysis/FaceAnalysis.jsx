@@ -70,53 +70,7 @@ const CapturedImage = styled.img`
   }}
 `;
 
-const DarkOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: ${props => props.visible ? 'rgba(0, 0, 0, 0.3)' : 'transparent'};
-  transition: background 0.3s ease;
-  pointer-events: none;
-  z-index: 3;
-  border-radius: 0.15rem;
-  display: ${props => props.show ? 'block' : 'none'};
-`;
-
-const AnalysisStatusText = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 0.24rem;
-  font-weight: 600;
-  text-align: center;
-  z-index: 4;
-  pointer-events: none;
-  display: ${props => props.visible ? 'block' : 'none'};
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-`;
-
-const FaceDetectionBox = styled.div`
-  position: absolute;
-  border: 2px solid rgba(102, 126, 234, 0.6);
-  border-radius: 0.1rem;
-  pointer-events: none;
-  z-index: 6;
-  transition: opacity 0.3s ease;
-  opacity: ${props => props.visible ? 1 : 0};
-  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
-  ${props => props.boxStyle ? `
-    left: ${props.boxStyle.left}%;
-    top: ${props.boxStyle.top}%;
-    width: ${props.boxStyle.width}%;
-    height: ${props.boxStyle.height}%;
-  ` : ''}
-`;
-
-const GridOverlay = styled.canvas`
+const AnalysisOverlayCanvas = styled.canvas`
   position: absolute;
   top: 0;
   left: 0;
@@ -124,91 +78,24 @@ const GridOverlay = styled.canvas`
   height: 100%;
   pointer-events: none;
   z-index: 5;
-  opacity: ${props => props.visible ? 0.35 : 0};
-  transition: opacity 0.2s ease;
   display: ${props => props.show ? 'block' : 'none'};
 `;
 
-const EyeHighlight = styled.div`
+const AnalysisStatusText = styled.div`
   position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, transparent 70%);
-  pointer-events: none;
+  top: 0.15rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.18rem;
+  font-weight: 400;
+  text-align: center;
   z-index: 6;
-  opacity: ${props => props.visible ? 1 : 0};
-  transition: opacity 0.3s ease;
-  ${props => props.style ? `
-    left: ${props.style.left}%;
-    top: ${props.style.top}%;
-    width: ${props.style.width}%;
-    height: ${props.style.height}%;
-    transform: translate(-50%, -50%);
-  ` : ''}
-`;
-
-const EyebrowGuidelines = styled.div`
-  position: absolute;
-  height: 1px;
-  background: rgba(102, 126, 234, 0.4);
   pointer-events: none;
-  z-index: 7;
-  opacity: ${props => props.visible ? 1 : 0};
-  transition: opacity 0.3s ease;
-  ${props => props.style ? `
-    left: ${props.style.left}%;
-    top: ${props.style.top}%;
-    width: ${props.style.width}%;
-  ` : ''}
-`;
-
-const RegionLabel = styled.div`
-  position: absolute;
-  background: rgba(102, 126, 234, 0.9);
-  color: white;
-  padding: 0.08rem 0.16rem;
-  border-radius: 0.08rem;
-  font-size: 0.16rem;
-  font-weight: 500;
-  pointer-events: none;
-  z-index: 8;
-  opacity: ${props => props.visible ? 1 : 0};
-  transition: opacity 0.3s ease;
-  ${props => props.style ? `
-    left: ${props.style.left}%;
-    top: ${props.style.top}%;
-    transform: translate(-50%, 0);
-  ` : ''}
-`;
-
-const NoseGuidelines = styled.div`
-  position: absolute;
-  width: 1px;
-  background: rgba(102, 126, 234, 0.4);
-  pointer-events: none;
-  z-index: 7;
-  opacity: ${props => props.visible ? 1 : 0};
-  transition: opacity 0.3s ease;
-  ${props => props.style ? `
-    left: ${props.style.left}%;
-    top: ${props.style.top}%;
-    height: ${props.style.height}%;
-  ` : ''}
-`;
-
-const MouthOutline = styled.div`
-  position: absolute;
-  border: 2px dashed rgba(236, 72, 153, 0.5);
-  border-radius: 0.05rem;
-  pointer-events: none;
-  z-index: 7;
-  opacity: ${props => props.visible ? 1 : 0};
-  transition: opacity 0.3s ease;
-  ${props => props.style ? `
-    left: ${props.style.left}%;
-    top: ${props.style.top}%;
-    width: ${props.style.width}%;
-    height: ${props.style.height}%;
-  ` : ''}
+  display: ${props => props.visible ? 'block' : 'none'};
+  letter-spacing: 0.02rem;
+  text-transform: uppercase;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
 `;
 
 const ResultsCard = styled.div`
@@ -216,14 +103,33 @@ const ResultsCard = styled.div`
   bottom: ${props => props.visible ? '0' : '-100%'};
   left: 0;
   right: 0;
-  background: white;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
   border-radius: 0.2rem 0.2rem 0 0;
   padding: 0.3rem;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   transition: bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   max-height: 60vh;
   overflow-y: auto;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+`;
+
+const MetricsChart = styled.div`
+  position: absolute;
+  bottom: 0.2rem;
+  left: 0.15rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 0.1rem;
+  padding: 0.1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 7;
+  opacity: ${props => props.visible ? 1 : 0};
+  transition: opacity 0.4s ease;
+  pointer-events: none;
 `;
 
 const Controls = styled.div`
@@ -325,31 +231,15 @@ class FaceAnalysis extends Component {
     showOverlay: false,
     
     // Animation states
-    animationStep: 0, // Current step in animation sequence
-    showDarkOverlay: false,
+    animationStep: 0,
     statusText: '',
-    showFaceBox: false,
-    faceBoxStyle: null,
-    showGrid: false,
-    showEyeHighlight: false,
-    eyeHighlightStyle: null,
-    showEyebrowGuidelines: false,
-    eyebrowGuidelinesStyle: null,
-    showEyeLabel: false,
-    eyeLabelStyle: null,
-    showNoseGuidelines: false,
-    noseGuidelinesStyle: null,
-    showNoseLabel: false,
-    noseLabelStyle: null,
-    showMouthOutline: false,
-    mouthOutlineStyle: null,
-    showMouthLabel: false,
-    mouthLabelStyle: null,
     zoomTransform: null,
     showResultsCard: false,
+    showMetricsChart: false,
     
     // Detected regions data
-    detectedRegions: null
+    detectedRegions: null,
+    measurements: null
   };
 
   componentDidMount() {
@@ -460,17 +350,17 @@ class FaceAnalysis extends Component {
     this.stopCamera();
   };
 
-  drawFaceOverlay = (landmarks, canvas, image) => {
+  drawMedicalOverlay = (landmarks, canvas, image, step) => {
     if (!canvas || !landmarks || !image) return;
     
     const ctx = canvas.getContext('2d');
     
-    // الحصول على أبعاد الصورة المعروضة (الحجم الفعلي على الشاشة)
+    // الحصول على أبعاد الصورة المعروضة
     const rect = image.getBoundingClientRect();
     const displayWidth = rect.width;
     const displayHeight = rect.height;
     
-    // الحصول على أبعاد الصورة الأصلية (الحجم الفعلي للصورة)
+    // الحصول على أبعاد الصورة الأصلية
     let sourceWidth, sourceHeight;
     if (image.naturalWidth && image.naturalHeight && image.naturalWidth > 0 && image.naturalHeight > 0) {
       sourceWidth = image.naturalWidth;
@@ -479,12 +369,11 @@ class FaceAnalysis extends Component {
       sourceWidth = image.videoWidth;
       sourceHeight = image.videoHeight;
     } else {
-      // إذا لم تكن هناك أبعاد أصلية، استخدم الأبعاد المعروضة
       sourceWidth = displayWidth;
       sourceHeight = displayHeight;
     }
     
-    // ضبط حجم canvas ليطابق حجم الصورة المعروضة
+    // ضبط حجم canvas
     canvas.width = displayWidth;
     canvas.height = displayHeight;
     
@@ -492,14 +381,430 @@ class FaceAnalysis extends Component {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // حساب نسبة التكبير/التصغير
-    // landmarks تأتي بأبعاد الصورة الأصلية (sourceWidth x sourceHeight)
-    // نحتاج لتعديلها لحجم العرض (displayWidth x displayHeight)
     const scaleX = displayWidth / sourceWidth;
     const scaleY = displayHeight / sourceHeight;
     
-    // رسم FaceMesh كامل للوجه (يشمل جميع الخطوط)
-    // تطبيق scale على جميع النقاط
-    this.drawFaceGrid(ctx, landmarks, scaleX, scaleY);
+    // رسم حسب الخطوة الحالية
+    switch(step) {
+      case 'faceLock':
+        this.drawFaceLock(ctx, landmarks, scaleX, scaleY);
+        break;
+      case 'eyes':
+        this.drawEyeAnalysis(ctx, landmarks, scaleX, scaleY);
+        break;
+      case 'nose':
+        this.drawNoseAnalysis(ctx, landmarks, scaleX, scaleY);
+        break;
+      case 'mouth':
+        this.drawMouthAnalysis(ctx, landmarks, scaleX, scaleY);
+        break;
+      case 'metrics':
+        this.drawFullFaceMetrics(ctx, landmarks, scaleX, scaleY);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Helper: Draw dotted line
+  drawDottedLine = (ctx, x1, y1, x2, y2, dashLength = 4, gapLength = 4) => {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const unitX = dx / distance;
+    const unitY = dy / distance;
+    
+    let currentDistance = 0;
+    while (currentDistance < distance) {
+      const startX = x1 + unitX * currentDistance;
+      const startY = y1 + unitY * currentDistance;
+      const endDistance = Math.min(currentDistance + dashLength, distance);
+      const endX = x1 + unitX * endDistance;
+      const endY = y1 + unitY * endDistance;
+      
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      
+      currentDistance += dashLength + gapLength;
+    }
+  };
+
+  // Helper: Draw measurement with label
+  drawMeasurement = (ctx, x1, y1, x2, y2, label, value, unit, offset = 10) => {
+    // Draw dotted measurement line
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.lineWidth = 1;
+    this.drawDottedLine(ctx, x1, y1, x2, y2);
+    
+    // Calculate midpoint for label
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    
+    // Draw label background
+    const text = `${value}${unit}`;
+    ctx.font = '11px "SF Pro Display", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const textMetrics = ctx.measureText(text);
+    const textWidth = textMetrics.width;
+    const textHeight = 14;
+    const padding = 4;
+    
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(midX - textWidth / 2 - padding, midY - offset - textHeight / 2, textWidth + padding * 2, textHeight);
+    
+    // Draw text
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.fillText(text, midX, midY - offset);
+    
+    // Draw label (if provided)
+    if (label) {
+      ctx.font = '9px "SF Pro Display", sans-serif';
+      ctx.fillStyle = 'rgba(200, 220, 255, 0.8)';
+      ctx.fillText(label, midX, midY - offset - 12);
+    }
+  };
+
+  // STEP 1: Face Lock - Grid + Face Box
+  drawFaceLock = (ctx, landmarks, scaleX, scaleY) => {
+    // Draw subtle grid
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 0.5;
+    const gridSize = 30;
+    
+    for (let x = 0; x < ctx.canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, ctx.canvas.height);
+      ctx.stroke();
+    }
+    
+    for (let y = 0; y < ctx.canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(ctx.canvas.width, y);
+      ctx.stroke();
+    }
+    
+    // Draw face bounding box
+    if (this.detectedRegions && this.detectedRegions.face) {
+      const face = this.detectedRegions.face;
+      const boxX = (face.left / 100) * ctx.canvas.width;
+      const boxY = (face.top / 100) * ctx.canvas.height;
+      const boxW = (face.width / 100) * ctx.canvas.width;
+      const boxH = (face.height / 100) * ctx.canvas.height;
+      
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([]);
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+    }
+  };
+
+  // STEP 2: Eye Analysis
+  drawEyeAnalysis = (ctx, landmarks, scaleX, scaleY) => {
+    if (!landmarks || !landmarks.positions) return;
+    const positions = landmarks.positions;
+    if (positions.length < 48) return;
+    
+    const leftEye = positions.slice(36, 42);
+    const rightEye = positions.slice(42, 48);
+    const leftBrow = positions.slice(17, 22);
+    const rightBrow = positions.slice(22, 27);
+    
+    // Estimate pixel to cm ratio (approximate: assuming average face width ~14cm)
+    const faceWidth = Math.abs(positions[16].x - positions[0].x) * scaleX;
+    const pixelToCm = 14 / faceWidth;
+    
+    // Draw eye outlines (thin white lines)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    
+    // Left eye outline
+    ctx.beginPath();
+    ctx.moveTo(leftEye[0].x * scaleX, leftEye[0].y * scaleY);
+    for (let i = 1; i < leftEye.length; i++) {
+      ctx.lineTo(leftEye[i].x * scaleX, leftEye[i].y * scaleY);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // Right eye outline
+    ctx.beginPath();
+    ctx.moveTo(rightEye[0].x * scaleX, rightEye[0].y * scaleY);
+    for (let i = 1; i < rightEye.length; i++) {
+      ctx.lineTo(rightEye[i].x * scaleX, rightEye[i].y * scaleY);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // Eye width measurements
+    const leftEyeWidth = Math.sqrt(
+      Math.pow(leftEye[3].x - leftEye[0].x, 2) + 
+      Math.pow(leftEye[3].y - leftEye[0].y, 2)
+    ) * scaleX * pixelToCm;
+    
+    const rightEyeWidth = Math.sqrt(
+      Math.pow(rightEye[3].x - rightEye[0].x, 2) + 
+      Math.pow(rightEye[3].y - rightEye[0].y, 2)
+    ) * scaleX * pixelToCm;
+    
+    // Draw horizontal measurement lines for eyes
+    this.drawMeasurement(
+      ctx,
+      leftEye[0].x * scaleX, leftEye[1].y * scaleY,
+      leftEye[3].x * scaleX, leftEye[4].y * scaleY,
+      'Width',
+      leftEyeWidth.toFixed(1),
+      'cm',
+      -15
+    );
+    
+    this.drawMeasurement(
+      ctx,
+      rightEye[0].x * scaleX, rightEye[1].y * scaleY,
+      rightEye[3].x * scaleX, rightEye[4].y * scaleY,
+      'Width',
+      rightEyeWidth.toFixed(1),
+      'cm',
+      -15
+    );
+    
+    // Eye height measurements
+    const leftEyeHeight = Math.sqrt(
+      Math.pow(leftEye[1].x - leftEye[5].x, 2) + 
+      Math.pow(leftEye[1].y - leftEye[5].y, 2)
+    ) * scaleY * pixelToCm;
+    
+    const rightEyeHeight = Math.sqrt(
+      Math.pow(rightEye[1].x - rightEye[5].x, 2) + 
+      Math.pow(rightEye[1].y - rightEye[5].y, 2)
+    ) * scaleY * pixelToCm;
+    
+    // Draw vertical measurement lines
+    this.drawMeasurement(
+      ctx,
+      leftEye[1].x * scaleX, leftEye[1].y * scaleY,
+      leftEye[5].x * scaleX, leftEye[5].y * scaleY,
+      'Height',
+      leftEyeHeight.toFixed(1),
+      'cm',
+      15
+    );
+    
+    // Inner eye angle (between inner corners)
+    const innerEyeAngle = this.calculateAngle(
+      positions[39].x * scaleX, positions[39].y * scaleY, // Left inner corner
+      positions[42].x * scaleX, positions[42].y * scaleY, // Right inner corner
+      positions[27].x * scaleX, positions[27].y * scaleY  // Nose tip
+    );
+    
+    // Draw angle arc
+    ctx.strokeStyle = 'rgba(200, 220, 255, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.arc(positions[27].x * scaleX, positions[27].y * scaleY, 40, 
+      Math.atan2(positions[39].y * scaleY - positions[27].y * scaleY, positions[39].x * scaleX - positions[27].x * scaleX),
+      Math.atan2(positions[42].y * scaleY - positions[27].y * scaleY, positions[42].x * scaleX - positions[27].x * scaleX)
+    );
+    ctx.stroke();
+    
+    // Angle label
+    const angleX = positions[27].x * scaleX + 50;
+    const angleY = positions[27].y * scaleY - 20;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(angleX - 30, angleY - 10, 60, 20);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.font = '11px "SF Pro Display", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Inner: ${innerEyeAngle.toFixed(1)}°`, angleX, angleY + 4);
+    
+    // Eyebrow lift angle
+    const leftBrowAngle = this.calculateEyebrowAngle(leftBrow, scaleX, scaleY);
+    const rightBrowAngle = this.calculateEyebrowAngle(rightBrow, scaleX, scaleY);
+    
+    // Draw eyebrow lines and angles
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(leftBrow[0].x * scaleX, leftBrow[0].y * scaleY);
+    ctx.lineTo(leftBrow[4].x * scaleX, leftBrow[4].y * scaleY);
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.moveTo(rightBrow[0].x * scaleX, rightBrow[0].y * scaleY);
+    ctx.lineTo(rightBrow[4].x * scaleX, rightBrow[4].y * scaleY);
+    ctx.stroke();
+    
+    // Eyebrow angle labels
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(leftBrow[2].x * scaleX - 25, leftBrow[2].y * scaleY - 20, 50, 18);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.font = '10px "SF Pro Display", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${leftBrowAngle.toFixed(1)}°`, leftBrow[2].x * scaleX, leftBrow[2].y * scaleY - 7);
+    
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(rightBrow[2].x * scaleX - 25, rightBrow[2].y * scaleY - 20, 50, 18);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.fillText(`${rightBrowAngle.toFixed(1)}°`, rightBrow[2].x * scaleX, rightBrow[2].y * scaleY - 7);
+  };
+
+  // STEP 3: Nose Analysis
+  drawNoseAnalysis = (ctx, landmarks, scaleX, scaleY) => {
+    if (!landmarks || !landmarks.positions) return;
+    const positions = landmarks.positions;
+    if (positions.length < 36) return;
+    
+    const nose = positions.slice(27, 36);
+    const faceWidth = Math.abs(positions[16].x - positions[0].x) * scaleX;
+    const pixelToCm = 14 / faceWidth;
+    
+    // Draw nose bridge line (center line)
+    ctx.strokeStyle = 'rgba(200, 220, 255, 0.7)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(nose[0].x * scaleX, nose[0].y * scaleY);
+    ctx.lineTo(nose[6].x * scaleX, nose[6].y * scaleY);
+    ctx.stroke();
+    
+    // Nose length measurement
+    const noseLength = Math.sqrt(
+      Math.pow(nose[6].x - nose[0].x, 2) + 
+      Math.pow(nose[6].y - nose[0].y, 2)
+    ) * scaleY * pixelToCm;
+    
+    this.drawMeasurement(
+      ctx,
+      nose[0].x * scaleX, nose[0].y * scaleY,
+      nose[6].x * scaleX, nose[6].y * scaleY,
+      'Length',
+      noseLength.toFixed(1),
+      'cm',
+      -20
+    );
+    
+    // Nose width measurement (at nostrils)
+    const noseWidth = Math.sqrt(
+      Math.pow(nose[4].x - nose[8].x, 2) + 
+      Math.pow(nose[4].y - nose[8].y, 2)
+    ) * scaleX * pixelToCm;
+    
+    this.drawMeasurement(
+      ctx,
+      nose[4].x * scaleX, nose[4].y * scaleY,
+      nose[8].x * scaleX, nose[8].y * scaleY,
+      'Width',
+      noseWidth.toFixed(1),
+      'cm',
+      15
+    );
+    
+    // Symmetry center line (vertical line through nose tip)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([5, 5]);
+    const centerX = nose[3].x * scaleX;
+    ctx.beginPath();
+    ctx.moveTo(centerX, nose[0].y * scaleY - 30);
+    ctx.lineTo(centerX, positions[8].y * scaleY + 30);
+    ctx.stroke();
+  };
+
+  // STEP 4: Lip Analysis
+  drawMouthAnalysis = (ctx, landmarks, scaleX, scaleY) => {
+    if (!landmarks || !landmarks.positions) return;
+    const positions = landmarks.positions;
+    if (positions.length < 68) return;
+    
+    const mouthOuter = positions.slice(48, 60);
+    const mouthInner = positions.slice(60, 68);
+    const faceWidth = Math.abs(positions[16].x - positions[0].x) * scaleX;
+    const pixelToCm = 14 / faceWidth;
+    
+    // Draw lip contour
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(mouthOuter[0].x * scaleX, mouthOuter[0].y * scaleY);
+    for (let i = 1; i < mouthOuter.length; i++) {
+      ctx.lineTo(mouthOuter[i].x * scaleX, mouthOuter[i].y * scaleY);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    
+    // Lip width measurement
+    const lipWidth = Math.sqrt(
+      Math.pow(mouthOuter[6].x - mouthOuter[0].x, 2) + 
+      Math.pow(mouthOuter[6].y - mouthOuter[0].y, 2)
+    ) * scaleX * pixelToCm;
+    
+    this.drawMeasurement(
+      ctx,
+      mouthOuter[0].x * scaleX, mouthOuter[0].y * scaleY,
+      mouthOuter[6].x * scaleX, mouthOuter[6].y * scaleY,
+      'Width',
+      lipWidth.toFixed(1),
+      'cm',
+      -20
+    );
+    
+    // Upper/lower lip ratio
+    const upperLipHeight = Math.sqrt(
+      Math.pow(mouthOuter[3].x - mouthInner[2].x, 2) + 
+      Math.pow(mouthOuter[3].y - mouthInner[2].y, 2)
+    ) * scaleY * pixelToCm;
+    
+    const lowerLipHeight = Math.sqrt(
+      Math.pow(mouthOuter[9].x - mouthInner[6].x, 2) + 
+      Math.pow(mouthOuter[9].y - mouthInner[6].y, 2)
+    ) * scaleY * pixelToCm;
+    
+    const lipRatio = (upperLipHeight / lowerLipHeight).toFixed(2);
+    
+    // Ratio label
+    const ratioX = (mouthOuter[0].x + mouthOuter[6].x) / 2 * scaleX;
+    const ratioY = mouthOuter[3].y * scaleY + 25;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(ratioX - 40, ratioY - 10, 80, 20);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.font = '11px "SF Pro Display", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Ratio: ${lipRatio}`, ratioX, ratioY + 4);
+  };
+
+  // STEP 5: Full Face Metrics
+  drawFullFaceMetrics = (ctx, landmarks, scaleX, scaleY) => {
+    // Draw radar chart placeholder (will be drawn separately as component)
+    // For now, just indicate metrics area
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+  };
+
+  // Helper: Calculate angle between three points
+  calculateAngle = (x1, y1, x2, y2, x3, y3) => {
+    const angle1 = Math.atan2(y1 - y2, x1 - x2);
+    const angle2 = Math.atan2(y3 - y2, x3 - x2);
+    let angle = Math.abs(angle1 - angle2) * (180 / Math.PI);
+    if (angle > 180) angle = 360 - angle;
+    return angle;
+  };
+
+  // Helper: Calculate eyebrow angle
+  calculateEyebrowAngle = (browPoints, scaleX, scaleY) => {
+    if (browPoints.length < 2) return 0;
+    const dx = (browPoints[browPoints.length - 1].x - browPoints[0].x) * scaleX;
+    const dy = (browPoints[browPoints.length - 1].y - browPoints[0].y) * scaleY;
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    return Math.abs(angle);
   };
 
   drawFaceGrid = (ctx, landmarks, scaleX, scaleY) => {
@@ -1406,216 +1711,160 @@ class FaceAnalysis extends Component {
       mouth: calculateRegionBounds(regions.mouth)
     };
     
-    this.setState({ detectedRegions }, () => {
+    // Calculate measurements
+    const measurements = this.calculateMeasurements(regions, imageWidth, imageHeight);
+    
+    this.setState({ detectedRegions, measurements }, () => {
       this.startAnimationSequence();
     });
   };
 
-  startAnimationSequence = () => {
-    // Step 1: Initial state (0-800ms)
-    this.setState({
-      showDarkOverlay: true,
-      statusText: 'جار تحليل الوجه.....'
-    });
+  calculateMeasurements = (regions, imageWidth, imageHeight) => {
+    // Estimate pixel to cm ratio (average face width ~14cm)
+    const faceWidthPx = Math.abs(regions.face.box.x + regions.face.box.width - regions.face.box.x);
+    const pixelToCm = 14 / faceWidthPx;
     
-    setTimeout(() => {
-      // Step 2: Face detection box (600ms)
-      this.setState({ 
-        showFaceBox: true,
-        faceBoxStyle: this.state.detectedRegions.face
-      });
-      
-      setTimeout(() => {
-        // Step 3: Grid flash (400ms)
-        this.setState({ showGrid: true, showOverlay: true });
-        
-        // رسم الشبكة على overlay canvas
-        if (this.overlayCanvasRef.current && this.detectedLandmarks && this.detectedImage) {
-          requestAnimationFrame(() => {
-            this.drawFaceOverlay(this.detectedLandmarks, this.overlayCanvasRef.current, this.detectedImage);
-          });
-        }
-        
-        setTimeout(() => {
-          this.setState({ showGrid: false });
-          // مسح الشبكة بعد الاختفاء
-          if (this.overlayCanvasRef.current) {
-            const ctx = this.overlayCanvasRef.current.getContext('2d');
-            ctx.clearRect(0, 0, this.overlayCanvasRef.current.width, this.overlayCanvasRef.current.height);
-          }
-          
-          setTimeout(() => {
-            // Step 4: Focus on eyes (1200ms)
-            this.focusOnEyes();
-          }, 100);
-        }, 400);
-      }, 600);
-    }, 800);
+    // Calculate various metrics
+    const youthIndex = 70 + Math.random() * 20; // Placeholder calculation
+    const balance = 75 + Math.random() * 20; // Placeholder calculation
+    const proportion = 72 + Math.random() * 20; // Placeholder calculation
+    
+    return {
+      pixelToCm,
+      youthIndex: Math.round(youthIndex),
+      balance: Math.round(balance),
+      proportion: Math.round(proportion)
+    };
   };
 
-  focusOnEyes = () => {
+  startAnimationSequence = () => {
+    // STEP 1: Global Face Lock (1000ms)
+    this.setState({
+      statusText: 'FACIAL STRUCTURE ANALYSIS',
+      animationStep: 'faceLock'
+    });
+    
+    // Draw face lock overlay
+    if (this.overlayCanvasRef.current && this.detectedLandmarks && this.detectedImage) {
+      requestAnimationFrame(() => {
+        this.drawMedicalOverlay(this.detectedLandmarks, this.overlayCanvasRef.current, this.detectedImage, 'faceLock');
+        this.setState({ showOverlay: true });
+      });
+    }
+    
+    setTimeout(() => {
+      // STEP 2: Eye Analysis (1500ms) - slight zoom
+      this.analyzeEyes();
+    }, 1000);
+  };
+
+  analyzeEyes = () => {
     const { detectedRegions } = this.state;
     const eyes = detectedRegions.eyes;
     
-    // Calculate zoom transform
-    const scale = 2.2;
+    // Slight zoom (1.3x) instead of full zoom
+    const scale = 1.3;
     const translateX = (50 - eyes.centerX) / scale;
     const translateY = (50 - eyes.centerY) / scale;
     
-    // Calculate eye highlight (larger circle covering both eyes)
-    const eyeHighlightWidth = Math.max(eyes.width * 1.5, 25);
-    const eyeHighlightHeight = eyes.height * 2;
-    
-    // Calculate eyebrow guidelines
-    const leftBrow = detectedRegions.brows.left;
-    const rightBrow = detectedRegions.brows.right;
-    
     this.setState({
-      zoomTransform: { scale, translateX, translateY, transitionDuration: 1.2 },
-      showEyeHighlight: true,
-      eyeHighlightStyle: {
-        left: eyes.centerX,
-        top: eyes.centerY,
-        width: eyeHighlightWidth,
-        height: eyeHighlightHeight
-      },
-      showEyebrowGuidelines: true,
-      eyebrowGuidelinesStyle: [
-        {
-          left: leftBrow.left,
-          top: leftBrow.top + leftBrow.height / 2,
-          width: leftBrow.width
-        },
-        {
-          left: rightBrow.left,
-          top: rightBrow.top + rightBrow.height / 2,
-          width: rightBrow.width
-        }
-      ],
-      showEyeLabel: true,
-      eyeLabelStyle: {
-        left: eyes.centerX,
-        top: eyes.top - 5
-      },
-      statusText: 'جار تحليل العينين والحاجبين'
+      zoomTransform: { scale, translateX, translateY, transitionDuration: 0.8 },
+      statusText: 'EYE ANALYSIS',
+      animationStep: 'eyes'
     });
     
+    // Draw eye analysis overlay
+    if (this.overlayCanvasRef.current && this.detectedLandmarks && this.detectedImage) {
+      requestAnimationFrame(() => {
+        this.drawMedicalOverlay(this.detectedLandmarks, this.overlayCanvasRef.current, this.detectedImage, 'eyes');
+      });
+    }
+    
     setTimeout(() => {
-      // Step 5: Hold (400ms)
-      setTimeout(() => {
-        // Step 6: Transition to nose (800ms)
-        this.transitionToNose();
-      }, 400);
-    }, 1200);
+      // STEP 3: Nose Analysis (1200ms)
+      this.analyzeNose();
+    }, 1500);
   };
 
-  transitionToNose = () => {
+  analyzeNose = () => {
     const { detectedRegions } = this.state;
     const nose = detectedRegions.nose;
     
-    const scale = 2.5;
+    // Slight zoom (1.4x)
+    const scale = 1.4;
     const translateX = (50 - nose.centerX) / scale;
     const translateY = (50 - nose.centerY) / scale;
     
     this.setState({
-      zoomTransform: { scale, translateX, translateY, transitionDuration: 0.8 },
-      showEyeHighlight: false,
-      showEyebrowGuidelines: false,
-      showEyeLabel: false
+      zoomTransform: { scale, translateX, translateY, transitionDuration: 0.7 },
+      statusText: 'NOSE ANALYSIS',
+      animationStep: 'nose'
     });
     
-    setTimeout(() => {
-      // Step 7: Analyze nose (1000ms)
-      this.setState({
-        showNoseGuidelines: true,
-        noseGuidelinesStyle: [
-          {
-            left: nose.centerX - 3,
-            top: nose.top,
-            height: nose.height
-          },
-          {
-            left: nose.centerX,
-            top: nose.top,
-            height: nose.height
-          },
-          {
-            left: nose.centerX + 3,
-            top: nose.top,
-            height: nose.height
-          }
-        ],
-        showNoseLabel: true,
-        noseLabelStyle: {
-          left: nose.centerX,
-          top: nose.top - 5
-        },
-        statusText: 'تحليل الأنف والمسام'
+    // Draw nose analysis overlay
+    if (this.overlayCanvasRef.current && this.detectedLandmarks && this.detectedImage) {
+      requestAnimationFrame(() => {
+        this.drawMedicalOverlay(this.detectedLandmarks, this.overlayCanvasRef.current, this.detectedImage, 'nose');
       });
-      
-      setTimeout(() => {
-        // Step 8: Transition to mouth (700ms)
-        this.transitionToMouth();
-      }, 1000);
-    }, 800);
+    }
+    
+    setTimeout(() => {
+      // STEP 4: Lip Analysis (1200ms)
+      this.analyzeMouth();
+    }, 1200);
   };
 
-  transitionToMouth = () => {
+  analyzeMouth = () => {
     const { detectedRegions } = this.state;
     const mouth = detectedRegions.mouth;
     
-    const scale = 2.3;
+    // Slight zoom (1.4x)
+    const scale = 1.4;
     const translateX = (50 - mouth.centerX) / scale;
     const translateY = (50 - mouth.centerY) / scale;
     
     this.setState({
       zoomTransform: { scale, translateX, translateY, transitionDuration: 0.7 },
-      showNoseGuidelines: false,
-      showNoseLabel: false
+      statusText: 'LIP ANALYSIS',
+      animationStep: 'mouth'
     });
     
-    setTimeout(() => {
-      // Step 9: Analyze mouth (1000ms)
-      this.setState({
-        showMouthOutline: true,
-        mouthOutlineStyle: {
-          left: mouth.left - 2,
-          top: mouth.top - 2,
-          width: mouth.width + 4,
-          height: mouth.height + 4
-        },
-        showMouthLabel: true,
-        mouthLabelStyle: {
-          left: mouth.centerX,
-          top: mouth.top - 5
-        },
-        statusText: 'تحليل حالة الشفاه'
+    // Draw mouth analysis overlay
+    if (this.overlayCanvasRef.current && this.detectedLandmarks && this.detectedImage) {
+      requestAnimationFrame(() => {
+        this.drawMedicalOverlay(this.detectedLandmarks, this.overlayCanvasRef.current, this.detectedImage, 'mouth');
       });
-      
-      setTimeout(() => {
-        // Step 10: Zoom out to full face (1500ms)
-        this.zoomOutToFullFace();
-      }, 1000);
-    }, 700);
+    }
+    
+    setTimeout(() => {
+      // STEP 5: Full Face Metrics (1500ms)
+      this.showFullFaceMetrics();
+    }, 1200);
   };
 
-  zoomOutToFullFace = () => {
+  showFullFaceMetrics = () => {
     this.setState({
-      zoomTransform: { scale: 1, translateX: 0, translateY: 0, transitionDuration: 1.5 },
-      showMouthOutline: false,
-      showMouthLabel: false,
-      showFaceBox: false,
-      statusText: '',
-      showDarkOverlay: false
+      zoomTransform: { scale: 1, translateX: 0, translateY: 0, transitionDuration: 1.0 },
+      statusText: 'FACIAL PROPORTIONS',
+      animationStep: 'metrics',
+      showMetricsChart: true
     });
     
+    // Draw full face metrics overlay
+    if (this.overlayCanvasRef.current && this.detectedLandmarks && this.detectedImage) {
+      requestAnimationFrame(() => {
+        this.drawMedicalOverlay(this.detectedLandmarks, this.overlayCanvasRef.current, this.detectedImage, 'metrics');
+      });
+    }
+    
     setTimeout(() => {
-      // Step 11: Show results card
+      // Show results card
       this.setState({
-        showResultsCard: true
+        showResultsCard: true,
+        statusText: ''
       });
       
-      // إرسال نتائج التحليل بعد انتهاء الرسوم المتحركة
+      // Send analysis results
       if (this.props.onAnalysisComplete && this.pendingAnalysis) {
         this.props.onAnalysisComplete(this.pendingAnalysis);
       }
@@ -1628,20 +1877,11 @@ class FaceAnalysis extends Component {
       showOverlay: false,
       zoomTransform: null,
       animationStep: 0,
-      showDarkOverlay: false,
       statusText: '',
-      showFaceBox: false,
-      faceBoxStyle: null,
-      showGrid: false,
-      showEyeHighlight: false,
-      showEyebrowGuidelines: false,
-      showEyeLabel: false,
-      showNoseGuidelines: false,
-      showNoseLabel: false,
-      showMouthOutline: false,
-      showMouthLabel: false,
       showResultsCard: false,
-      detectedRegions: null
+      showMetricsChart: false,
+      detectedRegions: null,
+      measurements: null
     });
     if (this.overlayCanvasRef.current) {
       const ctx = this.overlayCanvasRef.current.getContext('2d');
@@ -1676,73 +1916,19 @@ class FaceAnalysis extends Component {
               transitionDuration={this.state.zoomTransform?.transitionDuration || 0.8}
               transformOrigin="center center"
             />
-            <DarkOverlay 
-              show={showImage}
-              visible={this.state.showDarkOverlay}
+            <AnalysisOverlayCanvas
+              ref={this.overlayCanvasRef}
+              show={showImage && (isAnalyzing || this.state.showOverlay)}
             />
             <AnalysisStatusText 
               visible={!!this.state.statusText}
             >
               {this.state.statusText}
             </AnalysisStatusText>
-            <FaceDetectionBox
-              visible={this.state.showFaceBox}
-              boxStyle={this.state.faceBoxStyle}
-            />
-            <GridOverlay
-              ref={this.overlayCanvasRef}
-              show={showImage && (isAnalyzing || this.state.showOverlay)}
-              visible={this.state.showGrid}
-            />
-            {this.state.showEyeHighlight && (
-              <EyeHighlight
-                visible={this.state.showEyeHighlight}
-                style={this.state.eyeHighlightStyle}
-              />
-            )}
-            {this.state.showEyebrowGuidelines && this.state.eyebrowGuidelinesStyle?.map((style, idx) => (
-              <EyebrowGuidelines
-                key={idx}
-                visible={this.state.showEyebrowGuidelines}
-                style={style}
-              />
-            ))}
-            {this.state.showEyeLabel && (
-              <RegionLabel
-                visible={this.state.showEyeLabel}
-                style={this.state.eyeLabelStyle}
-              >
-                جار تحليل العينين والحاجبين
-              </RegionLabel>
-            )}
-            {this.state.showNoseGuidelines && this.state.noseGuidelinesStyle?.map((style, idx) => (
-              <NoseGuidelines
-                key={idx}
-                visible={this.state.showNoseGuidelines}
-                style={style}
-              />
-            ))}
-            {this.state.showNoseLabel && (
-              <RegionLabel
-                visible={this.state.showNoseLabel}
-                style={this.state.noseLabelStyle}
-              >
-                تحليل الأنف والمسام
-              </RegionLabel>
-            )}
-            {this.state.showMouthOutline && (
-              <MouthOutline
-                visible={this.state.showMouthOutline}
-                style={this.state.mouthOutlineStyle}
-              />
-            )}
-            {this.state.showMouthLabel && (
-              <RegionLabel
-                visible={this.state.showMouthLabel}
-                style={this.state.mouthLabelStyle}
-              >
-                تحليل حالة الشفاه
-              </RegionLabel>
+            {this.state.showMetricsChart && (
+              <MetricsChart visible={this.state.showMetricsChart}>
+                <canvas ref={el => { if (el) this.metricsChartCanvas = el; }} width={120} height={120} />
+              </MetricsChart>
             )}
           </ImageWrapper>
           {(isAnalyzing || modelsLoading) && (
@@ -1794,9 +1980,11 @@ class FaceAnalysis extends Component {
         
         <ResultsCard visible={this.state.showResultsCard}>
           <div style={{ textAlign: 'center', padding: '0.2rem' }}>
-            <h2 style={{ margin: '0 0 0.1rem 0', color: '#667eea' }}>✓ اكتمل تحليل البشرة</h2>
-            <p style={{ margin: 0, color: '#666', fontSize: '0.16rem' }}>
-              تم تحليل جميع المناطق بنجاح
+            <h2 style={{ margin: '0 0 0.1rem 0', color: '#333', fontFamily: '"SF Pro Display", sans-serif', fontWeight: 400, fontSize: '0.22rem', letterSpacing: '0.02rem' }}>
+              ANALYSIS COMPLETE
+            </h2>
+            <p style={{ margin: 0, color: '#666', fontSize: '0.14rem', fontFamily: '"SF Pro Display", sans-serif' }}>
+              Facial structure analysis completed
             </p>
           </div>
         </ResultsCard>
