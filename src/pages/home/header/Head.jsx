@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 
-import { Header, Topbar, HeaderContent, Greeting, UserInfo, NotificationIcon, SearchSection, SearchBar, NotificationBar, NotificationList, NotificationListItem, NotificationOverlay } from "./styled";
+import { Header, Topbar, HeaderContent, Greeting, UserInfo, NotificationIcon, SearchSection, SearchBar, NotificationBar } from "./styled";
 import City from "@/city/City";
 import Mine from "@/mine/Mine";
 import { Icon } from "antd-mobile";
@@ -15,7 +15,6 @@ export default class Head extends Component {
     ],
     currentNotification: 0,
     showNotifications: true,
-    showNotificationList: false,
     notificationList: [
       { 
         id: 1, 
@@ -133,23 +132,9 @@ export default class Head extends Component {
   };
 
   handleNotificationClick = () => {
-    this.setState(prevState => ({
-      showNotificationList: !prevState.showNotificationList
-    }));
+    this.props.history.push("/notifications");
   };
 
-  handleCloseNotificationList = () => {
-    this.setState({ showNotificationList: false });
-  };
-
-  handleNotificationItemClick = (notificationId) => {
-    // Mark notification as read
-    this.setState(prevState => ({
-      notificationList: prevState.notificationList.map(notif =>
-        notif.id === notificationId ? { ...notif, read: true } : notif
-      )
-    }));
-  };
 
   componentDidMount() {
     // تغيير الإشعارات تلقائياً كل 4 ثوان
@@ -186,7 +171,7 @@ export default class Head extends Component {
   }
 
   render() {
-    const { notifications, currentNotification, showNotifications, showNotificationList, notificationList, isScrolled } = this.state;
+    const { notifications, currentNotification, showNotifications, notificationList, isScrolled } = this.state;
     const currentNotif = notifications[currentNotification];
     const unreadCount = notificationList.filter(n => !n.read).length;
 
@@ -231,69 +216,6 @@ export default class Head extends Component {
             </SearchSection>
           </Header>
         </Topbar>
-        {showNotificationList && (
-          <>
-            <NotificationOverlay onClick={this.handleCloseNotificationList} />
-            <NotificationList>
-              <div className="notification-header">
-                <div className="header-content">
-                  <div className="notification-logo">
-                    <img src="/icon.svg" alt="ClinicAI Logo" />
-                  </div>
-                  <h3>الإشعارات</h3>
-                </div>
-                <button className="close-btn" onClick={this.handleCloseNotificationList}>
-                  <Icon type="cross" size="xs" />
-                </button>
-              </div>
-              <div className="notification-items">
-                {notificationList.length === 0 ? (
-                  <div className="empty-state">
-                    <Icon type="bell" size="lg" />
-                    <p>لا توجد إشعارات</p>
-                  </div>
-                ) : (
-                  notificationList.map(notif => (
-                    <NotificationListItem
-                      key={notif.id}
-                      onClick={() => this.handleNotificationItemClick(notif.id)}
-                      unread={!notif.read}
-                      notifType={notif.type}
-                    >
-                      <div className="notification-icon">
-                        <Icon 
-                          type={
-                            notif.type === "offer" ? "check-circle" :
-                            notif.type === "success" ? "check-circle-o" :
-                            notif.type === "reminder" ? "clock-circle" :
-                            notif.type === "like" ? "like" :
-                            notif.type === "comment" ? "message" :
-                            notif.type === "follow" ? "user" :
-                            notif.type === "mention" ? "message" :
-                            "info-circle"
-                          } 
-                          size="xs" 
-                        />
-                      </div>
-                      <div className="notification-content">
-                        <p className="notification-text">
-                          {notif.userName && (
-                            <>
-                              <span style={{ color: '#667eea', fontWeight: 600 }}>{notif.userName}</span> {notif.action || notif.text}
-                            </>
-                          )}
-                          {!notif.userName && notif.text}
-                        </p>
-                        <span className="notification-time">{notif.subtitle || notif.time}</span>
-                      </div>
-                      {!notif.read && <div className="unread-dot" />}
-                    </NotificationListItem>
-                  ))
-                )}
-              </div>
-            </NotificationList>
-          </>
-        )}
       </>
     );
   }
