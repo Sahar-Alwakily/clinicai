@@ -146,18 +146,24 @@ const CameraPageContainer = styled.div`
 const CameraView = styled.div`
   position: relative;
   width: 100%;
-  max-width: 7rem;
+  max-width: min(90vw, 500px);
+  aspect-ratio: 3/4;
   background: #000;
-  border-radius: 0.3rem;
+  border-radius: clamp(8px, 2vw, 16px);
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  margin-bottom: 0.4rem;
+  margin-bottom: clamp(12px, 3vh, 24px);
+  
+  @media (min-width: 768px) {
+    max-width: min(70vw, 600px);
+  }
 `;
 
 const Video = styled.video`
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
+  object-fit: cover;
   transform: scaleX(-1); /* Mirror for front camera */
 `;
 
@@ -175,15 +181,21 @@ const StartButton = styled.button`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 0.25rem 0.8rem;
-  font-size: 0.24rem;
+  padding: clamp(10px, 2vh, 16px) clamp(24px, 5vw, 40px);
+  font-size: clamp(14px, 3vw, 18px);
   font-weight: 700;
-  border-radius: 2rem;
+  border-radius: 50px;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'SF Pro Display', -apple-system, sans-serif;
-  letter-spacing: 0.02rem;
+  letter-spacing: 0.5px;
+  min-height: 44px; /* Touch target size */
+  
+  @media (min-width: 768px) {
+    padding: 12px 32px;
+    font-size: 16px;
+  }
   
   &:hover {
     transform: translateY(-3px);
@@ -203,22 +215,27 @@ const StartButton = styled.button`
 
 const StatusText = styled.div`
   position: absolute;
-  top: 0.4rem;
+  top: clamp(12px, 3vh, 20px);
   left: 50%;
   transform: translateX(-50%);
   color: rgba(255, 255, 255, 0.95);
-  font-size: 0.18rem;
+  font-size: clamp(12px, 2.5vw, 16px);
   font-weight: 500;
   text-align: center;
   z-index: 8;
   pointer-events: none;
-  letter-spacing: 0.02rem;
+  letter-spacing: 0.3px;
   font-family: 'SF Pro Display', -apple-system, sans-serif;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   background: rgba(0, 0, 0, 0.3);
-  padding: 0.1rem 0.3rem;
-  border-radius: 1rem;
+  padding: clamp(6px, 1.5vh, 10px) clamp(12px, 3vw, 20px);
+  border-radius: 50px;
   backdrop-filter: blur(10px);
+  
+  @media (min-width: 768px) {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
 `;
 
 const LoadingOverlay = styled.div`
@@ -233,10 +250,15 @@ const LoadingOverlay = styled.div`
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 0.2rem;
+  font-size: clamp(14px, 3vw, 18px);
   z-index: 1000;
-  gap: 0.2rem;
+  gap: clamp(8px, 2vh, 16px);
   font-family: 'SF Pro Display', -apple-system, sans-serif;
+  
+  @media (min-width: 768px) {
+    font-size: 16px;
+    gap: 12px;
+  }
 `;
 
 // ============================================
@@ -269,12 +291,19 @@ const AnalysisImage = styled.img`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scaleX(-1);
-  max-width: 90%;
-  max-height: 90%;
+  max-width: min(90vw, 90vh);
+  max-height: min(90vw, 90vh);
+  width: auto;
+  height: auto;
   z-index: 2;
-  border-radius: 0.2rem;
+  border-radius: clamp(8px, 2vw, 16px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   object-fit: contain;
+  
+  @media (orientation: landscape) {
+    max-width: min(70vw, 80vh);
+    max-height: min(70vw, 80vh);
+  }
 `;
 
 const ScanningLine = styled.div`
@@ -282,7 +311,7 @@ const ScanningLine = styled.div`
   left: 0;
   right: 0;
   width: 100%;
-  height: 3px;
+  height: clamp(2px, 0.5vh, 4px);
   background: linear-gradient(
     to bottom,
     rgba(102, 126, 234, 0) 0%,
@@ -297,8 +326,8 @@ const ScanningLine = styled.div`
 
 const Particle = styled.div`
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: clamp(3px, 0.8vw, 6px);
+  height: clamp(3px, 0.8vw, 6px);
   background: radial-gradient(circle, rgba(102, 126, 234, 0.8) 0%, transparent 100%);
   border-radius: 50%;
   pointer-events: none;
@@ -311,34 +340,43 @@ const Particle = styled.div`
 
 const AnalysisStatusText = styled.div`
   position: absolute;
-  bottom: 2rem;
+  bottom: clamp(60px, 12vh, 100px);
   left: 50%;
   transform: translateX(-50%);
   color: rgba(255, 255, 255, 0.95);
-  font-size: 0.32rem;
+  font-size: clamp(18px, 5vw, 28px);
   font-weight: 700;
   text-align: center;
   z-index: 10;
   pointer-events: none;
-  letter-spacing: 0.05rem;
+  letter-spacing: clamp(1px, 0.3vw, 3px);
   font-family: 'SF Pro Display', -apple-system, sans-serif;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   animation: ${glowPulse} 2s ease-in-out infinite;
   text-transform: uppercase;
+  
+  @media (min-width: 768px) {
+    font-size: 24px;
+    bottom: 80px;
+  }
 `;
 
 const ProgressBar = styled.div`
   position: absolute;
-  bottom: 1rem;
+  bottom: clamp(30px, 6vh, 50px);
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 6rem;
-  height: 4px;
+  width: min(80vw, 400px);
+  height: clamp(3px, 0.8vh, 6px);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
   overflow: hidden;
   z-index: 10;
+  
+  @media (min-width: 768px) {
+    width: min(60vw, 500px);
+    height: 4px;
+  }
 `;
 
 const ProgressFill = styled.div`
@@ -358,44 +396,79 @@ const ResultsPageContainer = styled.div`
   width: 100%;
   min-height: 100vh;
   background: #f8f9fa;
-  padding: 0.3rem 0.25rem;
-  padding-bottom: 1.5rem;
+  padding: clamp(12px, 3vw, 20px) clamp(10px, 2.5vw, 16px);
+  padding-bottom: clamp(60px, 12vh, 100px);
   overflow-y: auto;
+  
+  @media (min-width: 768px) {
+    padding: 20px 24px;
+    padding-bottom: 80px;
+  }
 `;
 
 const ResultsHeader = styled.div`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 0.4rem 0.3rem;
+  padding: clamp(16px, 4vw, 24px) clamp(12px, 3vw, 20px);
   color: white;
-  margin: -0.3rem -0.25rem 0.3rem -0.25rem;
+  margin: clamp(-12px, -3vw, -20px) clamp(-10px, -2.5vw, -16px) clamp(12px, 3vw, 20px) clamp(-10px, -2.5vw, -16px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  
+  @media (min-width: 768px) {
+    padding: 20px 24px;
+    margin: -20px -24px 20px -24px;
+  }
   
   h1 {
-    font-size: 0.32rem;
+    font-size: clamp(20px, 5vw, 28px);
     font-weight: 700;
-    margin: 0 0 0.1rem 0;
+    margin: 0 0 clamp(6px, 1.5vh, 10px) 0;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
-    letter-spacing: -0.01rem;
+    letter-spacing: -0.5px;
+    
+    @media (min-width: 768px) {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
   }
   
   p {
-    font-size: 0.18rem;
+    font-size: clamp(12px, 3vw, 16px);
     margin: 0;
     opacity: 0.9;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
+    line-height: 1.5;
+    
+    @media (min-width: 768px) {
+      font-size: 14px;
+    }
   }
 `;
 
 const ResultsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr));
-  gap: 0.2rem;
-  margin-top: 0.2rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(150px, 45vw), 1fr));
+  gap: clamp(8px, 2vw, 16px);
+  margin-top: clamp(8px, 2vw, 16px);
+  
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
 `;
 
 const ResultCard = styled.div`
   background: white;
-  border-radius: 0.2rem;
+  border-radius: clamp(8px, 2vw, 12px);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -403,6 +476,10 @@ const ResultCard = styled.div`
   animation: ${fadeIn} 0.5s ease-out;
   animation-delay: ${props => props.delay || 0}s;
   animation-fill-mode: both;
+  
+  @media (min-width: 768px) {
+    border-radius: 12px;
+  }
   
   &:hover {
     transform: translateY(-4px);
@@ -432,33 +509,48 @@ const CardImage = styled.div`
 `;
 
 const CardContent = styled.div`
-  padding: 0.2rem;
+  padding: clamp(10px, 2.5vw, 16px);
+  
+  @media (min-width: 768px) {
+    padding: 16px;
+  }
   
   h3 {
-    font-size: 0.2rem;
+    font-size: clamp(14px, 3.5vw, 18px);
     font-weight: 700;
-    margin: 0 0 0.08rem 0;
+    margin: 0 0 clamp(6px, 1.5vh, 10px) 0;
     color: #2d3748;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
     display: flex;
     align-items: center;
-    gap: 0.08rem;
+    gap: clamp(4px, 1vw, 8px);
+    
+    @media (min-width: 768px) {
+      font-size: 16px;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
   }
   
   p {
-    font-size: 0.16rem;
+    font-size: clamp(11px, 2.8vw, 14px);
     color: #718096;
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.5;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
+    
+    @media (min-width: 768px) {
+      font-size: 13px;
+      line-height: 1.4;
+    }
   }
 `;
 
 const ScoreBadge = styled.span`
   display: inline-block;
-  padding: 0.03rem 0.1rem;
-  border-radius: 0.1rem;
-  font-size: 0.14rem;
+  padding: clamp(2px, 0.5vh, 4px) clamp(6px, 1.5vw, 10px);
+  border-radius: clamp(4px, 1vw, 6px);
+  font-size: clamp(10px, 2.5vw, 13px);
   font-weight: 600;
   background: ${props => {
     if (props.score >= 80) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
@@ -466,27 +558,44 @@ const ScoreBadge = styled.span`
     return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
   }};
   color: white;
-  margin-right: 0.05rem;
+  margin-right: clamp(3px, 0.8vw, 5px);
+  
+  @media (min-width: 768px) {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-right: 4px;
+  }
 `;
 
 const BackButton = styled.button`
   position: absolute;
-  top: 0.3rem;
-  right: 0.3rem;
+  top: clamp(12px, 3vw, 20px);
+  right: clamp(12px, 3vw, 20px);
   background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 50%;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: clamp(36px, 9vw, 44px);
+  height: clamp(36px, 9vw, 44px);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: white;
-  font-size: 0.24rem;
+  font-size: clamp(18px, 4.5vw, 24px);
   transition: all 0.3s ease;
   z-index: 100;
   backdrop-filter: blur(10px);
+  min-width: 44px; /* Touch target */
+  min-height: 44px;
+  
+  @media (min-width: 768px) {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    top: 16px;
+    right: 16px;
+  }
   
   &:hover {
     background: rgba(255, 255, 255, 0.3);
@@ -1710,7 +1819,7 @@ class SoYoungFaceAnalysis extends Component {
             {modelsLoading && (
               <LoadingOverlay>
                 <div>Loading AI Models...</div>
-                <div style={{ fontSize: '0.16rem', opacity: 0.8 }}>Please wait</div>
+                <div style={{ fontSize: 'clamp(12px, 2.5vw, 14px)', opacity: 0.8 }}>Please wait</div>
               </LoadingOverlay>
             )}
           </CameraView>
@@ -1719,10 +1828,10 @@ class SoYoungFaceAnalysis extends Component {
             <div style={{ 
               background: '#ffebee', 
               color: '#c62828', 
-              padding: '0.2rem 0.4rem', 
-              borderRadius: '0.1rem',
-              fontSize: '0.16rem',
-              marginBottom: '0.2rem',
+              padding: 'clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px)', 
+              borderRadius: 'clamp(4px, 1vw, 8px)',
+              fontSize: 'clamp(12px, 2.5vw, 14px)',
+              marginBottom: 'clamp(10px, 2.5vw, 14px)',
               maxWidth: '90%',
               textAlign: 'center'
             }}>
@@ -1795,7 +1904,7 @@ class SoYoungFaceAnalysis extends Component {
             <p>
               Overall Score: {analysisResults.overall.score}/100
               {analysisResults.overall.age && (
-                <span style={{ marginRight: '0.2rem' }}>
+                <span style={{ marginRight: 'clamp(8px, 2vw, 12px)' }}>
                   • Age: {analysisResults.overall.age}
                   {analysisResults.overall.gender && ` (${analysisResults.overall.gender})`}
                 </span>
