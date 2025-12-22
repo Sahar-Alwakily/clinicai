@@ -3,6 +3,7 @@ import { withRouter } from "react-router-dom";
 import styled from "styled-components";
 import BottomNav from "../../components/bottomNav/BottomNav";
 import FaceAnalysis from "../../components/FaceAnalysis/FaceAnalysis";
+import RealTimeFaceAnalysis from "../../components/FaceAnalysis/RealTimeFaceAnalysis";
 
 const SkinAnalysisContainer = styled.div`
   min-height: 100vh;
@@ -160,6 +161,7 @@ const SectionTitle = styled.div`
 class SkinAnalysis extends Component {
   state = {
     aiAnalysis: null,
+    useRealTime: false, // Toggle between real-time and capture mode
     analysis: {
       skinType: "بشرة دهنية",
       concerns: ["حب الشباب", "البقع الداكنة", "المسام الواسعة"],
@@ -291,8 +293,29 @@ class SkinAnalysis extends Component {
         </Header>
 
         <AnalysisCard style={{ marginTop: '0.2rem' }}>
-          <SectionTitle>📷 تحليل الوجه</SectionTitle>
-          <FaceAnalysis onAnalysisComplete={this.handleAnalysisComplete} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.15rem' }}>
+            <SectionTitle>📷 تحليل الوجه</SectionTitle>
+            <button
+              onClick={() => this.setState({ useRealTime: !this.state.useRealTime })}
+              style={{
+                padding: '0.08rem 0.15rem',
+                fontSize: '0.14rem',
+                background: this.state.useRealTime ? '#667eea' : '#e0e0e0',
+                color: this.state.useRealTime ? 'white' : '#666',
+                border: 'none',
+                borderRadius: '0.1rem',
+                cursor: 'pointer',
+                fontWeight: 500
+              }}
+            >
+              {this.state.useRealTime ? '⚡ Real-Time' : '📸 Capture'}
+            </button>
+          </div>
+          {this.state.useRealTime ? (
+            <RealTimeFaceAnalysis onModelsLoaded={() => console.log('Real-time models loaded')} />
+          ) : (
+            <FaceAnalysis onAnalysisComplete={this.handleAnalysisComplete} />
+          )}
         </AnalysisCard>
 
         {aiAnalysis && (
