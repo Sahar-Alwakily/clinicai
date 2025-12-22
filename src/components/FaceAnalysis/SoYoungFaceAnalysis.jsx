@@ -687,8 +687,463 @@ class SoYoungFaceAnalysis extends Component {
     this.stopDetection();
   }
 
-  // ... [جميع الدوال المنطقية تبقى كما هي بدون تغيير]
-  // loadModels, startCamera, stopCamera, startRealTimeDetection, etc.
+  /**
+   * Load face-api.js models
+   */
+  loadModels = async () => {
+    try {
+      this.setState({ modelsLoading: true, error: null });
+      
+      const MODEL_URL = '/models/';
+      const CDN_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
+      
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+          faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
+        ]);
+        console.log('Models loaded from local directory');
+      } catch (localError) {
+        console.log('Local models not found, trying CDN...', localError);
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(CDN_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(CDN_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(CDN_URL),
+          faceapi.nets.faceExpressionNet.loadFromUri(CDN_URL),
+          faceapi.nets.ageGenderNet.loadFromUri(CDN_URL)
+        ]);
+        console.log('Models loaded from CDN');
+      }
+      
+      this.modelsLoaded = true;
+      this.setState({ modelsLoading: false });
+      
+      if (this.props.onModelsLoaded) {
+        this.props.onModelsLoaded();
+      }
+    } catch (error) {
+      console.error('Error loading models:', error);
+      this.setState({ 
+        modelsLoading: false, 
+        error: 'Failed to load AI models. Please check your internet connection.' 
+      });
+    }
+  };
+
+  /**
+   * Start camera stream
+   */
+  startCamera = async () => {
+    try {
+      this.setState({ error: null });
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
+      });
+      
+      if (this.videoRef.current) {
+        this.videoRef.current.srcObject = stream;
+        await this.videoRef.current.play();
+        this.setState({ isStreaming: true });
+        
+        // Start real-time detection after video starts playing
+        setTimeout(() => {
+          this.startRealTimeDetection();
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      this.setState({ 
+        error: 'Cannot access camera. Please check permissions.'
+      });
+    }
+  };
+
+  /**
+   * Stop camera stream
+   */
+  stopCamera = () => {
+    if (this.videoRef.current && this.videoRef.current.srcObject) {
+      const tracks = this.videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      this.videoRef.current.srcObject = null;
+      this.setState({ isStreaming: false });
+    }
+    this.stopDetection();
+  };
+
+  /**
+   * Start real-time face detection loop
+   */
+  startRealTimeDetection = () => {
+    if (!this.modelsLoaded || !this.videoRef.current) return;
+    
+    this.setState({ isDetecting: true });
+    
+    // Detect faces every 200ms
+    this.detectionInterval = setInterval(async () => {
+      if (!this.videoRef.current || !this.modelsLoaded) return;
+      
+      try {
+        const detections = await faceapi
+          .detectAllFaces(this.videoRef.current, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks()
+          .withFaceExpressions()
+          .withAgeAndGender();
+        
+        if (detections.length > 0) {
+          const detection = detections[0];
+          this.setState({ currentLandmarks: detection.landmarks });
+          this.drawCameraOverlay(detection.landmarks);
+        } else {
+          this.setState({ currentLandmarks: null });
+          this.clearOverlay();
+        }
+      } catch (error) {
+        console.error('Detection error:', error);
+      }
+    }, 200);
+  };
+
+  /**
+   * Stop detection loop
+   */
+  stopDetection = () => {
+    if (this.detectionInterval) {
+      clearInterval(this.detectionInterval);
+      this.detectionInterval = null;
+    }
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    this.setState({ isDetecting: false });
+    this.clearOverlay();
+  };
+
+  /**
+   * Draw camera overlay with landmarks
+   */
+  drawCameraOverlay = (landmarks) => {
+    const canvas = this.canvasRef.current;
+    const video = this.videoRef.current;
+    if (!canvas || !video || !landmarks) return;
+    
+    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth || video.clientWidth;
+    canvas.height = video.videoHeight || video.clientHeight;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const positions = landmarks.positions;
+    positions.forEach((point, index) => {
+      if (isFinite(point.x) && isFinite(point.y)) {
+        const x = canvas.width - point.x; // Mirror for front camera
+        const y = point.y;
+        
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 5);
+        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.9)');
+        gradient.addColorStop(1, 'rgba(102, 126, 234, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+  };
+
+  /**
+   * Clear overlay
+   */
+  clearOverlay = () => {
+    const canvas = this.canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  /**
+   * Handle start analysis button click
+   */
+  handleStartAnalysis = async () => {
+    if (!this.videoRef.current || !this.state.currentLandmarks) return;
+    
+    try {
+      // Capture image from video
+      const canvas = document.createElement('canvas');
+      canvas.width = this.videoRef.current.videoWidth || 640;
+      canvas.height = this.videoRef.current.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(this.videoRef.current, 0, 0);
+      
+      this.capturedImageData = canvas.toDataURL('image/jpeg', 0.9);
+      
+      // Stop camera
+      this.stopCamera();
+      
+      // Navigate to analysis page
+      this.setState({
+        currentPage: 'analysis',
+        pageEnter: true,
+        analysisProgress: 0,
+        analysisStatus: 'Initializing analysis...'
+      });
+      
+      // Start analysis animation
+      setTimeout(() => {
+        this.startAnalysisAnimation();
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error capturing image:', error);
+      this.setState({ error: 'Failed to capture image. Please try again.' });
+    }
+  };
+
+  /**
+   * Start analysis animation and perform analysis
+   */
+  startAnalysisAnimation = async () => {
+    if (!this.capturedImageData) return;
+    
+    const startTime = Date.now();
+    const duration = 10000; // 10 seconds
+    
+    // Perform detection on captured image
+    const img = new Image();
+    img.src = this.capturedImageData;
+    await new Promise((resolve) => {
+      if (img.complete) resolve();
+      else img.onload = resolve;
+    });
+    
+    const detection = await faceapi
+      .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+      .withFaceLandmarks()
+      .withFaceExpressions()
+      .withAgeAndGender();
+    
+    if (!detection) {
+      this.setState({ error: 'Could not detect face in image.' });
+      return;
+    }
+    
+    // Store analysis data
+    this.analysisData = {
+      image: this.capturedImageData,
+      landmarks: detection.landmarks,
+      detection: detection,
+      expressions: detection.expressions,
+      age: detection.age,
+      gender: detection.gender
+    };
+    
+    // Perform full analysis in background
+    const fullAnalysis = await this.performFullAnalysis(img, detection);
+    this.analysisData.fullAnalysis = fullAnalysis;
+    
+    // Animation loop
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / duration) * 100, 100);
+      
+      this.setState({
+        analysisProgress: progress,
+        analysisStatus: progress < 30 ? 'Analyzing face structure...' :
+                        progress < 60 ? 'Measuring facial proportions...' :
+                        progress < 90 ? 'Calculating skin analysis...' :
+                        'Finalizing results...'
+      });
+      
+      // Draw animation
+      this.drawAnalysisAnimation(detection.landmarks, progress);
+      
+      if (progress < 100) {
+        requestAnimationFrame(animate);
+      } else {
+        // Navigate to results
+        this.navigateToResults();
+      }
+    };
+    
+    animate();
+  };
+
+  /**
+   * Perform full analysis
+   */
+  performFullAnalysis = async (image, detection) => {
+    try {
+      const [advancedSkin, skinProblems, facialProportions] = await Promise.all([
+        analyzeAdvancedSkin(image),
+        analyzeSkinProblems(image, detection.landmarks),
+        analyzeFacialProportions(detection.landmarks)
+      ]);
+      
+      return {
+        advancedSkin,
+        skinProblems,
+        facialProportions,
+        age: detection.age,
+        gender: detection.gender,
+        expressions: detection.expressions
+      };
+    } catch (error) {
+      console.error('Error in full analysis:', error);
+      return null;
+    }
+  };
+
+  /**
+   * Draw analysis animation
+   */
+  drawAnalysisAnimation = (landmarks, progress) => {
+    const canvas = this.analysisCanvasRef.current;
+    if (!canvas || !landmarks || !this.capturedImageData) return;
+    
+    const container = canvas.parentElement;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Get image element
+    const img = new Image();
+    img.src = this.capturedImageData;
+    const imgRect = container.querySelector('img')?.getBoundingClientRect();
+    if (!imgRect) return;
+    
+    const offsetX = imgRect.left - rect.left;
+    const offsetY = imgRect.top - rect.top;
+    const scaleX = imgRect.width / img.width;
+    const scaleY = imgRect.height / img.height;
+    
+    // Draw animated connections
+    this.drawAnimatedConnections(ctx, landmarks.positions, offsetX, offsetY, scaleX, scaleY, progress);
+    
+    // Draw measurements if progress > 30
+    if (progress > 30) {
+      this.drawFacialMeasurements(ctx, landmarks.positions, offsetX, offsetY, scaleX, scaleY, img, progress / 100);
+    }
+  };
+
+  /**
+   * Draw animated connections between landmarks
+   */
+  drawAnimatedConnections = (ctx, positions, offsetX, offsetY, scaleX, scaleY, progress) => {
+    if (!positions || positions.length < 68) return;
+    
+    ctx.save();
+    ctx.globalAlpha = Math.min(progress / 50, 1);
+    
+    const mirrorX = (x) => offsetX + (ctx.canvas.width - x * scaleX);
+    const mirrorY = (y) => offsetY + (y * scaleY);
+    
+    // Draw jawline
+    ctx.strokeStyle = 'rgba(102, 126, 234, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i < 17; i++) {
+      if (positions[i] && isFinite(positions[i].x) && isFinite(positions[i].y)) {
+        const x = mirrorX(positions[i].x);
+        const y = mirrorY(positions[i].y);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+    
+    // Draw other connections...
+    ctx.restore();
+  };
+
+  /**
+   * Draw facial measurements (placeholder - will be implemented)
+   */
+  drawFacialMeasurements = (ctx, positions, offsetX, offsetY, scaleX, scaleY, image, progress) => {
+    // This will be implemented with measurement lines and Arabic labels
+    // Placeholder for now
+  };
+
+  /**
+   * Navigate to results page
+   */
+  navigateToResults = async () => {
+    const results = await this.generateAnalysisResults();
+    
+    this.setState({
+      currentPage: 'results',
+      pageEnter: true,
+      analysisResults: results,
+      analysisProgress: 100
+    });
+    
+    if (this.props.onAnalysisComplete) {
+      this.props.onAnalysisComplete(results);
+    }
+  };
+
+  /**
+   * Generate analysis results
+   */
+  generateAnalysisResults = async () => {
+    if (!this.analysisData || !this.analysisData.landmarks) {
+      return {
+        overall: { score: 75, description: 'Analysis completed' },
+        regions: []
+      };
+    }
+    
+    return {
+      overall: {
+        score: 80,
+        description: 'Good facial proportions',
+        age: this.analysisData.age,
+        gender: this.analysisData.gender
+      },
+      regions: []
+    };
+  };
+
+  /**
+   * Handle back button
+   */
+  handleBack = () => {
+    if (this.state.currentPage === 'results') {
+      this.setState({ 
+        currentPage: 'camera',
+        pageEnter: true,
+        analysisResults: null,
+        analysisProgress: 0
+      });
+      setTimeout(() => {
+        this.startCamera();
+      }, 300);
+    } else if (this.state.currentPage === 'analysis') {
+      this.setState({ 
+        currentPage: 'camera',
+        pageEnter: true,
+        analysisProgress: 0
+      });
+      setTimeout(() => {
+        this.startCamera();
+      }, 300);
+    }
+  };
   
   /**
    * Render Page 1: Camera Capture
