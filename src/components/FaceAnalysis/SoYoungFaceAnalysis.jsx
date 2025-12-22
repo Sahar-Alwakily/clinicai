@@ -909,7 +909,7 @@ class SoYoungFaceAnalysis extends Component {
   };
 
   /**
-   * Draw analysis animation with lines, scanning, and particles (Page 2)
+   * Draw analysis animation with lines, scanning, measurements, and particles (Page 2)
    */
   drawAnalysisAnimation = (canvas, image, landmarks, progress) => {
     const ctx = canvas.getContext('2d');
@@ -943,6 +943,12 @@ class SoYoungFaceAnalysis extends Component {
     
     // Draw connecting lines (animated based on progress)
     this.drawAnimatedConnections(ctx, positions, imgX, imgY, scaleX, scaleY, progress);
+    
+    // Draw facial measurements with Arabic labels (animated)
+    if (progress > 30) { // Start showing measurements after 30% progress
+      const measurementProgress = Math.min(1, (progress - 30) / 40); // Show over 30-70% progress
+      this.drawFacialMeasurements(ctx, positions, imgX, imgY, scaleX, scaleY, image, measurementProgress);
+    }
     
     // Draw scanning line
     const scanY = imgY + (progress / 100) * imgHeight;
@@ -1047,6 +1053,225 @@ class SoYoungFaceAnalysis extends Component {
         ctx.fill();
       }
     });
+  };
+
+  /**
+   * Calculate distance between two points in pixels
+   */
+  calculateDistance = (p1, p2) => {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  /**
+   * Convert pixel distance to cm (approximation: 1cm ≈ 37.8 pixels for average face at 640px width)
+   */
+  pixelsToCm = (pixels, imageWidth) => {
+    // Approximate: average face width is ~14cm, and takes ~70% of image width
+    const faceWidthInPixels = imageWidth * 0.7;
+    const pixelsPerCm = faceWidthInPixels / 14;
+    return pixels / pixelsPerCm;
+  };
+
+  /**
+   * Calculate angle between three points
+   */
+  calculateAngle = (p1, p2, p3) => {
+    const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+    const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+    const dot = v1.x * v2.x + v1.y * v2.y;
+    const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+    const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+    const cosAngle = dot / (mag1 * mag2);
+    const angle = Math.acos(Math.max(-1, Math.min(1, cosAngle))) * (180 / Math.PI);
+    return angle;
+  };
+
+  /**
+   * Draw facial measurements with Arabic labels
+   */
+  drawFacialMeasurements = (ctx, positions, offsetX, offsetY, scaleX, scaleY, image, progress) => {
+    ctx.save();
+    ctx.globalAlpha = progress;
+    
+    const mirrorX = (x) => offsetX + (ctx.canvas.width - x * scaleX);
+    const mirrorY = (y) => offsetY + y * scaleY;
+    
+    // Set up text style
+    ctx.font = 'bold 14px Arial, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.lineWidth = 3;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // 1. Eye measurements (العيون)
+    if (positions[36] && positions[39] && positions[42] && positions[45]) {
+      // Inner eye distance (المسافة بين العينين الداخلية)
+      const innerEyeDist = this.calculateDistance(positions[39], positions[42]);
+      const innerEyeDistCm = this.pixelsToCm(innerEyeDist, image.width);
+      
+      const leftEyeInner = { x: mirrorX(positions[39].x), y: mirrorY(positions[39].y) };
+      const rightEyeInner = { x: mirrorX(positions[42].x), y: mirrorY(positions[42].y) };
+      
+      // Draw dashed line
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = 'rgba(102, 126, 234, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(leftEyeInner.x, leftEyeInner.y);
+      ctx.lineTo(rightEyeInner.x, rightEyeInner.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label
+      const midX = (leftEyeInner.x + rightEyeInner.x) / 2;
+      const midY = (leftEyeInner.y + rightEyeInner.y) / 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeText(`المسافة بين العينين: ${innerEyeDistCm.toFixed(2)} سم`, midX, midY - 20);
+      ctx.fillText(`المسافة بين العينين: ${innerEyeDistCm.toFixed(2)} سم`, midX, midY - 20);
+      
+      // Eye width (عرض العين)
+      const leftEyeWidth = this.calculateDistance(positions[36], positions[39]);
+      const rightEyeWidth = this.calculateDistance(positions[42], positions[45]);
+      const avgEyeWidth = (leftEyeWidth + rightEyeWidth) / 2;
+      const eyeWidthCm = this.pixelsToCm(avgEyeWidth, image.width);
+      
+      // Draw for left eye
+      const leftEyeLeft = { x: mirrorX(positions[36].x), y: mirrorY(positions[36].y) };
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(leftEyeLeft.x, leftEyeLeft.y - 10);
+      ctx.lineTo(leftEyeInner.x, leftEyeInner.y - 10);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.strokeText(`عرض العين: ${eyeWidthCm.toFixed(2)} سم`, leftEyeLeft.x + (leftEyeInner.x - leftEyeLeft.x) / 2, leftEyeLeft.y - 25);
+      ctx.fillText(`عرض العين: ${eyeWidthCm.toFixed(2)} سم`, leftEyeLeft.x + (leftEyeInner.x - leftEyeLeft.x) / 2, leftEyeLeft.y - 25);
+    }
+    
+    // 2. Nose measurements (الأنف)
+    if (positions[27] && positions[30] && positions[31] && positions[35]) {
+      // Nose length (طول الأنف)
+      const noseLength = this.calculateDistance(positions[27], positions[33]);
+      const noseLengthCm = this.pixelsToCm(noseLength, image.width);
+      
+      const noseTop = { x: mirrorX(positions[27].x), y: mirrorY(positions[27].y) };
+      const noseTip = { x: mirrorX(positions[33].x), y: mirrorY(positions[33].y) };
+      
+      // Draw vertical dashed line
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = 'rgba(240, 147, 251, 0.8)';
+      ctx.beginPath();
+      ctx.moveTo(noseTip.x, noseTop.y);
+      ctx.lineTo(noseTip.x, noseTip.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeText(`طول الأنف: ${noseLengthCm.toFixed(2)} سم`, noseTip.x + 40, (noseTop.y + noseTip.y) / 2);
+      ctx.fillText(`طول الأنف: ${noseLengthCm.toFixed(2)} سم`, noseTip.x + 40, (noseTop.y + noseTip.y) / 2);
+      
+      // Golden triangle (المثلث الذهبي) - angle between eye corners and nose tip
+      if (positions[39] && positions[42] && positions[33]) {
+        const leftEyeInner = positions[39];
+        const rightEyeInner = positions[42];
+        const noseTipPos = positions[33];
+        const goldenAngle = this.calculateAngle(leftEyeInner, noseTipPos, rightEyeInner);
+        
+        // Draw triangle
+        const p1 = { x: mirrorX(leftEyeInner.x), y: mirrorY(leftEyeInner.y) };
+        const p2 = { x: mirrorX(rightEyeInner.x), y: mirrorY(rightEyeInner.y) };
+        const p3 = { x: mirrorX(noseTipPos.x), y: mirrorY(noseTipPos.y) };
+        
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.closePath();
+        ctx.stroke();
+        
+        // Label angle
+        ctx.fillStyle = '#ffd700';
+        ctx.strokeText(`المثلث الذهبي: ${goldenAngle.toFixed(1)}°`, p3.x, p3.y + 30);
+        ctx.fillText(`المثلث الذهبي: ${goldenAngle.toFixed(1)}°`, p3.x, p3.y + 30);
+      }
+    }
+    
+    // 3. Mouth measurements (الفم)
+    if (positions[48] && positions[54]) {
+      // Mouth width (عرض الفم)
+      const mouthWidth = this.calculateDistance(positions[48], positions[54]);
+      const mouthWidthCm = this.pixelsToCm(mouthWidth, image.width);
+      
+      const mouthLeft = { x: mirrorX(positions[48].x), y: mirrorY(positions[48].y) };
+      const mouthRight = { x: mirrorX(positions[54].x), y: mirrorY(positions[54].y) };
+      
+      // Draw dashed line
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = 'rgba(236, 72, 153, 0.8)';
+      ctx.beginPath();
+      ctx.moveTo(mouthLeft.x, mouthLeft.y);
+      ctx.lineTo(mouthRight.x, mouthRight.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label
+      const mouthMidX = (mouthLeft.x + mouthRight.x) / 2;
+      const mouthMidY = (mouthLeft.y + mouthRight.y) / 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeText(`عرض الفم: ${mouthWidthCm.toFixed(2)} سم`, mouthMidX, mouthMidY + 25);
+      ctx.fillText(`عرض الفم: ${mouthWidthCm.toFixed(2)} سم`, mouthMidX, mouthMidY + 25);
+    }
+    
+    // 4. Face width (عرض الوجه)
+    if (positions[0] && positions[16]) {
+      const faceWidth = this.calculateDistance(positions[0], positions[16]);
+      const faceWidthCm = this.pixelsToCm(faceWidth, image.width);
+      
+      const leftFace = { x: mirrorX(positions[0].x), y: mirrorY(positions[0].y) };
+      const rightFace = { x: mirrorX(positions[16].x), y: mirrorY(positions[16].y) };
+      
+      // Draw horizontal dashed line at jawline
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = 'rgba(48, 207, 208, 0.8)';
+      ctx.beginPath();
+      ctx.moveTo(leftFace.x, leftFace.y);
+      ctx.lineTo(rightFace.x, rightFace.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label
+      const faceMidX = (leftFace.x + rightFace.x) / 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeText(`عرض الوجه: ${faceWidthCm.toFixed(2)} سم`, faceMidX, leftFace.y + 20);
+      ctx.fillText(`عرض الوجه: ${faceWidthCm.toFixed(2)} سم`, faceMidX, leftFace.y + 20);
+    }
+    
+    // 5. Jawline angle (زاوية الفك)
+    if (positions[4] && positions[8] && positions[12]) {
+      const jawAngle = this.calculateAngle(positions[4], positions[8], positions[12]);
+      const jawPoint = { x: mirrorX(positions[8].x), y: mirrorY(positions[8].y) };
+      
+      // Draw angle lines
+      ctx.strokeStyle = 'rgba(48, 207, 208, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(mirrorX(positions[4].x), mirrorY(positions[4].y));
+      ctx.lineTo(jawPoint.x, jawPoint.y);
+      ctx.lineTo(mirrorX(positions[12].x), mirrorY(positions[12].y));
+      ctx.stroke();
+      
+      // Label
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeText(`زاوية الفك: ${jawAngle.toFixed(1)}°`, jawPoint.x + 30, jawPoint.y);
+      ctx.fillText(`زاوية الفك: ${jawAngle.toFixed(1)}°`, jawPoint.x + 30, jawPoint.y);
+    }
+    
+    ctx.restore();
   };
 
   /**
