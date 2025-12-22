@@ -146,24 +146,18 @@ const CameraPageContainer = styled.div`
 const CameraView = styled.div`
   position: relative;
   width: 100%;
-  max-width: min(90vw, 500px);
-  aspect-ratio: 3/4;
+  max-width: 7rem;
   background: #000;
-  border-radius: clamp(8px, 2vw, 16px);
+  border-radius: 0.3rem;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  margin-bottom: clamp(12px, 3vh, 24px);
-  
-  @media (min-width: 768px) {
-    max-width: min(70vw, 600px);
-  }
+  margin-bottom: 0.4rem;
 `;
 
 const Video = styled.video`
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
-  object-fit: cover;
   transform: scaleX(-1); /* Mirror for front camera */
 `;
 
@@ -181,21 +175,15 @@ const StartButton = styled.button`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: clamp(10px, 2vh, 16px) clamp(24px, 5vw, 40px);
-  font-size: clamp(14px, 3vw, 18px);
+  padding: 0.25rem 0.8rem;
+  font-size: 0.24rem;
   font-weight: 700;
-  border-radius: 50px;
+  border-radius: 2rem;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'SF Pro Display', -apple-system, sans-serif;
-  letter-spacing: 0.5px;
-  min-height: 44px; /* Touch target size */
-  
-  @media (min-width: 768px) {
-    padding: 12px 32px;
-    font-size: 16px;
-  }
+  letter-spacing: 0.02rem;
   
   &:hover {
     transform: translateY(-3px);
@@ -215,27 +203,22 @@ const StartButton = styled.button`
 
 const StatusText = styled.div`
   position: absolute;
-  top: clamp(12px, 3vh, 20px);
+  top: 0.4rem;
   left: 50%;
   transform: translateX(-50%);
   color: rgba(255, 255, 255, 0.95);
-  font-size: clamp(12px, 2.5vw, 16px);
+  font-size: 0.18rem;
   font-weight: 500;
   text-align: center;
   z-index: 8;
   pointer-events: none;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.02rem;
   font-family: 'SF Pro Display', -apple-system, sans-serif;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   background: rgba(0, 0, 0, 0.3);
-  padding: clamp(6px, 1.5vh, 10px) clamp(12px, 3vw, 20px);
-  border-radius: 50px;
+  padding: 0.1rem 0.3rem;
+  border-radius: 1rem;
   backdrop-filter: blur(10px);
-  
-  @media (min-width: 768px) {
-    font-size: 14px;
-    padding: 8px 16px;
-  }
 `;
 
 const LoadingOverlay = styled.div`
@@ -250,15 +233,10 @@ const LoadingOverlay = styled.div`
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: clamp(14px, 3vw, 18px);
+  font-size: 0.2rem;
   z-index: 1000;
-  gap: clamp(8px, 2vh, 16px);
+  gap: 0.2rem;
   font-family: 'SF Pro Display', -apple-system, sans-serif;
-  
-  @media (min-width: 768px) {
-    font-size: 16px;
-    gap: 12px;
-  }
 `;
 
 // ============================================
@@ -291,19 +269,12 @@ const AnalysisImage = styled.img`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scaleX(-1);
-  max-width: min(90vw, 90vh);
-  max-height: min(90vw, 90vh);
-  width: auto;
-  height: auto;
+  max-width: 90%;
+  max-height: 90%;
   z-index: 2;
-  border-radius: clamp(8px, 2vw, 16px);
+  border-radius: 0.2rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   object-fit: contain;
-  
-  @media (orientation: landscape) {
-    max-width: min(70vw, 80vh);
-    max-height: min(70vw, 80vh);
-  }
 `;
 
 const ScanningLine = styled.div`
@@ -311,7 +282,7 @@ const ScanningLine = styled.div`
   left: 0;
   right: 0;
   width: 100%;
-  height: clamp(2px, 0.5vh, 4px);
+  height: 3px;
   background: linear-gradient(
     to bottom,
     rgba(102, 126, 234, 0) 0%,
@@ -326,8 +297,8 @@ const ScanningLine = styled.div`
 
 const Particle = styled.div`
   position: absolute;
-  width: clamp(3px, 0.8vw, 6px);
-  height: clamp(3px, 0.8vw, 6px);
+  width: 4px;
+  height: 4px;
   background: radial-gradient(circle, rgba(102, 126, 234, 0.8) 0%, transparent 100%);
   border-radius: 50%;
   pointer-events: none;
@@ -340,43 +311,34 @@ const Particle = styled.div`
 
 const AnalysisStatusText = styled.div`
   position: absolute;
-  bottom: clamp(60px, 12vh, 100px);
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
   color: rgba(255, 255, 255, 0.95);
-  font-size: clamp(18px, 5vw, 28px);
+  font-size: 0.32rem;
   font-weight: 700;
   text-align: center;
   z-index: 10;
   pointer-events: none;
-  letter-spacing: clamp(1px, 0.3vw, 3px);
+  letter-spacing: 0.05rem;
   font-family: 'SF Pro Display', -apple-system, sans-serif;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   animation: ${glowPulse} 2s ease-in-out infinite;
   text-transform: uppercase;
-  
-  @media (min-width: 768px) {
-    font-size: 24px;
-    bottom: 80px;
-  }
 `;
 
 const ProgressBar = styled.div`
   position: absolute;
-  bottom: clamp(30px, 6vh, 50px);
+  bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  width: min(80vw, 400px);
-  height: clamp(3px, 0.8vh, 6px);
+  width: 80%;
+  max-width: 6rem;
+  height: 4px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
   overflow: hidden;
   z-index: 10;
-  
-  @media (min-width: 768px) {
-    width: min(60vw, 500px);
-    height: 4px;
-  }
 `;
 
 const ProgressFill = styled.div`
@@ -396,79 +358,44 @@ const ResultsPageContainer = styled.div`
   width: 100%;
   min-height: 100vh;
   background: #f8f9fa;
-  padding: clamp(12px, 3vw, 20px) clamp(10px, 2.5vw, 16px);
-  padding-bottom: clamp(60px, 12vh, 100px);
+  padding: 0.3rem 0.25rem;
+  padding-bottom: 1.5rem;
   overflow-y: auto;
-  
-  @media (min-width: 768px) {
-    padding: 20px 24px;
-    padding-bottom: 80px;
-  }
 `;
 
 const ResultsHeader = styled.div`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: clamp(16px, 4vw, 24px) clamp(12px, 3vw, 20px);
+  padding: 0.4rem 0.3rem;
   color: white;
-  margin: clamp(-12px, -3vw, -20px) clamp(-10px, -2.5vw, -16px) clamp(12px, 3vw, 20px) clamp(-10px, -2.5vw, -16px);
+  margin: -0.3rem -0.25rem 0.3rem -0.25rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
-  
-  @media (min-width: 768px) {
-    padding: 20px 24px;
-    margin: -20px -24px 20px -24px;
-  }
   
   h1 {
-    font-size: clamp(20px, 5vw, 28px);
+    font-size: 0.32rem;
     font-weight: 700;
-    margin: 0 0 clamp(6px, 1.5vh, 10px) 0;
+    margin: 0 0 0.1rem 0;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
-    letter-spacing: -0.5px;
-    
-    @media (min-width: 768px) {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
+    letter-spacing: -0.01rem;
   }
   
   p {
-    font-size: clamp(12px, 3vw, 16px);
+    font-size: 0.18rem;
     margin: 0;
     opacity: 0.9;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
-    line-height: 1.5;
-    
-    @media (min-width: 768px) {
-      font-size: 14px;
-    }
   }
 `;
 
 const ResultsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(150px, 45vw), 1fr));
-  gap: clamp(8px, 2vw, 16px);
-  margin-top: clamp(8px, 2vw, 16px);
-  
-  @media (min-width: 480px) {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  }
-  
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
-  }
-  
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
+  grid-template-columns: repeat(auto-fill, minmax(3rem, 1fr));
+  gap: 0.2rem;
+  margin-top: 0.2rem;
 `;
 
 const ResultCard = styled.div`
   background: white;
-  border-radius: clamp(8px, 2vw, 12px);
+  border-radius: 0.2rem;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -476,10 +403,6 @@ const ResultCard = styled.div`
   animation: ${fadeIn} 0.5s ease-out;
   animation-delay: ${props => props.delay || 0}s;
   animation-fill-mode: both;
-  
-  @media (min-width: 768px) {
-    border-radius: 12px;
-  }
   
   &:hover {
     transform: translateY(-4px);
@@ -509,48 +432,33 @@ const CardImage = styled.div`
 `;
 
 const CardContent = styled.div`
-  padding: clamp(10px, 2.5vw, 16px);
-  
-  @media (min-width: 768px) {
-    padding: 16px;
-  }
+  padding: 0.2rem;
   
   h3 {
-    font-size: clamp(14px, 3.5vw, 18px);
+    font-size: 0.2rem;
     font-weight: 700;
-    margin: 0 0 clamp(6px, 1.5vh, 10px) 0;
+    margin: 0 0 0.08rem 0;
     color: #2d3748;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
     display: flex;
     align-items: center;
-    gap: clamp(4px, 1vw, 8px);
-    
-    @media (min-width: 768px) {
-      font-size: 16px;
-      margin-bottom: 8px;
-      gap: 6px;
-    }
+    gap: 0.08rem;
   }
   
   p {
-    font-size: clamp(11px, 2.8vw, 14px);
+    font-size: 0.16rem;
     color: #718096;
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.4;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
-    
-    @media (min-width: 768px) {
-      font-size: 13px;
-      line-height: 1.4;
-    }
   }
 `;
 
 const ScoreBadge = styled.span`
   display: inline-block;
-  padding: clamp(2px, 0.5vh, 4px) clamp(6px, 1.5vw, 10px);
-  border-radius: clamp(4px, 1vw, 6px);
-  font-size: clamp(10px, 2.5vw, 13px);
+  padding: 0.03rem 0.1rem;
+  border-radius: 0.1rem;
+  font-size: 0.14rem;
   font-weight: 600;
   background: ${props => {
     if (props.score >= 80) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
@@ -558,191 +466,31 @@ const ScoreBadge = styled.span`
     return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
   }};
   color: white;
-  margin-right: clamp(3px, 0.8vw, 5px);
-  
-  @media (min-width: 768px) {
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-right: 4px;
-  }
+  margin-right: 0.05rem;
 `;
 
 const BackButton = styled.button`
   position: absolute;
-  top: clamp(12px, 3vw, 20px);
-  right: clamp(12px, 3vw, 20px);
+  top: 0.3rem;
+  right: 0.3rem;
   background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 50%;
-  width: clamp(36px, 9vw, 44px);
-  height: clamp(36px, 9vw, 44px);
+  width: 0.5rem;
+  height: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: white;
-  font-size: clamp(18px, 4.5vw, 24px);
+  font-size: 0.24rem;
   transition: all 0.3s ease;
   z-index: 100;
   backdrop-filter: blur(10px);
-  min-width: 44px; /* Touch target */
-  min-height: 44px;
-  
-  @media (min-width: 768px) {
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    top: 16px;
-    right: 16px;
-  }
   
   &:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: scale(1.1);
-  }
-`;
-
-const Instructions = styled.div`
-  color: rgba(255, 255, 255, 0.8);
-  font-size: clamp(12px, 2.5vw, 14px);
-  text-align: center;
-  max-width: min(400px, 90vw);
-  margin-top: clamp(8px, 2vh, 12px);
-  font-family: 'SF Pro Display', -apple-system, sans-serif;
-  line-height: 1.5;
-  
-  @media (min-width: 768px) {
-    font-size: 14px;
-  }
-`;
-
-const PercentageText = styled.div`
-  position: absolute;
-  top: -25px;
-  left: 0;
-  color: white;
-  font-size: clamp(12px, 2.5vw, 14px);
-  font-weight: 600;
-  font-family: 'SF Pro Display', -apple-system, sans-serif;
-  
-  @media (min-width: 768px) {
-    font-size: 14px;
-  }
-`;
-
-const OverallScore = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(12px, 3vw, 20px);
-  margin: clamp(12px, 3vh, 20px) 0;
-  
-  @media (min-width: 768px) {
-    gap: 20px;
-    margin: 20px 0;
-  }
-`;
-
-const ScoreCircle = styled.div`
-  width: clamp(60px, 15vw, 80px);
-  height: clamp(60px, 15vw, 80px);
-  border-radius: 50%;
-  background: ${props => {
-    if (props.score >= 80) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-    if (props.score >= 60) return 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)';
-    return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
-  }};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: clamp(18px, 4.5vw, 24px);
-  font-weight: 700;
-  font-family: 'SF Pro Display', -apple-system, sans-serif;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  
-  @media (min-width: 768px) {
-    width: 80px;
-    height: 80px;
-    font-size: 24px;
-  }
-`;
-
-const ScoreLabel = styled.div`
-  display: flex;
-  flex-direction: column;
-  
-  .score-title {
-    font-size: clamp(16px, 4vw, 18px);
-    font-weight: 600;
-    margin-bottom: clamp(4px, 1vh, 6px);
-    
-    @media (min-width: 768px) {
-      font-size: 18px;
-      margin-bottom: 5px;
-    }
-  }
-  
-  .score-description {
-    font-size: clamp(12px, 3vw, 14px);
-    opacity: 0.8;
-    
-    @media (min-width: 768px) {
-      font-size: 14px;
-    }
-  }
-`;
-
-const AnalysisSteps = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: clamp(20px, 5vw, 40px);
-  margin: clamp(20px, 5vh, 30px) 0;
-  padding: 0 clamp(10px, 2.5vw, 20px);
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-    gap: clamp(15px, 3vh, 20px);
-  }
-`;
-
-const Step = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(8px, 2vh, 10px);
-  
-  .step-icon {
-    width: clamp(40px, 10vw, 50px);
-    height: clamp(40px, 10vw, 50px);
-    border-radius: 50%;
-    background: ${props => props.active ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e2e8f0'};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: ${props => props.active ? 'white' : '#94a3b8'};
-    font-size: clamp(16px, 4vw, 20px);
-    font-weight: bold;
-    
-    @media (min-width: 768px) {
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
-    }
-  }
-  
-  .step-text {
-    font-size: clamp(12px, 2.8vw, 14px);
-    color: ${props => props.active ? '#2d3748' : '#94a3b8'};
-    font-weight: ${props => props.active ? '600' : '400'};
-    text-align: center;
-    font-family: 'SF Pro Display', -apple-system, sans-serif;
-    
-    @media (min-width: 768px) {
-      font-size: 14px;
-    }
   }
 `;
 
@@ -1944,21 +1692,6 @@ class SoYoungFaceAnalysis extends Component {
     return (
       <PageWrapper active={this.state.currentPage === 'camera'} enter={this.state.pageEnter}>
         <CameraPageContainer>
-          <AnalysisSteps>
-            <Step active={true}>
-              <div className="step-icon">1</div>
-              <div className="step-text">Capture Face</div>
-            </Step>
-            <Step active={false}>
-              <div className="step-icon">2</div>
-              <div className="step-text">Analysis</div>
-            </Step>
-            <Step active={false}>
-              <div className="step-icon">3</div>
-              <div className="step-text">Results</div>
-            </Step>
-          </AnalysisSteps>
-          
           <StatusText>
             {!isStreaming ? 'Position your face in the frame' : 
              currentLandmarks ? 'Face detected ✓' : 'Detecting face...'}
@@ -1977,7 +1710,7 @@ class SoYoungFaceAnalysis extends Component {
             {modelsLoading && (
               <LoadingOverlay>
                 <div>Loading AI Models...</div>
-                <div style={{ fontSize: 'clamp(12px, 2.5vw, 14px)', opacity: 0.8 }}>Please wait</div>
+                <div style={{ fontSize: '0.16rem', opacity: 0.8 }}>Please wait</div>
               </LoadingOverlay>
             )}
           </CameraView>
@@ -1986,10 +1719,10 @@ class SoYoungFaceAnalysis extends Component {
             <div style={{ 
               background: '#ffebee', 
               color: '#c62828', 
-              padding: 'clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px)', 
-              borderRadius: 'clamp(4px, 1vw, 8px)',
-              fontSize: 'clamp(12px, 2.5vw, 14px)',
-              marginBottom: 'clamp(10px, 2.5vw, 14px)',
+              padding: '0.2rem 0.4rem', 
+              borderRadius: '0.1rem',
+              fontSize: '0.16rem',
+              marginBottom: '0.2rem',
               maxWidth: '90%',
               textAlign: 'center'
             }}>
@@ -1998,31 +1731,21 @@ class SoYoungFaceAnalysis extends Component {
           )}
           
           {!isStreaming && (
-            <>
-              <StartButton 
-                onClick={this.startCamera}
-                disabled={modelsLoading || !this.modelsLoaded}
-              >
-                {modelsLoading ? 'Loading...' : 'Start Camera'}
-              </StartButton>
-              <Instructions>
-                Make sure your face is well-lit and centered in the frame
-              </Instructions>
-            </>
+            <StartButton 
+              onClick={this.startCamera}
+              disabled={modelsLoading || !this.modelsLoaded}
+            >
+              {modelsLoading ? 'Loading...' : 'Start Camera'}
+            </StartButton>
           )}
           
           {isStreaming && (
-            <>
-              <StartButton 
-                onClick={this.handleStartAnalysis}
-                disabled={!currentLandmarks}
-              >
-                Start Analysis
-              </StartButton>
-              <Instructions>
-                Hold still and press the button when your face is properly aligned
-              </Instructions>
-            </>
+            <StartButton 
+              onClick={this.handleStartAnalysis}
+              disabled={!currentLandmarks}
+            >
+              Start Analysis
+            </StartButton>
           )}
         </CameraPageContainer>
       </PageWrapper>
@@ -2038,21 +1761,6 @@ class SoYoungFaceAnalysis extends Component {
     return (
       <PageWrapper active={this.state.currentPage === 'analysis'} enter={this.state.pageEnter}>
         <AnalysisPageContainer>
-          <AnalysisSteps>
-            <Step active={false}>
-              <div className="step-icon">1</div>
-              <div className="step-text">Capture Face</div>
-            </Step>
-            <Step active={true}>
-              <div className="step-icon">2</div>
-              <div className="step-text">Analysis</div>
-            </Step>
-            <Step active={false}>
-              <div className="step-icon">3</div>
-              <div className="step-text">Results</div>
-            </Step>
-          </AnalysisSteps>
-          
           {this.capturedImageData && (
             <AnalysisImage 
               src={this.capturedImageData} 
@@ -2064,7 +1772,6 @@ class SoYoungFaceAnalysis extends Component {
           <AnalysisStatusText>{analysisStatus}</AnalysisStatusText>
           <ProgressBar>
             <ProgressFill progress={analysisProgress} />
-            <PercentageText>{Math.round(analysisProgress)}%</PercentageText>
           </ProgressBar>
         </AnalysisPageContainer>
       </PageWrapper>
@@ -2083,39 +1790,18 @@ class SoYoungFaceAnalysis extends Component {
       <PageWrapper active={this.state.currentPage === 'results'} enter={this.state.pageEnter}>
         <ResultsPageContainer>
           <ResultsHeader>
-            <BackButton onClick={this.handleBack}>←</BackButton>
+            <BackButton onClick={this.handleBack}>×</BackButton>
             <h1>Analysis Results</h1>
-            <OverallScore>
-              <ScoreCircle score={analysisResults.overall.score}>
-                {analysisResults.overall.score}
-              </ScoreCircle>
-              <ScoreLabel>
-                <div className="score-title">Overall Score</div>
-                <div className="score-description">{analysisResults.overall.description}</div>
-                {analysisResults.overall.age && (
-                  <div className="score-description">
-                    Age: {analysisResults.overall.age}
-                    {analysisResults.overall.gender && ` • ${analysisResults.overall.gender}`}
-                  </div>
-                )}
-              </ScoreLabel>
-            </OverallScore>
+            <p>
+              Overall Score: {analysisResults.overall.score}/100
+              {analysisResults.overall.age && (
+                <span style={{ marginRight: '0.2rem' }}>
+                  • Age: {analysisResults.overall.age}
+                  {analysisResults.overall.gender && ` (${analysisResults.overall.gender})`}
+                </span>
+              )}
+            </p>
           </ResultsHeader>
-          
-          <AnalysisSteps>
-            <Step active={false}>
-              <div className="step-icon">1</div>
-              <div className="step-text">Capture Face</div>
-            </Step>
-            <Step active={false}>
-              <div className="step-icon">2</div>
-              <div className="step-text">Analysis</div>
-            </Step>
-            <Step active={true}>
-              <div className="step-icon">3</div>
-              <div className="step-text">Results</div>
-            </Step>
-          </AnalysisSteps>
           
           <ResultsGrid>
             {analysisResults.regions.map((region, index) => (

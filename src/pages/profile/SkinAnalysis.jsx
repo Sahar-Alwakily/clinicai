@@ -437,18 +437,18 @@ class SkinAnalysis extends Component {
         </AnalysisCard>
 
         {aiAnalysis && (
-          <AnalysisCard>
+        <AnalysisCard>
             <SectionTitle>📊 نتائج التحليل</SectionTitle>
-            
-            <AnalysisItem>
+          
+          <AnalysisItem>
               <div className="item-label">العمر المتوقع</div>
               <div className="item-value">
                 {aiAnalysis.age} سنة
                 <span style={{ 
                   display: 'inline-block',
-                  padding: '0.05rem 0.1rem',
-                  borderRadius: '0.1rem',
-                  fontSize: '0.14rem',
+                    padding: '0.05rem 0.1rem',
+                    borderRadius: '0.1rem',
+                    fontSize: '0.14rem',
                   fontWeight: 500,
                   background: '#e3f2fd', 
                   color: '#1565c0', 
@@ -467,7 +467,7 @@ class SkinAnalysis extends Component {
                 {aiAnalysis.skinType && aiAnalysis.skinType.confidence > 0 && (
                   <span style={{ fontSize: '0.14rem', color: '#718096', marginRight: '0.05rem' }}>
                     ({aiAnalysis.skinType.confidence}% دقة)
-                  </span>
+                </span>
                 )}
               </div>
             </AnalysisItem>
@@ -485,10 +485,10 @@ class SkinAnalysis extends Component {
               </ScoreBar>
               <div className="item-description">
                 الجبهة: {aiAnalysis.wrinkles.forehead} | العينان: {aiAnalysis.wrinkles.eyes} | حول الفم: {aiAnalysis.wrinkles.mouth}
-              </div>
-            </AnalysisItem>
-
-            <AnalysisItem>
+            </div>
+          </AnalysisItem>
+          
+          <AnalysisItem>
               <div className="item-label">الترهل</div>
               <div className="item-value">
                 <Badge type={this.getSeverityBadgeType(aiAnalysis.sagging.severity)}>
@@ -813,20 +813,20 @@ class SkinAnalysis extends Component {
 
             <AnalysisItem>
               <div className="item-label">التوصيات العامة</div>
-              <div style={{ marginTop: '0.08rem' }}>
+            <div style={{ marginTop: '0.08rem' }}>
                 {aiAnalysis.recommendations && aiAnalysis.recommendations.map((rec, index) => (
-                  <div key={index} className="item-description" style={{ marginBottom: '0.05rem' }}>
-                    • {rec}
-                  </div>
-                ))}
-              </div>
-            </AnalysisItem>
-
-            <AnalysisItem>
+                <div key={index} className="item-description" style={{ marginBottom: '0.05rem' }}>
+                  • {rec}
+                </div>
+              ))}
+            </div>
+          </AnalysisItem>
+          
+          <AnalysisItem>
               <div className="item-label">تاريخ التحليل</div>
               <div className="item-value">{aiAnalysis.lastUpdate}</div>
-            </AnalysisItem>
-          </AnalysisCard>
+          </AnalysisItem>
+        </AnalysisCard>
         )}
 
         {!aiAnalysis && (
