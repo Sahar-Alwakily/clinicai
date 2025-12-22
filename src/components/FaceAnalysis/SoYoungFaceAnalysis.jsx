@@ -945,8 +945,8 @@ class SoYoungFaceAnalysis extends Component {
     this.drawAnimatedConnections(ctx, positions, imgX, imgY, scaleX, scaleY, progress);
     
     // Draw facial measurements with Arabic labels (animated)
-    if (progress > 30) { // Start showing measurements after 30% progress
-      const measurementProgress = Math.min(1, (progress - 30) / 40); // Show over 30-70% progress
+    if (progress > 20) { // Start showing measurements after 20% progress
+      const measurementProgress = Math.min(1, (progress - 20) / 60); // Show over 20-80% progress
       this.drawFacialMeasurements(ctx, positions, imgX, imgY, scaleX, scaleY, image, measurementProgress);
     }
     
@@ -1092,17 +1092,24 @@ class SoYoungFaceAnalysis extends Component {
    * Draw facial measurements with Arabic labels
    */
   drawFacialMeasurements = (ctx, positions, offsetX, offsetY, scaleX, scaleY, image, progress) => {
+    if (!positions || positions.length < 68) return;
+    
     ctx.save();
     ctx.globalAlpha = progress;
     
-    const mirrorX = (x) => offsetX + (ctx.canvas.width - x * scaleX);
-    const mirrorY = (y) => offsetY + y * scaleY;
+    // Calculate image width on canvas
+    const imgWidth = image.width * scaleX;
+    const imgHeight = image.height * scaleY;
     
-    // Set up text style
-    ctx.font = 'bold 14px Arial, sans-serif';
+    // Mirror function to match the image display
+    const mirrorX = (x) => offsetX + imgWidth - (x * scaleX);
+    const mirrorY = (y) => offsetY + (y * scaleY);
+    
+    // Set up text style - larger and more visible
+    ctx.font = 'bold 18px Arial, "Arabic Typesetting", sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.lineWidth = 4;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -1116,21 +1123,30 @@ class SoYoungFaceAnalysis extends Component {
       const rightEyeInner = { x: mirrorX(positions[42].x), y: mirrorY(positions[42].y) };
       
       // Draw dashed line
-      ctx.setLineDash([5, 5]);
-      ctx.strokeStyle = 'rgba(102, 126, 234, 0.8)';
-      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 4]);
+      ctx.strokeStyle = 'rgba(102, 126, 234, 1)';
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(leftEyeInner.x, leftEyeInner.y);
       ctx.lineTo(rightEyeInner.x, rightEyeInner.y);
       ctx.stroke();
       ctx.setLineDash([]);
       
-      // Label
+      // Label with background for better visibility
       const midX = (leftEyeInner.x + rightEyeInner.x) / 2;
       const midY = (leftEyeInner.y + rightEyeInner.y) / 2;
+      const labelText = `المسافة بين العينين: ${innerEyeDistCm.toFixed(2)} سم`;
+      const textMetrics = ctx.measureText(labelText);
+      const textWidth = textMetrics.width;
+      const textHeight = 20;
+      
+      // Draw background rectangle
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(midX - textWidth / 2 - 8, midY - textHeight - 30, textWidth + 16, textHeight + 8);
+      
       ctx.fillStyle = '#ffffff';
-      ctx.strokeText(`المسافة بين العينين: ${innerEyeDistCm.toFixed(2)} سم`, midX, midY - 20);
-      ctx.fillText(`المسافة بين العينين: ${innerEyeDistCm.toFixed(2)} سم`, midX, midY - 20);
+      ctx.strokeText(labelText, midX, midY - 20);
+      ctx.fillText(labelText, midX, midY - 20);
       
       // Eye width (عرض العين)
       const leftEyeWidth = this.calculateDistance(positions[36], positions[39]);
@@ -1140,14 +1156,27 @@ class SoYoungFaceAnalysis extends Component {
       
       // Draw for left eye
       const leftEyeLeft = { x: mirrorX(positions[36].x), y: mirrorY(positions[36].y) };
-      ctx.setLineDash([5, 5]);
+      ctx.setLineDash([8, 4]);
+      ctx.strokeStyle = 'rgba(102, 126, 234, 1)';
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(leftEyeLeft.x, leftEyeLeft.y - 10);
-      ctx.lineTo(leftEyeInner.x, leftEyeInner.y - 10);
+      ctx.moveTo(leftEyeLeft.x, leftEyeLeft.y - 15);
+      ctx.lineTo(leftEyeInner.x, leftEyeInner.y - 15);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.strokeText(`عرض العين: ${eyeWidthCm.toFixed(2)} سم`, leftEyeLeft.x + (leftEyeInner.x - leftEyeLeft.x) / 2, leftEyeLeft.y - 25);
-      ctx.fillText(`عرض العين: ${eyeWidthCm.toFixed(2)} سم`, leftEyeLeft.x + (leftEyeInner.x - leftEyeLeft.x) / 2, leftEyeLeft.y - 25);
+      
+      const eyeLabelText = `عرض العين: ${eyeWidthCm.toFixed(2)} سم`;
+      const eyeLabelX = leftEyeLeft.x + (leftEyeInner.x - leftEyeLeft.x) / 2;
+      const eyeLabelY = leftEyeLeft.y - 40;
+      const eyeTextMetrics = ctx.measureText(eyeLabelText);
+      
+      // Draw background
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(eyeLabelX - eyeTextMetrics.width / 2 - 8, eyeLabelY - 14, eyeTextMetrics.width + 16, 22);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeText(eyeLabelText, eyeLabelX, eyeLabelY);
+      ctx.fillText(eyeLabelText, eyeLabelX, eyeLabelY);
     }
     
     // 2. Nose measurements (الأنف)
@@ -1160,8 +1189,9 @@ class SoYoungFaceAnalysis extends Component {
       const noseTip = { x: mirrorX(positions[33].x), y: mirrorY(positions[33].y) };
       
       // Draw vertical dashed line
-      ctx.setLineDash([5, 5]);
-      ctx.strokeStyle = 'rgba(240, 147, 251, 0.8)';
+      ctx.setLineDash([8, 4]);
+      ctx.strokeStyle = 'rgba(240, 147, 251, 1)';
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(noseTip.x, noseTop.y);
       ctx.lineTo(noseTip.x, noseTip.y);
@@ -1169,9 +1199,17 @@ class SoYoungFaceAnalysis extends Component {
       ctx.setLineDash([]);
       
       // Label
+      const noseLabelText = `طول الأنف: ${noseLengthCm.toFixed(2)} سم`;
+      const noseLabelX = noseTip.x + 50;
+      const noseLabelY = (noseTop.y + noseTip.y) / 2;
+      const noseTextMetrics = ctx.measureText(noseLabelText);
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(noseLabelX - noseTextMetrics.width / 2 - 8, noseLabelY - 14, noseTextMetrics.width + 16, 22);
+      
       ctx.fillStyle = '#ffffff';
-      ctx.strokeText(`طول الأنف: ${noseLengthCm.toFixed(2)} سم`, noseTip.x + 40, (noseTop.y + noseTip.y) / 2);
-      ctx.fillText(`طول الأنف: ${noseLengthCm.toFixed(2)} سم`, noseTip.x + 40, (noseTop.y + noseTip.y) / 2);
+      ctx.strokeText(noseLabelText, noseLabelX, noseLabelY);
+      ctx.fillText(noseLabelText, noseLabelX, noseLabelY);
       
       // Golden triangle (المثلث الذهبي) - angle between eye corners and nose tip
       if (positions[39] && positions[42] && positions[33]) {
@@ -1195,9 +1233,15 @@ class SoYoungFaceAnalysis extends Component {
         ctx.stroke();
         
         // Label angle
+        const triangleLabelText = `المثلث الذهبي: ${goldenAngle.toFixed(1)}°`;
+        const triangleTextMetrics = ctx.measureText(triangleLabelText);
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillRect(p3.x - triangleTextMetrics.width / 2 - 8, p3.y + 15, triangleTextMetrics.width + 16, 22);
+        
         ctx.fillStyle = '#ffd700';
-        ctx.strokeText(`المثلث الذهبي: ${goldenAngle.toFixed(1)}°`, p3.x, p3.y + 30);
-        ctx.fillText(`المثلث الذهبي: ${goldenAngle.toFixed(1)}°`, p3.x, p3.y + 30);
+        ctx.strokeText(triangleLabelText, p3.x, p3.y + 30);
+        ctx.fillText(triangleLabelText, p3.x, p3.y + 30);
       }
     }
     
@@ -1211,8 +1255,9 @@ class SoYoungFaceAnalysis extends Component {
       const mouthRight = { x: mirrorX(positions[54].x), y: mirrorY(positions[54].y) };
       
       // Draw dashed line
-      ctx.setLineDash([5, 5]);
-      ctx.strokeStyle = 'rgba(236, 72, 153, 0.8)';
+      ctx.setLineDash([8, 4]);
+      ctx.strokeStyle = 'rgba(236, 72, 153, 1)';
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(mouthLeft.x, mouthLeft.y);
       ctx.lineTo(mouthRight.x, mouthRight.y);
@@ -1222,9 +1267,15 @@ class SoYoungFaceAnalysis extends Component {
       // Label
       const mouthMidX = (mouthLeft.x + mouthRight.x) / 2;
       const mouthMidY = (mouthLeft.y + mouthRight.y) / 2;
+      const mouthLabelText = `عرض الفم: ${mouthWidthCm.toFixed(2)} سم`;
+      const mouthTextMetrics = ctx.measureText(mouthLabelText);
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(mouthMidX - mouthTextMetrics.width / 2 - 8, mouthMidY + 10, mouthTextMetrics.width + 16, 22);
+      
       ctx.fillStyle = '#ffffff';
-      ctx.strokeText(`عرض الفم: ${mouthWidthCm.toFixed(2)} سم`, mouthMidX, mouthMidY + 25);
-      ctx.fillText(`عرض الفم: ${mouthWidthCm.toFixed(2)} سم`, mouthMidX, mouthMidY + 25);
+      ctx.strokeText(mouthLabelText, mouthMidX, mouthMidY + 25);
+      ctx.fillText(mouthLabelText, mouthMidX, mouthMidY + 25);
     }
     
     // 4. Face width (عرض الوجه)
@@ -1236,8 +1287,9 @@ class SoYoungFaceAnalysis extends Component {
       const rightFace = { x: mirrorX(positions[16].x), y: mirrorY(positions[16].y) };
       
       // Draw horizontal dashed line at jawline
-      ctx.setLineDash([5, 5]);
-      ctx.strokeStyle = 'rgba(48, 207, 208, 0.8)';
+      ctx.setLineDash([8, 4]);
+      ctx.strokeStyle = 'rgba(48, 207, 208, 1)';
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(leftFace.x, leftFace.y);
       ctx.lineTo(rightFace.x, rightFace.y);
@@ -1246,9 +1298,15 @@ class SoYoungFaceAnalysis extends Component {
       
       // Label
       const faceMidX = (leftFace.x + rightFace.x) / 2;
+      const faceLabelText = `عرض الوجه: ${faceWidthCm.toFixed(2)} سم`;
+      const faceTextMetrics = ctx.measureText(faceLabelText);
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(faceMidX - faceTextMetrics.width / 2 - 8, leftFace.y + 5, faceTextMetrics.width + 16, 22);
+      
       ctx.fillStyle = '#ffffff';
-      ctx.strokeText(`عرض الوجه: ${faceWidthCm.toFixed(2)} سم`, faceMidX, leftFace.y + 20);
-      ctx.fillText(`عرض الوجه: ${faceWidthCm.toFixed(2)} سم`, faceMidX, leftFace.y + 20);
+      ctx.strokeText(faceLabelText, faceMidX, leftFace.y + 20);
+      ctx.fillText(faceLabelText, faceMidX, leftFace.y + 20);
     }
     
     // 5. Jawline angle (زاوية الفك)
@@ -1257,8 +1315,8 @@ class SoYoungFaceAnalysis extends Component {
       const jawPoint = { x: mirrorX(positions[8].x), y: mirrorY(positions[8].y) };
       
       // Draw angle lines
-      ctx.strokeStyle = 'rgba(48, 207, 208, 0.6)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(48, 207, 208, 1)';
+      ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(mirrorX(positions[4].x), mirrorY(positions[4].y));
       ctx.lineTo(jawPoint.x, jawPoint.y);
@@ -1266,9 +1324,15 @@ class SoYoungFaceAnalysis extends Component {
       ctx.stroke();
       
       // Label
+      const jawLabelText = `زاوية الفك: ${jawAngle.toFixed(1)}°`;
+      const jawTextMetrics = ctx.measureText(jawLabelText);
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(jawPoint.x + 15, jawPoint.y - 14, jawTextMetrics.width + 16, 22);
+      
       ctx.fillStyle = '#ffffff';
-      ctx.strokeText(`زاوية الفك: ${jawAngle.toFixed(1)}°`, jawPoint.x + 30, jawPoint.y);
-      ctx.fillText(`زاوية الفك: ${jawAngle.toFixed(1)}°`, jawPoint.x + 30, jawPoint.y);
+      ctx.strokeText(jawLabelText, jawPoint.x + 35, jawPoint.y);
+      ctx.fillText(jawLabelText, jawPoint.x + 35, jawPoint.y);
     }
     
     ctx.restore();
