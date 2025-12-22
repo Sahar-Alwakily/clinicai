@@ -4,6 +4,7 @@ import styled from "styled-components";
 import BottomNav from "../../components/bottomNav/BottomNav";
 import FaceAnalysis from "../../components/FaceAnalysis/FaceAnalysis";
 import RealTimeFaceAnalysis from "../../components/FaceAnalysis/RealTimeFaceAnalysis";
+import SoYoungFaceAnalysis from "../../components/FaceAnalysis/SoYoungFaceAnalysis";
 
 const SkinAnalysisContainer = styled.div`
   min-height: 100vh;
@@ -161,7 +162,7 @@ const SectionTitle = styled.div`
 class SkinAnalysis extends Component {
   state = {
     aiAnalysis: null,
-    useRealTime: false, // Toggle between real-time and capture mode
+    analysisMode: 'soyoung', // 'soyoung', 'realtime', 'capture'
     analysis: {
       skinType: "بشرة دهنية",
       concerns: ["حب الشباب", "البقع الداكنة", "المسام الواسعة"],
@@ -292,26 +293,63 @@ class SkinAnalysis extends Component {
           <h1>🔬 تحليل البشرة بالذكاء الاصطناعي</h1>
         </Header>
 
-        <AnalysisCard style={{ marginTop: '0.2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.15rem' }}>
-            <SectionTitle>📷 تحليل الوجه</SectionTitle>
-            <button
-              onClick={() => this.setState({ useRealTime: !this.state.useRealTime })}
-              style={{
-                padding: '0.08rem 0.15rem',
-                fontSize: '0.14rem',
-                background: this.state.useRealTime ? '#667eea' : '#e0e0e0',
-                color: this.state.useRealTime ? 'white' : '#666',
-                border: 'none',
-                borderRadius: '0.1rem',
-                cursor: 'pointer',
-                fontWeight: 500
-              }}
-            >
-              {this.state.useRealTime ? '⚡ Real-Time' : '📸 Capture'}
-            </button>
+        <AnalysisCard style={{ marginTop: '0.2rem', padding: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+            <SectionTitle style={{ color: 'white', margin: 0 }}>📷 تحليل الوجه</SectionTitle>
+            <div style={{ display: 'flex', gap: '0.1rem' }}>
+              <button
+                onClick={() => this.setState({ analysisMode: 'soyoung' })}
+                style={{
+                  padding: '0.06rem 0.12rem',
+                  fontSize: '0.13rem',
+                  background: this.state.analysisMode === 'soyoung' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.1rem',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                ✨ SoYoung
+              </button>
+              <button
+                onClick={() => this.setState({ analysisMode: 'realtime' })}
+                style={{
+                  padding: '0.06rem 0.12rem',
+                  fontSize: '0.13rem',
+                  background: this.state.analysisMode === 'realtime' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.1rem',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                ⚡ Real-Time
+              </button>
+              <button
+                onClick={() => this.setState({ analysisMode: 'capture' })}
+                style={{
+                  padding: '0.06rem 0.12rem',
+                  fontSize: '0.13rem',
+                  background: this.state.analysisMode === 'capture' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.1rem',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                📸 Capture
+              </button>
+            </div>
           </div>
-          {this.state.useRealTime ? (
+          {this.state.analysisMode === 'soyoung' ? (
+            <SoYoungFaceAnalysis 
+              onAnalysisComplete={this.handleAnalysisComplete}
+              onModelsLoaded={() => console.log('SoYoung models loaded')}
+            />
+          ) : this.state.analysisMode === 'realtime' ? (
             <RealTimeFaceAnalysis onModelsLoaded={() => console.log('Real-time models loaded')} />
           ) : (
             <FaceAnalysis onAnalysisComplete={this.handleAnalysisComplete} />
