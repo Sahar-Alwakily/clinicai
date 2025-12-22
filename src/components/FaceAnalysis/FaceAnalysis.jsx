@@ -1,6 +1,15 @@
 import React, { Component } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import * as faceapi from "face-api.js";
+
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
 import { 
   analyzeAdvancedSkin, 
   analyzeSkinProblems, 
@@ -33,141 +42,161 @@ const WelcomePage = styled(Page)`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.4rem;
+  padding: 0.6rem 0.4rem;
   text-align: center;
   color: white;
+  min-height: 100vh;
 `;
 
 const WelcomeImage = styled.div`
-  width: 2.5rem;
-  height: 2.5rem;
-  background: rgba(255, 255, 255, 0.2);
+  width: 1.2rem;
+  height: 1.2rem;
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
-  margin-bottom: 0.3rem;
-  backdrop-filter: blur(10px);
+  font-size: 0.6rem;
+  margin-bottom: 0.4rem;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 `;
 
 const WelcomeTitle = styled.h1`
-  font-size: 0.36rem;
-  font-weight: 600;
-  margin: 0 0 0.15rem 0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  font-size: 0.42rem;
+  font-weight: 700;
+  margin: 0 0 0.2rem 0;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.01rem;
 `;
 
 const WelcomeSubtitle = styled.p`
-  font-size: 0.18rem;
-  opacity: 0.9;
-  margin: 0 0 0.4rem 0;
-  line-height: 1.5;
+  font-size: 0.2rem;
+  opacity: 0.95;
+  margin: 0 0 0.6rem 0;
+  line-height: 1.6;
+  max-width: 5rem;
 `;
 
 const StartButton = styled.button`
   background: white;
   color: #667eea;
   border: none;
-  padding: 0.2rem 0.5rem;
-  font-size: 0.22rem;
-  font-weight: 600;
-  border-radius: 0.25rem;
+  padding: 0.24rem 0.8rem;
+  font-size: 0.24rem;
+  font-weight: 700;
+  border-radius: 2rem;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
   }
   
   &:active {
-    transform: translateY(0);
+    transform: translateY(-1px);
   }
 `;
 
 // Results Page Styles
 const ResultsPage = styled(Page)`
-  background: #f5f5f5;
-  padding: 0.2rem;
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 0.3rem;
   overflow-y: auto;
+  min-height: 100vh;
 `;
 
 const ResultsHeader = styled.div`
   background: white;
-  padding: 0.3rem;
-  border-radius: 0.15rem;
-  margin-bottom: 0.2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 0.4rem;
+  border-radius: 0.2rem;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 `;
 
 const ThumbnailImage = styled.img`
   width: 100%;
-  max-width: 3rem;
+  max-width: 4rem;
   height: auto;
-  border-radius: 0.1rem;
-  margin-bottom: 0.15rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0.15rem;
+  margin-bottom: 0.2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 3px solid white;
 `;
 
 const ResultsTitle = styled.h2`
-  font-size: 0.24rem;
-  font-weight: 600;
+  font-size: 0.28rem;
+  font-weight: 700;
   margin: 0 0 0.1rem 0;
-  color: #333;
+  color: #2d3748;
+  letter-spacing: -0.005rem;
 `;
 
 const ResultsSubtitle = styled.p`
-  font-size: 0.16rem;
-  color: #666;
+  font-size: 0.18rem;
+  color: #718096;
   margin: 0;
+  line-height: 1.5;
 `;
 
 const RegionCards = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
 `;
 
 const RegionCard = styled.div`
   background: white;
-  border-radius: 0.15rem;
-  padding: 0.2rem;
+  border-radius: 0.2rem;
+  padding: 0.3rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border: ${props => props.active ? '2px solid #667eea' : '2px solid transparent'};
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+  
+  &:active {
+    transform: translateY(-1px);
   }
 `;
 
 const RegionHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.15rem;
-  margin-bottom: 0.1rem;
+  gap: 0.2rem;
+  margin-bottom: 0.15rem;
 `;
 
 const RegionIcon = styled.div`
-  font-size: 0.24rem;
+  font-size: 0.28rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0.1rem;
 `;
 
 const RegionName = styled.h3`
-  font-size: 0.2rem;
-  font-weight: 600;
+  font-size: 0.22rem;
+  font-weight: 700;
   margin: 0;
-  color: #333;
+  color: #2d3748;
+  flex: 1;
 `;
 
 const RegionDescription = styled.p`
-  font-size: 0.16rem;
-  color: #666;
-  margin: 0.1rem 0 0 0;
-  line-height: 1.4;
+  font-size: 0.18rem;
+  color: #718096;
+  margin: 0.1rem 0 0 0.7rem;
+  line-height: 1.5;
 `;
 
 const RegionDetailView = styled.div`
@@ -239,9 +268,10 @@ const CameraContainer = styled.div`
   position: relative;
   width: 100%;
   background: #000;
-  border-radius: 0.15rem;
+  border-radius: 0.2rem;
   overflow: hidden;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 `;
 
 const Video = styled.video`
@@ -356,9 +386,10 @@ const MetricsChart = styled.div`
 
 const Controls = styled.div`
   display: flex;
-  gap: 0.15rem;
+  gap: 0.2rem;
   justify-content: center;
-  margin: 0.2rem 0;
+  margin: 0.3rem 0;
+  flex-wrap: wrap;
 `;
 
 const Button = styled.button`
@@ -432,6 +463,13 @@ const ErrorMessage = styled.div`
   margin: 0.15rem 0;
   font-size: 0.16rem;
   text-align: center;
+`;
+
+const Spinner = styled.div`
+  font-size: 0.4rem;
+  margin-bottom: 0.2rem;
+  animation: ${spin} 1s linear infinite;
+  display: inline-block;
 `;
 
 class FaceAnalysis extends Component {
@@ -578,14 +616,9 @@ class FaceAnalysis extends Component {
     const imageData = canvas.toDataURL('image/jpeg');
     this.setState({ 
       capturedImage: imageData,
-      currentPage: 'analyzing'
+      currentPage: 'camera' // Stay on camera page to show analyze button
     });
     this.stopCamera();
-    
-    // Start analysis automatically
-    setTimeout(() => {
-      this.analyzeFace();
-    }, 500);
   };
 
   drawMedicalOverlay = (landmarks, canvas, image, step) => {
@@ -2265,13 +2298,13 @@ class FaceAnalysis extends Component {
   };
 
   renderAnalyzingPage = () => {
-    const { capturedImage } = this.state;
+    const { capturedImage, isAnalyzing, statusText } = this.state;
     const showImage = !!capturedImage;
 
     return (
       <Page show={this.state.currentPage === 'analyzing'}>
-        <CameraContainer style={{ height: '100vh' }}>
-          <ImageWrapper style={{ height: '100%' }}>
+        <CameraContainer style={{ minHeight: '70vh', height: 'auto' }}>
+          <ImageWrapper style={{ minHeight: '70vh', position: 'relative' }}>
             <CapturedImage 
               ref={this.imageRef}
               src={capturedImage}
@@ -2280,20 +2313,30 @@ class FaceAnalysis extends Component {
               zoomTransform={this.state.zoomTransform}
               transitionDuration={this.state.zoomTransform?.transitionDuration || 0.8}
               transformOrigin="center center"
+              style={{ borderRadius: '0.2rem' }}
             />
             <AnalysisOverlayCanvas
               ref={this.overlayCanvasRef}
               show={showImage && this.state.showOverlay}
             />
             <AnalysisStatusText 
-              visible={!!this.state.statusText}
+              visible={!!statusText}
             >
-              {this.state.statusText}
+              {statusText || 'جاري التحليل...'}
             </AnalysisStatusText>
             {this.state.showMetricsChart && (
               <MetricsChart visible={this.state.showMetricsChart}>
                 <canvas ref={el => { if (el) this.metricsChartCanvas = el; }} width={120} height={120} />
               </MetricsChart>
+            )}
+            {isAnalyzing && !this.state.showOverlay && (
+              <LoadingOverlay style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <Spinner>⏳</Spinner>
+                  <div style={{ fontSize: '0.2rem', marginTop: '0.2rem' }}>جاري تحليل الوجه...</div>
+                  <div style={{ fontSize: '0.16rem', marginTop: '0.1rem', opacity: 0.8 }}>يرجى الانتظار</div>
+                </div>
+              </LoadingOverlay>
             )}
           </ImageWrapper>
         </CameraContainer>
