@@ -1052,9 +1052,9 @@ class SoYoungFaceAnalysis extends Component {
   /**
    * Navigate to results page
    */
-  navigateToResults = () => {
-    // Generate analysis results
-    const results = this.generateAnalysisResults();
+  navigateToResults = async () => {
+    // Generate analysis results (now async to crop images)
+    const results = await this.generateAnalysisResults();
     
     this.setState({
       currentPage: 'results',
@@ -1071,15 +1071,38 @@ class SoYoungFaceAnalysis extends Component {
 
   /**
    * Generate analysis results from captured data
+   * Now async to crop region images
    */
-  generateAnalysisResults = () => {
+  generateAnalysisResults = async () => {
     if (!this.analysisData || !this.analysisData.landmarks) {
       return this.getDefaultResults();
     }
     
-    const { landmarks, fullAnalysis } = this.analysisData;
+    const { landmarks, fullAnalysis, detection } = this.analysisData;
     
-    // Extract regions from landmarks
+    // Get original image dimensions
+    let originalImageWidth = 640;
+    let originalImageHeight = 480;
+    
+    // Load image to get actual dimensions
+    const img = new Image();
+    img.src = this.analysisData.image;
+    await new Promise((resolve) => {
+      if (img.complete) {
+        originalImageWidth = img.width;
+        originalImageHeight = img.height;
+        resolve();
+      } else {
+        img.onload = () => {
+          originalImageWidth = img.width;
+          originalImageHeight = img.height;
+          resolve();
+        };
+        img.onerror = resolve;
+      }
+    });
+    
+    // Extract regions from landmarks (using actual image dimensions)
     const regions = this.extractRegions(landmarks);
     
     // Calculate overall score
@@ -1091,76 +1114,138 @@ class SoYoungFaceAnalysis extends Component {
       );
     }
     
-    // Generate region-specific results
-    const regionResults = [
-      {
+    // Generate region-specific results with cropped thumbnails
+    const regionResults = [];
+    
+    // Eyes region
+    if (regions.eyes && regions.eyes.minX < regions.eyes.maxX) {
+      const eyesThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.eyes, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
         id: 'eyes',
         name: 'Eyes',
         icon: '👁️',
-        thumbnail: this.analysisData.image,
+        thumbnail: eyesThumbnail,
         score: fullAnalysis?.facialProportions?.symmetry > 85 ? 88 : 78,
         description: fullAnalysis?.facialProportions?.symmetry > 85 
           ? 'Symmetrical and well-proportioned' 
           : 'Good eye alignment',
         gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         region: regions.eyes
-      },
-      {
+      });
+    }
+    
+    // Nose region
+    if (regions.nose && regions.nose.minX < regions.nose.maxX) {
+      const noseThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.nose, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
         id: 'nose',
         name: 'Nose',
         icon: '👃',
-        thumbnail: this.analysisData.image,
+        thumbnail: noseThumbnail,
         score: 80,
         description: 'Balanced nose structure',
         gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
         region: regions.nose
-      },
-      {
+      });
+    }
+    
+    // Mouth region
+    if (regions.mouth && regions.mouth.minX < regions.mouth.maxX) {
+      const mouthThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.mouth, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
         id: 'mouth',
         name: 'Lips',
         icon: '👄',
-        thumbnail: this.analysisData.image,
+        thumbnail: mouthThumbnail,
         score: 82,
         description: fullAnalysis?.age && fullAnalysis.age < 30 
           ? 'Full and youthful lips' 
           : 'Well-defined lip structure',
         gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
         region: regions.mouth
-      },
-      {
+      });
+    }
+    
+    // Jawline region
+    if (regions.jawline && regions.jawline.minX < regions.jawline.maxX) {
+      const jawlineThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.jawline, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
         id: 'jawline',
         name: 'Jawline',
         icon: '⚡',
-        thumbnail: this.analysisData.image,
+        thumbnail: jawlineThumbnail,
         score: 85,
         description: 'Strong and well-defined',
         gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
         region: regions.jawline
-      },
-      {
+      });
+    }
+    
+    // Cheeks region
+    if (regions.cheeks && regions.cheeks.minX < regions.cheeks.maxX) {
+      const cheeksThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.cheeks, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
         id: 'cheeks',
         name: 'Cheeks',
         icon: '✨',
-        thumbnail: this.analysisData.image,
+        thumbnail: cheeksThumbnail,
         score: 80,
         description: 'Natural contour and volume',
         gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
         region: regions.cheeks
-      }
-    ];
+      });
+    }
     
     // Add skin quality card if analysis available
     if (fullAnalysis && fullAnalysis.advancedSkin) {
       const skinScore = 100 - (fullAnalysis.advancedSkin.poresScore || 0) / 2;
+      // For skin, use a cropped version of the face center
+      const skinRegion = {
+        minX: originalImageWidth * 0.25,
+        maxX: originalImageWidth * 0.75,
+        minY: originalImageHeight * 0.2,
+        maxY: originalImageHeight * 0.7
+      };
+      const skinThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        skinRegion, 
+        originalImageWidth, 
+        originalImageHeight
+      );
       regionResults.push({
         id: 'skin',
         name: 'Skin Quality',
         icon: '🌟',
-        thumbnail: this.analysisData.image,
+        thumbnail: skinThumbnail,
         score: Math.round(skinScore),
         description: `${fullAnalysis.advancedSkin.type} skin with ${fullAnalysis.advancedSkin.hydration || 'normal'} hydration`,
         gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-        region: regions.skin
+        region: skinRegion
       });
     }
     
@@ -1252,12 +1337,77 @@ class SoYoungFaceAnalysis extends Component {
   };
 
   /**
-   * Extract region image from full image
+   * Extract region image from full image by cropping the specific region
    */
-  extractRegionImage = (imageSrc, region) => {
-    // For now, return the full image as thumbnail
-    // In production, you would crop the specific region
-    return imageSrc;
+  extractRegionImage = (imageSrc, region, originalImageWidth, originalImageHeight) => {
+    if (!region || !imageSrc || region.minX >= region.maxX || region.minY >= region.maxY) {
+      return Promise.resolve(imageSrc);
+    }
+    
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Use actual loaded image dimensions
+          const imgWidth = img.width;
+          const imgHeight = img.height;
+          
+          // Calculate scale factors if landmarks were in different coordinate system
+          // face-api.js landmarks are in pixel coordinates relative to the image
+          // But we need to ensure they match the actual image dimensions
+          const scaleX = imgWidth / (originalImageWidth || imgWidth);
+          const scaleY = imgHeight / (originalImageHeight || imgHeight);
+          
+          // Scale region coordinates to match actual image
+          const scaledMinX = region.minX * scaleX;
+          const scaledMaxX = region.maxX * scaleX;
+          const scaledMinY = region.minY * scaleY;
+          const scaledMaxY = region.maxY * scaleY;
+          
+          // Add padding around the region (30% on each side for better view)
+          const regionWidth = scaledMaxX - scaledMinX;
+          const regionHeight = scaledMaxY - scaledMinY;
+          const paddingX = regionWidth * 0.3;
+          const paddingY = regionHeight * 0.3;
+          
+          // Calculate crop coordinates with padding
+          const cropX = Math.max(0, scaledMinX - paddingX);
+          const cropY = Math.max(0, scaledMinY - paddingY);
+          const cropWidth = Math.min(imgWidth - cropX, regionWidth + paddingX * 2);
+          const cropHeight = Math.min(imgHeight - cropY, regionHeight + paddingY * 2);
+          
+          // Ensure minimum dimensions
+          if (cropWidth <= 0 || cropHeight <= 0) {
+            resolve(imageSrc);
+            return;
+          }
+          
+          // Set canvas size to cropped region
+          canvas.width = cropWidth;
+          canvas.height = cropHeight;
+          
+          // Draw the cropped region
+          ctx.drawImage(
+            img,
+            cropX, cropY, cropWidth, cropHeight,  // Source region
+            0, 0, cropWidth, cropHeight           // Destination (canvas)
+          );
+          
+          // Convert to data URL
+          const croppedImageSrc = canvas.toDataURL('image/jpeg', 0.9);
+          resolve(croppedImageSrc);
+        } catch (error) {
+          console.error('Error cropping region:', error);
+          resolve(imageSrc); // Fallback to full image
+        }
+      };
+      img.onerror = () => resolve(imageSrc); // Fallback on error
+      img.src = imageSrc;
+    });
   };
 
   /**
