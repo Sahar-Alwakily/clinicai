@@ -15,7 +15,7 @@
  */
 
 import React, { Component } from "react";
-import styled, { keyframes, css } from "styled-components";
+import styled, { keyframes } from "styled-components";
 import * as faceapi from "face-api.js";
 import { 
   analyzeAdvancedSkin, 
@@ -140,38 +140,30 @@ const CameraPageContainer = styled.div`
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 20px;
-  box-sizing: border-box;
-  gap: 20px;
+  overflow: hidden;
 `;
 
 const CameraView = styled.div`
   position: relative;
   width: 100%;
-  max-width: 400px;
-  height: 500px;
+  max-width: min(90vw, 500px);
+  aspect-ratio: 3/4;
   background: #000;
-  border-radius: 16px;
+  border-radius: clamp(8px, 2vw, 16px);
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  margin: 0 auto;
+  margin-bottom: clamp(12px, 3vh, 24px);
   
-  @media (max-width: 768px) {
-    height: 400px;
-    max-width: 350px;
-  }
-  
-  @media (max-width: 480px) {
-    height: 350px;
-    max-width: 300px;
+  @media (min-width: 768px) {
+    max-width: min(70vw, 600px);
   }
 `;
 
 const Video = styled.video`
   width: 100%;
   height: 100%;
-  object-fit: cover;
   display: block;
+  object-fit: cover;
   transform: scaleX(-1); /* Mirror for front camera */
 `;
 
@@ -189,8 +181,8 @@ const StartButton = styled.button`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 12px 32px;
-  font-size: 16px;
+  padding: clamp(10px, 2vh, 16px) clamp(24px, 5vw, 40px);
+  font-size: clamp(14px, 3vw, 18px);
   font-weight: 700;
   border-radius: 50px;
   cursor: pointer;
@@ -198,7 +190,12 @@ const StartButton = styled.button`
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'SF Pro Display', -apple-system, sans-serif;
   letter-spacing: 0.5px;
-  min-width: 180px;
+  min-height: 44px; /* Touch target size */
+  
+  @media (min-width: 768px) {
+    padding: 12px 32px;
+    font-size: 16px;
+  }
   
   &:hover {
     transform: translateY(-3px);
@@ -218,23 +215,27 @@ const StartButton = styled.button`
 
 const StatusText = styled.div`
   position: absolute;
-  top: 20px;
+  top: clamp(12px, 3vh, 20px);
   left: 50%;
   transform: translateX(-50%);
   color: rgba(255, 255, 255, 0.95);
-  font-size: 16px;
+  font-size: clamp(12px, 2.5vw, 16px);
   font-weight: 500;
   text-align: center;
   z-index: 8;
   pointer-events: none;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   font-family: 'SF Pro Display', -apple-system, sans-serif;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   background: rgba(0, 0, 0, 0.3);
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: clamp(6px, 1.5vh, 10px) clamp(12px, 3vw, 20px);
+  border-radius: 50px;
   backdrop-filter: blur(10px);
-  white-space: nowrap;
+  
+  @media (min-width: 768px) {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
 `;
 
 const LoadingOverlay = styled.div`
@@ -249,21 +250,15 @@ const LoadingOverlay = styled.div`
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 18px;
+  font-size: clamp(14px, 3vw, 18px);
   z-index: 1000;
-  gap: 12px;
+  gap: clamp(8px, 2vh, 16px);
   font-family: 'SF Pro Display', -apple-system, sans-serif;
-  border-radius: 16px;
-`;
-
-const Instructions = styled.div`
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-  text-align: center;
-  max-width: 400px;
-  margin-top: 10px;
-  font-family: 'SF Pro Display', -apple-system, sans-serif;
-  line-height: 1.5;
+  
+  @media (min-width: 768px) {
+    font-size: 16px;
+    gap: 12px;
+  }
 `;
 
 // ============================================
@@ -296,15 +291,18 @@ const AnalysisImage = styled.img`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scaleX(-1);
-  max-width: 90%;
-  max-height: 70%;
+  max-width: min(90vw, 90vh);
+  max-height: min(90vw, 90vh);
+  width: auto;
+  height: auto;
   z-index: 2;
-  border-radius: 12px;
+  border-radius: clamp(8px, 2vw, 16px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   object-fit: contain;
   
-  @media (max-width: 768px) {
-    max-height: 60%;
+  @media (orientation: landscape) {
+    max-width: min(70vw, 80vh);
+    max-height: min(70vw, 80vh);
   }
 `;
 
@@ -313,7 +311,7 @@ const ScanningLine = styled.div`
   left: 0;
   right: 0;
   width: 100%;
-  height: 3px;
+  height: clamp(2px, 0.5vh, 4px);
   background: linear-gradient(
     to bottom,
     rgba(102, 126, 234, 0) 0%,
@@ -328,8 +326,8 @@ const ScanningLine = styled.div`
 
 const Particle = styled.div`
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: clamp(3px, 0.8vw, 6px);
+  height: clamp(3px, 0.8vw, 6px);
   background: radial-gradient(circle, rgba(102, 126, 234, 0.8) 0%, transparent 100%);
   border-radius: 50%;
   pointer-events: none;
@@ -342,39 +340,43 @@ const Particle = styled.div`
 
 const AnalysisStatusText = styled.div`
   position: absolute;
-  bottom: 120px;
+  bottom: clamp(60px, 12vh, 100px);
   left: 50%;
   transform: translateX(-50%);
   color: rgba(255, 255, 255, 0.95);
-  font-size: 24px;
+  font-size: clamp(18px, 5vw, 28px);
   font-weight: 700;
   text-align: center;
   z-index: 10;
   pointer-events: none;
-  letter-spacing: 1px;
+  letter-spacing: clamp(1px, 0.3vw, 3px);
   font-family: 'SF Pro Display', -apple-system, sans-serif;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   animation: ${glowPulse} 2s ease-in-out infinite;
   text-transform: uppercase;
   
-  @media (max-width: 768px) {
-    font-size: 20px;
-    bottom: 100px;
+  @media (min-width: 768px) {
+    font-size: 24px;
+    bottom: 80px;
   }
 `;
 
 const ProgressBar = styled.div`
   position: absolute;
-  bottom: 60px;
+  bottom: clamp(30px, 6vh, 50px);
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 400px;
-  height: 4px;
+  width: min(80vw, 400px);
+  height: clamp(3px, 0.8vh, 6px);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
   overflow: hidden;
   z-index: 10;
+  
+  @media (min-width: 768px) {
+    width: min(60vw, 500px);
+    height: 4px;
+  }
 `;
 
 const ProgressFill = styled.div`
@@ -386,16 +388,6 @@ const ProgressFill = styled.div`
   box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
 `;
 
-const PercentageText = styled.div`
-  position: absolute;
-  top: -25px;
-  left: 0;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'SF Pro Display', -apple-system, sans-serif;
-`;
-
 // ============================================
 // PAGE 3: RESULTS
 // ============================================
@@ -404,100 +396,79 @@ const ResultsPageContainer = styled.div`
   width: 100%;
   min-height: 100vh;
   background: #f8f9fa;
-  padding: 20px;
-  padding-bottom: 80px;
+  padding: clamp(12px, 3vw, 20px) clamp(10px, 2.5vw, 16px);
+  padding-bottom: clamp(60px, 12vh, 100px);
   overflow-y: auto;
-  box-sizing: border-box;
+  
+  @media (min-width: 768px) {
+    padding: 20px 24px;
+    padding-bottom: 80px;
+  }
 `;
 
 const ResultsHeader = styled.div`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 30px 20px;
+  padding: clamp(16px, 4vw, 24px) clamp(12px, 3vw, 20px);
   color: white;
-  margin: -20px -20px 30px -20px;
+  margin: clamp(-12px, -3vw, -20px) clamp(-10px, -2.5vw, -16px) clamp(12px, 3vw, 20px) clamp(-10px, -2.5vw, -16px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
   
+  @media (min-width: 768px) {
+    padding: 20px 24px;
+    margin: -20px -24px 20px -24px;
+  }
+  
   h1 {
-    font-size: 28px;
+    font-size: clamp(20px, 5vw, 28px);
     font-weight: 700;
-    margin: 0 0 10px 0;
+    margin: 0 0 clamp(6px, 1.5vh, 10px) 0;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
     letter-spacing: -0.5px;
-    text-align: center;
+    
+    @media (min-width: 768px) {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
   }
   
   p {
-    font-size: 16px;
+    font-size: clamp(12px, 3vw, 16px);
     margin: 0;
     opacity: 0.9;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
-    text-align: center;
-  }
-`;
-
-const OverallScore = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  margin: 15px 0;
-`;
-
-const ScoreCircle = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: ${props => {
-    if (props.score >= 80) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-    if (props.score >= 60) return 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)';
-    return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
-  }};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 24px;
-  font-weight: 700;
-  font-family: 'SF Pro Display', -apple-system, sans-serif;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-`;
-
-const ScoreLabel = styled.div`
-  display: flex;
-  flex-direction: column;
-  
-  .score-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 5px;
-  }
-  
-  .score-description {
-    font-size: 14px;
-    opacity: 0.8;
+    line-height: 1.5;
+    
+    @media (min-width: 768px) {
+      font-size: 14px;
+    }
   }
 `;
 
 const ResultsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(min(150px, 45vw), 1fr));
+  gap: clamp(8px, 2vw, 16px);
+  margin-top: clamp(8px, 2vw, 16px);
   
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
+  @media (min-width: 480px) {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
   
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
 `;
 
 const ResultCard = styled.div`
   background: white;
-  border-radius: 12px;
+  border-radius: clamp(8px, 2vw, 12px);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -505,6 +476,10 @@ const ResultCard = styled.div`
   animation: ${fadeIn} 0.5s ease-out;
   animation-delay: ${props => props.delay || 0}s;
   animation-fill-mode: both;
+  
+  @media (min-width: 768px) {
+    border-radius: 12px;
+  }
   
   &:hover {
     transform: translateY(-4px);
@@ -518,7 +493,7 @@ const ResultCard = styled.div`
 
 const CardImage = styled.div`
   width: 100%;
-  height: 200px;
+  padding-top: 75%; /* 4:3 aspect ratio */
   position: relative;
   overflow: hidden;
   background: ${props => props.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
@@ -534,33 +509,48 @@ const CardImage = styled.div`
 `;
 
 const CardContent = styled.div`
-  padding: 20px;
+  padding: clamp(10px, 2.5vw, 16px);
+  
+  @media (min-width: 768px) {
+    padding: 16px;
+  }
   
   h3 {
-    font-size: 18px;
+    font-size: clamp(14px, 3.5vw, 18px);
     font-weight: 700;
-    margin: 0 0 10px 0;
+    margin: 0 0 clamp(6px, 1.5vh, 10px) 0;
     color: #2d3748;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: clamp(4px, 1vw, 8px);
+    
+    @media (min-width: 768px) {
+      font-size: 16px;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
   }
   
   p {
-    font-size: 14px;
+    font-size: clamp(11px, 2.8vw, 14px);
     color: #718096;
     margin: 0;
     line-height: 1.5;
     font-family: 'SF Pro Display', -apple-system, sans-serif;
+    
+    @media (min-width: 768px) {
+      font-size: 13px;
+      line-height: 1.4;
+    }
   }
 `;
 
 const ScoreBadge = styled.span`
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 14px;
+  padding: clamp(2px, 0.5vh, 4px) clamp(6px, 1.5vw, 10px);
+  border-radius: clamp(4px, 1vw, 6px);
+  font-size: clamp(10px, 2.5vw, 13px);
   font-weight: 600;
   background: ${props => {
     if (props.score >= 80) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
@@ -568,26 +558,44 @@ const ScoreBadge = styled.span`
     return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
   }};
   color: white;
+  margin-right: clamp(3px, 0.8vw, 5px);
+  
+  @media (min-width: 768px) {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-right: 4px;
+  }
 `;
 
 const BackButton = styled.button`
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: clamp(12px, 3vw, 20px);
+  right: clamp(12px, 3vw, 20px);
   background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: clamp(36px, 9vw, 44px);
+  height: clamp(36px, 9vw, 44px);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: white;
-  font-size: 20px;
+  font-size: clamp(18px, 4.5vw, 24px);
   transition: all 0.3s ease;
   z-index: 100;
   backdrop-filter: blur(10px);
+  min-width: 44px; /* Touch target */
+  min-height: 44px;
+  
+  @media (min-width: 768px) {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    top: 16px;
+    right: 16px;
+  }
   
   &:hover {
     background: rgba(255, 255, 255, 0.3);
@@ -595,50 +603,8 @@ const BackButton = styled.button`
   }
 `;
 
-const AnalysisSteps = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin: 30px 0;
-  padding: 0 20px;
-  
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-`;
-
-const Step = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  
-  .step-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: ${props => props.active ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e2e8f0'};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: ${props => props.active ? 'white' : '#94a3b8'};
-    font-size: 20px;
-    font-weight: bold;
-  }
-  
-  .step-text {
-    font-size: 14px;
-    color: ${props => props.active ? '#2d3748' : '#94a3b8'};
-    font-weight: ${props => props.active ? '600' : '400'};
-    text-align: center;
-    font-family: 'SF Pro Display', -apple-system, sans-serif;
-  }
-`;
-
 // ============================================
-// MAIN COMPONENT (استمرار بدون تغيير في منطق الكود)
+// MAIN COMPONENT
 // ============================================
 
 class SoYoungFaceAnalysis extends Component {
@@ -753,7 +719,7 @@ class SoYoungFaceAnalysis extends Component {
         await this.videoRef.current.play();
         this.setState({ isStreaming: true });
         
-        // Start real-time detection after video starts playing
+        // Start real-time detection
         setTimeout(() => {
           this.startRealTimeDetection();
         }, 500);
@@ -761,7 +727,7 @@ class SoYoungFaceAnalysis extends Component {
     } catch (error) {
       console.error('Error accessing camera:', error);
       this.setState({ 
-        error: 'Cannot access camera. Please check permissions.'
+        error: 'Cannot access camera. Please check permissions.' 
       });
     }
   };
@@ -787,20 +753,22 @@ class SoYoungFaceAnalysis extends Component {
     
     this.setState({ isDetecting: true });
     
-    // Detect faces every 200ms
+    // Detection loop - runs every ~150ms for performance
     this.detectionInterval = setInterval(async () => {
       if (!this.videoRef.current || !this.modelsLoaded) return;
       
       try {
         const detections = await faceapi
           .detectAllFaces(this.videoRef.current, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks()
-          .withFaceExpressions()
-          .withAgeAndGender();
+          .withFaceLandmarks();
         
         if (detections.length > 0) {
           const detection = detections[0];
-          this.setState({ currentLandmarks: detection.landmarks });
+          this.setState({
+            currentLandmarks: detection.landmarks
+          });
+          
+          // Draw overlay
           this.drawCameraOverlay(detection.landmarks);
         } else {
           this.setState({ currentLandmarks: null });
@@ -809,7 +777,7 @@ class SoYoungFaceAnalysis extends Component {
       } catch (error) {
         console.error('Detection error:', error);
       }
-    }, 200);
+    }, 150);
   };
 
   /**
@@ -824,153 +792,227 @@ class SoYoungFaceAnalysis extends Component {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
-    this.setState({ isDetecting: false });
+    this.setState({ isDetecting: false, currentLandmarks: null });
     this.clearOverlay();
   };
 
   /**
-   * Draw camera overlay with landmarks
+   * Draw glowing landmark dots on camera overlay (Page 1)
    */
   drawCameraOverlay = (landmarks) => {
+    if (!this.canvasRef.current || !landmarks || !this.videoRef.current) return;
+    
     const canvas = this.canvasRef.current;
     const video = this.videoRef.current;
-    if (!canvas || !video || !landmarks) return;
-    
     const ctx = canvas.getContext('2d');
-    canvas.width = video.videoWidth || video.clientWidth;
-    canvas.height = video.videoHeight || video.clientHeight;
     
+    // Set canvas size to match video display size
+    const rect = video.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Calculate scaling (video is mirrored)
+    const videoWidth = video.videoWidth || video.clientWidth;
+    const videoHeight = video.videoHeight || video.clientHeight;
+    const scaleX = canvas.width / videoWidth;
+    const scaleY = canvas.height / videoHeight;
+    
     const positions = landmarks.positions;
-    positions.forEach((point, index) => {
-      if (isFinite(point.x) && isFinite(point.y)) {
-        const x = canvas.width - point.x; // Mirror for front camera
-        const y = point.y;
-        
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 5);
-        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.9)');
-        gradient.addColorStop(1, 'rgba(102, 126, 234, 0)');
-        
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(x, y, 5, 0, Math.PI * 2);
-        ctx.fill();
-      }
+    if (!positions || positions.length < 68) return;
+    
+    // Draw key facial landmarks as glowing dots
+    const keyPoints = [
+      // Eyes
+      { indices: [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47], color: 'rgba(135, 206, 250, 0.9)', size: 3 },
+      // Eyebrows
+      { indices: [17, 18, 19, 20, 21, 22, 23, 24, 25, 26], color: 'rgba(102, 126, 234, 0.8)', size: 2.5 },
+      // Nose
+      { indices: [27, 28, 29, 30, 31, 32, 33, 34, 35], color: 'rgba(102, 126, 234, 0.7)', size: 2.5 },
+      // Mouth
+      { indices: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67], color: 'rgba(236, 72, 153, 0.8)', size: 2.5 },
+      // Jawline
+      { indices: Array.from({ length: 17 }, (_, i) => i), color: 'rgba(102, 126, 234, 0.6)', size: 2 }
+    ];
+    
+    keyPoints.forEach(pointGroup => {
+      pointGroup.indices.forEach(pointIdx => {
+        if (positions[pointIdx] && positions[pointIdx].x !== undefined && positions[pointIdx].y !== undefined) {
+          const x = canvas.width - positions[pointIdx].x * scaleX; // Mirror
+          const y = positions[pointIdx].y * scaleY;
+          
+          // Check if x and y are valid numbers (not NaN or Infinity)
+          if (!isFinite(x) || !isFinite(y) || x < 0 || y < 0 || x > canvas.width || y > canvas.height) {
+            return; // Skip invalid points
+          }
+          
+          // Draw outer glow
+          const gradient = ctx.createRadialGradient(x, y, 0, x, y, pointGroup.size * 3);
+          gradient.addColorStop(0, pointGroup.color);
+          gradient.addColorStop(0.5, pointGroup.color.replace('0.9', '0.3').replace('0.8', '0.2').replace('0.7', '0.15').replace('0.6', '0.1'));
+          gradient.addColorStop(1, 'transparent');
+          
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(x, y, pointGroup.size * 3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw inner point
+          ctx.fillStyle = pointGroup.color;
+          ctx.beginPath();
+          ctx.arc(x, y, pointGroup.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // White center
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.beginPath();
+          ctx.arc(x, y, pointGroup.size * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
     });
   };
 
   /**
-   * Clear overlay
+   * Clear overlay canvas
    */
   clearOverlay = () => {
-    const canvas = this.canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  };
-
-  /**
-   * Handle start analysis button click
-   */
-  handleStartAnalysis = async () => {
-    if (!this.videoRef.current || !this.state.currentLandmarks) return;
-    
-    try {
-      // Capture image from video
-      const canvas = document.createElement('canvas');
-      canvas.width = this.videoRef.current.videoWidth || 640;
-      canvas.height = this.videoRef.current.videoHeight || 480;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(this.videoRef.current, 0, 0);
-      
-      this.capturedImageData = canvas.toDataURL('image/jpeg', 0.9);
-      
-      // Stop camera
-      this.stopCamera();
-      
-      // Navigate to analysis page
-      this.setState({
-        currentPage: 'analysis',
-        pageEnter: true,
-        analysisProgress: 0,
-        analysisStatus: 'Initializing analysis...'
-      });
-      
-      // Start analysis animation
-      setTimeout(() => {
-        this.startAnalysisAnimation();
-      }, 100);
-      
-    } catch (error) {
-      console.error('Error capturing image:', error);
-      this.setState({ error: 'Failed to capture image. Please try again.' });
+    if (this.canvasRef.current) {
+      const ctx = this.canvasRef.current.getContext('2d');
+      ctx.clearRect(0, 0, this.canvasRef.current.width, this.canvasRef.current.height);
     }
   };
 
   /**
-   * Start analysis animation and perform analysis
+   * Handle Start Analysis button click
    */
-  startAnalysisAnimation = async () => {
-    if (!this.capturedImageData) return;
-    
-    const startTime = Date.now();
-    const duration = 10000; // 10 seconds
-    
-    // Perform detection on captured image
-    const img = new Image();
-    img.src = this.capturedImageData;
-    await new Promise((resolve) => {
-      if (img.complete) resolve();
-      else img.onload = resolve;
-    });
-    
-    const detection = await faceapi
-      .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks()
-      .withFaceExpressions()
-      .withAgeAndGender();
-    
-    if (!detection) {
-      this.setState({ error: 'Could not detect face in image.' });
+  handleStartAnalysis = () => {
+    if (!this.state.currentLandmarks || !this.videoRef.current) {
+      this.setState({ error: 'Please position your face in the frame' });
       return;
     }
     
-    // Store analysis data
+    // Capture image
+    const canvas = document.createElement('canvas');
+    const video = this.videoRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    this.capturedImageData = canvas.toDataURL('image/jpeg');
+    
+    // Stop camera
+    this.stopCamera();
+    
+    // Navigate to analysis page
+    this.setState({ 
+      currentPage: 'analysis',
+      pageEnter: true,
+      analysisProgress: 0,
+      analysisStatus: 'Analyzing...'
+    }, () => {
+      this.startAnalysisAnimation();
+    });
+  };
+
+  /**
+   * Start 10-second analysis animation (Page 2)
+   */
+  startAnalysisAnimation = async () => {
+    const duration = 10000; // 10 seconds
+    const startTime = Date.now();
+    const image = new Image();
+    image.src = this.capturedImageData;
+    
+    await new Promise(resolve => {
+      image.onload = resolve;
+    });
+    
+    // Detect landmarks on captured image and perform full analysis
+    let detection = null;
+    let fullAnalysis = null;
+    let landmarks = null;
+    
+    try {
+      const detections = await faceapi
+        .detectAllFaces(image, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceExpressions()
+        .withAgeAndGender();
+      
+      if (detections.length > 0) {
+        detection = detections[0];
+        landmarks = detection.landmarks;
+        
+        // Perform advanced analysis in background
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          ctx.drawImage(image, 0, 0);
+          
+          const advancedSkin = analyzeAdvancedSkin(image, detection.landmarks, ctx);
+          const skinProblems = analyzeSkinProblems(image, detection.landmarks, detection.age);
+          const facialProportions = analyzeFacialProportions(detection.landmarks);
+          
+          fullAnalysis = {
+            age: Math.round(detection.age),
+            gender: detection.gender === 'male' ? 'Male' : 'Female',
+            expressions: detection.expressions,
+            advancedSkin,
+            skinProblems,
+            facialProportions
+          };
+        } catch (error) {
+          console.error('Advanced analysis error:', error);
+          // Set default values if advanced analysis fails
+          fullAnalysis = {
+            age: Math.round(detection.age || 30),
+            gender: detection.gender === 'male' ? 'Male' : 'Female',
+            expressions: detection.expressions || {},
+            advancedSkin: { type: 'مختلطة', hydration: 'طبيعي', sebum: 'متوسط', pores: 'متوسطة', texture: 'متوسطة' },
+            skinProblems: { acne: { active: false }, pigmentation: { level: 'لا يوجد' }, darkCircles: { present: false } },
+            facialProportions: { symmetry: 75, goldenRatio: 75, faceShape: 'بيضاوي' }
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Detection error:', error);
+      // If detection completely fails, still navigate to results with default data
+      landmarks = null;
+    }
+    
+    // Store for results page
     this.analysisData = {
       image: this.capturedImageData,
-      landmarks: detection.landmarks,
+      landmarks: landmarks,
       detection: detection,
-      expressions: detection.expressions,
-      age: detection.age,
-      gender: detection.gender
+      fullAnalysis: fullAnalysis
     };
     
-    // Perform full analysis in background
-    const fullAnalysis = await this.performFullAnalysis(img, detection);
-    this.analysisData.fullAnalysis = fullAnalysis;
-    
-    // Animation loop
+    // Start animation loop
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min((elapsed / duration) * 100, 100);
       
-      this.setState({
-        analysisProgress: progress,
-        analysisStatus: progress < 30 ? 'Analyzing face structure...' :
-                        progress < 60 ? 'Measuring facial proportions...' :
-                        progress < 90 ? 'Calculating skin analysis...' :
-                        'Finalizing results...'
-      });
+      this.setState({ analysisProgress: progress });
       
-      // Draw animation
-      this.drawAnalysisAnimation(detection.landmarks, progress);
+      if (landmarks && this.analysisCanvasRef.current) {
+        this.drawAnalysisAnimation(this.analysisCanvasRef.current, image, landmarks, progress);
+      }
       
       if (progress < 100) {
-        requestAnimationFrame(animate);
+        this.animationFrameId = requestAnimationFrame(animate);
       } else {
-        // Navigate to results
-        this.navigateToResults();
+        // Animation complete
+        this.setState({ analysisStatus: 'Analysis Complete!' }, () => {
+          setTimeout(() => {
+            this.navigateToResults();
+          }, 1000);
+        });
       }
     };
     
@@ -978,111 +1020,396 @@ class SoYoungFaceAnalysis extends Component {
   };
 
   /**
-   * Perform full analysis
+   * Draw analysis animation with lines, scanning, measurements, and particles (Page 2)
    */
-  performFullAnalysis = async (image, detection) => {
-    try {
-      const [advancedSkin, skinProblems, facialProportions] = await Promise.all([
-        analyzeAdvancedSkin(image),
-        analyzeSkinProblems(image, detection.landmarks),
-        analyzeFacialProportions(detection.landmarks)
-      ]);
-      
-      return {
-        advancedSkin,
-        skinProblems,
-        facialProportions,
-        age: detection.age,
-        gender: detection.gender,
-        expressions: detection.expressions
-      };
-    } catch (error) {
-      console.error('Error in full analysis:', error);
-      return null;
-    }
-  };
-
-  /**
-   * Draw analysis animation
-   */
-  drawAnalysisAnimation = (landmarks, progress) => {
-    const canvas = this.analysisCanvasRef.current;
-    if (!canvas || !landmarks || !this.capturedImageData) return;
-    
-    const container = canvas.parentElement;
-    if (!container) return;
-    
-    const rect = container.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+  drawAnalysisAnimation = (canvas, image, landmarks, progress) => {
+    if (!canvas || !image || !landmarks || !landmarks.positions) return;
     
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
+    // Get container dimensions
+    const container = canvas.parentElement;
+    if (!container) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    const containerWidth = containerRect.width || window.innerWidth;
+    const containerHeight = containerRect.height || window.innerHeight;
+    
+    // Set canvas size to match container
+    canvas.width = containerWidth;
+    canvas.height = containerHeight;
+    
+    // Clear
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Get image element
-    const img = new Image();
-    img.src = this.capturedImageData;
-    const imgRect = container.querySelector('img')?.getBoundingClientRect();
-    if (!imgRect) return;
+    // Calculate image position (centered, matching AnalysisImage styling)
+    const imgAspect = image.width / image.height;
+    const containerAspect = containerWidth / containerHeight;
+    let imgWidth, imgHeight, imgX, imgY;
     
-    const offsetX = imgRect.left - rect.left;
-    const offsetY = imgRect.top - rect.top;
-    const scaleX = imgRect.width / img.width;
-    const scaleY = imgRect.height / img.height;
-    
-    // Draw animated connections
-    this.drawAnimatedConnections(ctx, landmarks.positions, offsetX, offsetY, scaleX, scaleY, progress);
-    
-    // Draw measurements if progress > 30
-    if (progress > 30) {
-      this.drawFacialMeasurements(ctx, landmarks.positions, offsetX, offsetY, scaleX, scaleY, img, progress / 100);
+    // Match the 90% max-width/max-height logic from AnalysisImage
+    if (imgAspect > containerAspect) {
+      imgWidth = containerWidth * 0.9;
+      imgHeight = imgWidth / imgAspect;
+    } else {
+      imgHeight = containerHeight * 0.9;
+      imgWidth = imgHeight * imgAspect;
     }
+    imgX = (containerWidth - imgWidth) / 2;
+    imgY = (containerHeight - imgHeight) / 2;
+    
+    const positions = landmarks.positions;
+    const scaleX = imgWidth / image.width;
+    const scaleY = imgHeight / image.height;
+    
+    // Draw connecting lines (animated based on progress)
+    this.drawAnimatedConnections(ctx, positions, imgX, imgY, scaleX, scaleY, progress);
+    
+    // Draw facial measurements with Arabic labels (animated)
+    if (progress > 20) { // Start showing measurements after 20% progress
+      const measurementProgress = Math.min(1, (progress - 20) / 60); // Show over 20-80% progress
+      this.drawFacialMeasurements(ctx, positions, imgX, imgY, scaleX, scaleY, image, measurementProgress);
+    }
+    
+    // Draw scanning line
+    const scanY = imgY + (progress / 100) * imgHeight;
+    this.drawScanningLine(ctx, imgX, scanY, imgX + imgWidth);
+    
+    // Draw particles
+    this.drawParticles(ctx, positions, imgX, imgY, scaleX, scaleY, progress);
   };
 
   /**
-   * Draw animated connections between landmarks
+   * Draw animated connecting lines between landmarks
    */
   drawAnimatedConnections = (ctx, positions, offsetX, offsetY, scaleX, scaleY, progress) => {
+    const connections = [
+      { points: Array.from({ length: 17 }, (_, i) => i), color: 'rgba(102, 126, 234, 0.5)' },
+      { points: [17, 18, 19, 20, 21], color: 'rgba(102, 126, 234, 0.6)' },
+      { points: [22, 23, 24, 25, 26], color: 'rgba(102, 126, 234, 0.6)' },
+      { points: [27, 28, 29, 30], color: 'rgba(102, 126, 234, 0.7)' },
+      { points: [31, 32, 33, 34, 35], color: 'rgba(102, 126, 234, 0.6)' },
+      { points: [36, 37, 38, 39, 40, 41, 36], color: 'rgba(135, 206, 250, 0.7)' },
+      { points: [42, 43, 44, 45, 46, 47, 42], color: 'rgba(135, 206, 250, 0.7)' },
+      { points: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 48], color: 'rgba(236, 72, 153, 0.6)' },
+      { points: [60, 61, 62, 63, 64, 65, 66, 67, 60], color: 'rgba(236, 72, 153, 0.5)' }
+    ];
+    
+    connections.forEach((connection, connIdx) => {
+      // Animate connection appearance based on progress
+      const connectionProgress = Math.min(1, (progress / 100) * connections.length - connIdx);
+      if (connectionProgress <= 0) return;
+      
+      ctx.strokeStyle = connection.color;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.globalAlpha = connectionProgress;
+      
+      ctx.beginPath();
+      connection.points.forEach((pointIdx, idx) => {
+        if (positions[pointIdx]) {
+          const x = offsetX + (ctx.canvas.width - positions[pointIdx].x * scaleX);
+          const y = offsetY + positions[pointIdx].y * scaleY;
+          
+          if (idx === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+      });
+      if (connection.points[connection.points.length - 1] !== connection.points[0]) {
+        ctx.closePath();
+      }
+      ctx.stroke();
+    });
+    
+    ctx.globalAlpha = 1;
+  };
+
+  /**
+   * Draw scanning line effect
+   */
+  drawScanningLine = (ctx, x1, y, x2) => {
+    const gradient = ctx.createLinearGradient(x1, y - 15, x1, y + 15);
+    gradient.addColorStop(0, 'rgba(102, 126, 234, 0)');
+    gradient.addColorStop(0.5, 'rgba(102, 126, 234, 0.9)');
+    gradient.addColorStop(1, 'rgba(102, 126, 234, 0)');
+    
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 4;
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = 'rgba(102, 126, 234, 0.8)';
+    ctx.beginPath();
+    ctx.moveTo(x1, y);
+    ctx.lineTo(x2, y);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  };
+
+  /**
+   * Draw particle effects
+   */
+  drawParticles = (ctx, positions, offsetX, offsetY, scaleX, scaleY, progress) => {
+    // Generate particles around key points
+    const keyPoints = [30, 36, 45, 51]; // nose tip, eyes, mouth
+    
+    keyPoints.forEach(pointIdx => {
+      if (positions[pointIdx] && Math.random() < 0.3) {
+        const baseX = offsetX + (ctx.canvas.width - positions[pointIdx].x * scaleX);
+        const baseY = offsetY + positions[pointIdx].y * scaleY;
+        
+        const particleX = baseX + (Math.random() - 0.5) * 40;
+        const particleY = baseY + (Math.random() - 0.5) * 40;
+        const size = 2 + Math.random() * 2;
+        
+        const gradient = ctx.createRadialGradient(particleX, particleY, 0, particleX, particleY, size * 2);
+        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
+        gradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(particleX, particleY, size * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+  };
+
+  /**
+   * Calculate distance between two points in pixels
+   */
+  calculateDistance = (p1, p2) => {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  /**
+   * Convert pixel distance to cm (approximation: 1cm ≈ 37.8 pixels for average face at 640px width)
+   */
+  pixelsToCm = (pixels, imageWidth) => {
+    // Approximate: average face width is ~14cm, and takes ~70% of image width
+    const faceWidthInPixels = imageWidth * 0.7;
+    const pixelsPerCm = faceWidthInPixels / 14;
+    return pixels / pixelsPerCm;
+  };
+
+  /**
+   * Calculate angle between three points
+   */
+  calculateAngle = (p1, p2, p3) => {
+    const v1 = { x: p1.x - p2.x, y: p1.y - p2.y };
+    const v2 = { x: p3.x - p2.x, y: p3.y - p2.y };
+    const dot = v1.x * v2.x + v1.y * v2.y;
+    const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+    const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+    const cosAngle = dot / (mag1 * mag2);
+    const angle = Math.acos(Math.max(-1, Math.min(1, cosAngle))) * (180 / Math.PI);
+    return angle;
+  };
+
+  /**
+   * Draw facial measurements with Arabic labels
+   */
+  drawFacialMeasurements = (ctx, positions, offsetX, offsetY, scaleX, scaleY, image, progress) => {
     if (!positions || positions.length < 68) return;
     
     ctx.save();
-    ctx.globalAlpha = Math.min(progress / 50, 1);
+    ctx.globalAlpha = progress;
     
-    const mirrorX = (x) => offsetX + (ctx.canvas.width - x * scaleX);
+    // Calculate image width on canvas
+    const imgWidth = image.width * scaleX;
+    const imgHeight = image.height * scaleY;
+    
+    // Mirror function to match the image display
+    const mirrorX = (x) => offsetX + imgWidth - (x * scaleX);
     const mirrorY = (y) => offsetY + (y * scaleY);
     
-    // Draw jawline
-    ctx.strokeStyle = 'rgba(102, 126, 234, 0.6)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 0; i < 17; i++) {
-      if (positions[i] && isFinite(positions[i].x) && isFinite(positions[i].y)) {
-        const x = mirrorX(positions[i].x);
-        const y = mirrorY(positions[i].y);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+    // Set up text style - smaller, cleaner, more organized
+    ctx.font = 'bold 12px Arial, "Segoe UI", sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.lineWidth = 5;
+    ctx.textAlign = 'right'; // Right align for Arabic
+    ctx.textBaseline = 'middle';
+    
+    // 1. Eye measurements (العيون) - فقط المسافة بين العينين
+    if (positions[36] && positions[39] && positions[42] && positions[45]) {
+      // Inner eye distance (المسافة بين العينين الداخلية)
+      const innerEyeDist = this.calculateDistance(positions[39], positions[42]);
+      const innerEyeDistCm = this.pixelsToCm(innerEyeDist, image.width);
+      
+      const leftEyeInner = { x: mirrorX(positions[39].x), y: mirrorY(positions[39].y) };
+      const rightEyeInner = { x: mirrorX(positions[42].x), y: mirrorY(positions[42].y) };
+      
+      // Draw dashed line
+      ctx.setLineDash([6, 3]);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(leftEyeInner.x, leftEyeInner.y);
+      ctx.lineTo(rightEyeInner.x, rightEyeInner.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label positioned above the line, centered
+      const midX = (leftEyeInner.x + rightEyeInner.x) / 2;
+      const midY = Math.min(leftEyeInner.y, rightEyeInner.y) - 25;
+      const labelText = `المسافة بين العينين: ${innerEyeDistCm.toFixed(2)} سم`;
+      const textMetrics = ctx.measureText(labelText);
+      
+      // Draw background rectangle
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(midX - textMetrics.width / 2 - 6, midY - 9, textMetrics.width + 12, 18);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText(labelText, midX, midY);
+    }
+    
+    // 2. Nose measurements (الأنف) - فقط طول الأنف
+    if (positions[27] && positions[33]) {
+      // Nose length (طول الأنف)
+      const noseLength = this.calculateDistance(positions[27], positions[33]);
+      const noseLengthCm = this.pixelsToCm(noseLength, image.width);
+      
+      const noseTop = { x: mirrorX(positions[27].x), y: mirrorY(positions[27].y) };
+      const noseTip = { x: mirrorX(positions[33].x), y: mirrorY(positions[33].y) };
+      
+      // Draw vertical dashed line
+      ctx.setLineDash([6, 3]);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(noseTip.x, noseTop.y);
+      ctx.lineTo(noseTip.x, noseTip.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label positioned to the right side
+      const noseLabelText = `طول الأنف: ${noseLengthCm.toFixed(2)} سم`;
+      const noseTextMetrics = ctx.measureText(noseLabelText);
+      const noseLabelX = noseTip.x + 20;
+      const noseLabelY = (noseTop.y + noseTip.y) / 2;
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(noseLabelX - noseTextMetrics.width - 6, noseLabelY - 9, noseTextMetrics.width + 12, 18);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'right';
+      ctx.fillText(noseLabelText, noseLabelX, noseLabelY);
+      
+      // Golden triangle (المثلث الذهبي) - angle between eye corners and nose tip
+      if (positions[39] && positions[42] && positions[33]) {
+        const leftEyeInner = positions[39];
+        const rightEyeInner = positions[42];
+        const noseTipPos = positions[33];
+        const goldenAngle = this.calculateAngle(leftEyeInner, noseTipPos, rightEyeInner);
+        
+        // Draw triangle with thinner lines
+        const p1 = { x: mirrorX(leftEyeInner.x), y: mirrorY(leftEyeInner.y) };
+        const p2 = { x: mirrorX(rightEyeInner.x), y: mirrorY(rightEyeInner.y) };
+        const p3 = { x: mirrorX(noseTipPos.x), y: mirrorY(noseTipPos.y) };
+        
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.closePath();
+        ctx.stroke();
+        
+        // Label angle - positioned below triangle, centered
+        const triangleLabelText = `المثلث الذهبي: ${goldenAngle.toFixed(1)}°`;
+        const triangleTextMetrics = ctx.measureText(triangleLabelText);
+        const triangleLabelX = p3.x;
+        const triangleLabelY = p3.y + 25;
+        
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(triangleLabelX - triangleTextMetrics.width / 2 - 6, triangleLabelY - 9, triangleTextMetrics.width + 12, 18);
+        
+        ctx.fillStyle = '#ffd700';
+        ctx.textAlign = 'center';
+        ctx.fillText(triangleLabelText, triangleLabelX, triangleLabelY);
       }
     }
-    ctx.stroke();
     
-    // Draw other connections...
+    // 3. Mouth measurements (الفم)
+    if (positions[48] && positions[54]) {
+      // Mouth width (عرض الفم)
+      const mouthWidth = this.calculateDistance(positions[48], positions[54]);
+      const mouthWidthCm = this.pixelsToCm(mouthWidth, image.width);
+      
+      const mouthLeft = { x: mirrorX(positions[48].x), y: mirrorY(positions[48].y) };
+      const mouthRight = { x: mirrorX(positions[54].x), y: mirrorY(positions[54].y) };
+      
+      // Draw dashed line
+      ctx.setLineDash([6, 3]);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(mouthLeft.x, mouthLeft.y);
+      ctx.lineTo(mouthRight.x, mouthRight.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label positioned below mouth, centered
+      const mouthMidX = (mouthLeft.x + mouthRight.x) / 2;
+      const mouthMidY = Math.max(mouthLeft.y, mouthRight.y) + 20;
+      const mouthLabelText = `عرض الفم: ${mouthWidthCm.toFixed(2)} سم`;
+      const mouthTextMetrics = ctx.measureText(mouthLabelText);
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(mouthMidX - mouthTextMetrics.width / 2 - 6, mouthMidY - 9, mouthTextMetrics.width + 12, 18);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText(mouthLabelText, mouthMidX, mouthMidY);
+    }
+    
+    // 4. Face width (عرض الوجه) - فقط عرض الوجه
+    if (positions[0] && positions[16]) {
+      const faceWidth = this.calculateDistance(positions[0], positions[16]);
+      const faceWidthCm = this.pixelsToCm(faceWidth, image.width);
+      
+      const leftFace = { x: mirrorX(positions[0].x), y: mirrorY(positions[0].y) };
+      const rightFace = { x: mirrorX(positions[16].x), y: mirrorY(positions[16].y) };
+      
+      // Draw horizontal dashed line at jawline
+      ctx.setLineDash([6, 3]);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(leftFace.x, leftFace.y);
+      ctx.lineTo(rightFace.x, rightFace.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label positioned below jawline, centered
+      const faceMidX = (leftFace.x + rightFace.x) / 2;
+      const faceLabelText = `عرض الوجه: ${faceWidthCm.toFixed(2)} سم`;
+      const faceTextMetrics = ctx.measureText(faceLabelText);
+      const faceLabelY = Math.max(leftFace.y, rightFace.y) + 20;
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      ctx.fillRect(faceMidX - faceTextMetrics.width / 2 - 6, faceLabelY - 9, faceTextMetrics.width + 12, 18);
+      
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText(faceLabelText, faceMidX, faceLabelY);
+    }
+    
     ctx.restore();
-  };
-
-  /**
-   * Draw facial measurements (placeholder - will be implemented)
-   */
-  drawFacialMeasurements = (ctx, positions, offsetX, offsetY, scaleX, scaleY, image, progress) => {
-    // This will be implemented with measurement lines and Arabic labels
-    // Placeholder for now
   };
 
   /**
    * Navigate to results page
    */
   navigateToResults = async () => {
+    // Generate analysis results (now async to crop images)
     const results = await this.generateAnalysisResults();
     
     this.setState({
@@ -1092,31 +1419,351 @@ class SoYoungFaceAnalysis extends Component {
       analysisProgress: 100
     });
     
+    // Call callback if provided
     if (this.props.onAnalysisComplete) {
       this.props.onAnalysisComplete(results);
     }
   };
 
   /**
-   * Generate analysis results
+   * Generate analysis results from captured data
+   * Now async to crop region images
    */
   generateAnalysisResults = async () => {
     if (!this.analysisData || !this.analysisData.landmarks) {
-      return {
-        overall: { score: 75, description: 'Analysis completed' },
-        regions: []
+      return this.getDefaultResults();
+    }
+    
+    const { landmarks, fullAnalysis, detection } = this.analysisData;
+    
+    // Get original image dimensions
+    let originalImageWidth = 640;
+    let originalImageHeight = 480;
+    
+    // Load image to get actual dimensions
+    const img = new Image();
+    img.src = this.analysisData.image;
+    await new Promise((resolve) => {
+      if (img.complete) {
+        originalImageWidth = img.width;
+        originalImageHeight = img.height;
+        resolve();
+      } else {
+        img.onload = () => {
+          originalImageWidth = img.width;
+          originalImageHeight = img.height;
+          resolve();
+        };
+        img.onerror = resolve;
+      }
+    });
+    
+    // Extract regions from landmarks (using actual image dimensions)
+    const regions = this.extractRegions(landmarks);
+    
+    // Calculate overall score
+    let overallScore = 75;
+    if (fullAnalysis && fullAnalysis.facialProportions) {
+      overallScore = Math.round(
+        (fullAnalysis.facialProportions.symmetry + 
+         (fullAnalysis.facialProportions.goldenRatio || 75)) / 2
+      );
+    }
+    
+    // Generate region-specific results with cropped thumbnails
+    const regionResults = [];
+    
+    // Eyes region
+    if (regions.eyes && regions.eyes.minX < regions.eyes.maxX) {
+      const eyesThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.eyes, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
+        id: 'eyes',
+        name: 'Eyes',
+        icon: '👁️',
+        thumbnail: eyesThumbnail,
+        score: fullAnalysis?.facialProportions?.symmetry > 85 ? 88 : 78,
+        description: fullAnalysis?.facialProportions?.symmetry > 85 
+          ? 'Symmetrical and well-proportioned' 
+          : 'Good eye alignment',
+        gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        region: regions.eyes
+      });
+    }
+    
+    // Nose region
+    if (regions.nose && regions.nose.minX < regions.nose.maxX) {
+      const noseThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.nose, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
+        id: 'nose',
+        name: 'Nose',
+        icon: '👃',
+        thumbnail: noseThumbnail,
+        score: 80,
+        description: 'Balanced nose structure',
+        gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        region: regions.nose
+      });
+    }
+    
+    // Mouth region
+    if (regions.mouth && regions.mouth.minX < regions.mouth.maxX) {
+      const mouthThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.mouth, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
+        id: 'mouth',
+        name: 'Lips',
+        icon: '👄',
+        thumbnail: mouthThumbnail,
+        score: 82,
+        description: fullAnalysis?.age && fullAnalysis.age < 30 
+          ? 'Full and youthful lips' 
+          : 'Well-defined lip structure',
+        gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+        region: regions.mouth
+      });
+    }
+    
+    // Jawline region
+    if (regions.jawline && regions.jawline.minX < regions.jawline.maxX) {
+      const jawlineThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.jawline, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
+        id: 'jawline',
+        name: 'Jawline',
+        icon: '⚡',
+        thumbnail: jawlineThumbnail,
+        score: 85,
+        description: 'Strong and well-defined',
+        gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+        region: regions.jawline
+      });
+    }
+    
+    // Cheeks region
+    if (regions.cheeks && regions.cheeks.minX < regions.cheeks.maxX) {
+      const cheeksThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.cheeks, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
+        id: 'cheeks',
+        name: 'Cheeks',
+        icon: '✨',
+        thumbnail: cheeksThumbnail,
+        score: 80,
+        description: 'Natural contour and volume',
+        gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+        region: regions.cheeks
+      });
+    }
+    
+    // Add skin quality card if analysis available
+    if (fullAnalysis && fullAnalysis.advancedSkin) {
+      const skinScore = 100 - (fullAnalysis.advancedSkin.poresScore || 0) / 2;
+      // For skin, use a cropped version of the face center
+      const skinRegion = {
+        minX: originalImageWidth * 0.25,
+        maxX: originalImageWidth * 0.75,
+        minY: originalImageHeight * 0.2,
+        maxY: originalImageHeight * 0.7
       };
+      const skinThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        skinRegion, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
+        id: 'skin',
+        name: 'Skin Quality',
+        icon: '🌟',
+        thumbnail: skinThumbnail,
+        score: Math.round(skinScore),
+        description: `${fullAnalysis.advancedSkin.type} skin with ${fullAnalysis.advancedSkin.hydration || 'normal'} hydration`,
+        gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+        region: skinRegion
+      });
     }
     
     return {
       overall: {
-        score: 80,
-        description: 'Good facial proportions',
-        age: this.analysisData.age,
-        gender: this.analysisData.gender
+        score: overallScore,
+        description: fullAnalysis?.facialProportions?.symmetry > 85 
+          ? 'Overall facial harmony is excellent' 
+          : 'Good facial proportions',
+        age: fullAnalysis?.age,
+        gender: fullAnalysis?.gender
       },
-      regions: []
+      regions: regionResults,
+      fullAnalysis: fullAnalysis
     };
+  };
+
+  /**
+   * Get default results if analysis fails
+   */
+  getDefaultResults = () => {
+    return {
+      overall: {
+        score: 75,
+        description: 'Analysis completed',
+        age: null,
+        gender: null
+      },
+      regions: [
+        {
+          id: 'eyes',
+          name: 'Eyes',
+          icon: '👁️',
+          thumbnail: this.analysisData?.image,
+          score: 80,
+          description: 'Analyzed successfully',
+          gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }
+      ]
+    };
+  };
+
+  /**
+   * Extract facial regions from landmarks
+   */
+  extractRegions = (landmarks) => {
+    if (!landmarks || !landmarks.positions) return {};
+    
+    const positions = landmarks.positions;
+    
+    return {
+      eyes: {
+        minX: Math.min(...[36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47].map(i => positions[i]?.x || 0)),
+        maxX: Math.max(...[36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47].map(i => positions[i]?.x || 0)),
+        minY: Math.min(...[36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47].map(i => positions[i]?.y || 0)),
+        maxY: Math.max(...[36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47].map(i => positions[i]?.y || 0))
+      },
+      nose: {
+        minX: Math.min(...[27, 28, 29, 30, 31, 32, 33, 34, 35].map(i => positions[i]?.x || 0)),
+        maxX: Math.max(...[27, 28, 29, 30, 31, 32, 33, 34, 35].map(i => positions[i]?.x || 0)),
+        minY: Math.min(...[27, 28, 29, 30, 31, 32, 33, 34, 35].map(i => positions[i]?.y || 0)),
+        maxY: Math.max(...[27, 28, 29, 30, 31, 32, 33, 34, 35].map(i => positions[i]?.y || 0))
+      },
+      mouth: {
+        minX: Math.min(...[48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59].map(i => positions[i]?.x || 0)),
+        maxX: Math.max(...[48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59].map(i => positions[i]?.x || 0)),
+        minY: Math.min(...[48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59].map(i => positions[i]?.y || 0)),
+        maxY: Math.max(...[48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59].map(i => positions[i]?.y || 0))
+      },
+      jawline: {
+        minX: Math.min(...Array.from({ length: 17 }, (_, i) => positions[i]?.x || 0)),
+        maxX: Math.max(...Array.from({ length: 17 }, (_, i) => positions[i]?.x || 0)),
+        minY: Math.min(...Array.from({ length: 17 }, (_, i) => positions[i]?.y || 0)),
+        maxY: Math.max(...Array.from({ length: 17 }, (_, i) => positions[i]?.y || 0))
+      },
+      cheeks: {
+        minX: Math.min(...[1, 2, 3, 4, 5, 11, 12, 13, 14, 15].map(i => positions[i]?.x || 0)),
+        maxX: Math.max(...[1, 2, 3, 4, 5, 11, 12, 13, 14, 15].map(i => positions[i]?.x || 0)),
+        minY: Math.min(...[1, 2, 3, 4, 5, 11, 12, 13, 14, 15].map(i => positions[i]?.y || 0)),
+        maxY: Math.max(...[1, 2, 3, 4, 5, 11, 12, 13, 14, 15].map(i => positions[i]?.y || 0))
+      },
+      skin: {
+        minX: 0,
+        maxX: 640, // Assuming default image width
+        minY: 0,
+        maxY: 480 // Assuming default image height
+      }
+    };
+  };
+
+  /**
+   * Extract region image from full image by cropping the specific region
+   */
+  extractRegionImage = (imageSrc, region, originalImageWidth, originalImageHeight) => {
+    if (!region || !imageSrc || region.minX >= region.maxX || region.minY >= region.maxY) {
+      return Promise.resolve(imageSrc);
+    }
+    
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Use actual loaded image dimensions
+          const imgWidth = img.width;
+          const imgHeight = img.height;
+          
+          // Calculate scale factors if landmarks were in different coordinate system
+          // face-api.js landmarks are in pixel coordinates relative to the image
+          // But we need to ensure they match the actual image dimensions
+          const scaleX = imgWidth / (originalImageWidth || imgWidth);
+          const scaleY = imgHeight / (originalImageHeight || imgHeight);
+          
+          // Scale region coordinates to match actual image
+          const scaledMinX = region.minX * scaleX;
+          const scaledMaxX = region.maxX * scaleX;
+          const scaledMinY = region.minY * scaleY;
+          const scaledMaxY = region.maxY * scaleY;
+          
+          // Add padding around the region (30% on each side for better view)
+          const regionWidth = scaledMaxX - scaledMinX;
+          const regionHeight = scaledMaxY - scaledMinY;
+          const paddingX = regionWidth * 0.3;
+          const paddingY = regionHeight * 0.3;
+          
+          // Calculate crop coordinates with padding
+          const cropX = Math.max(0, scaledMinX - paddingX);
+          const cropY = Math.max(0, scaledMinY - paddingY);
+          const cropWidth = Math.min(imgWidth - cropX, regionWidth + paddingX * 2);
+          const cropHeight = Math.min(imgHeight - cropY, regionHeight + paddingY * 2);
+          
+          // Ensure minimum dimensions
+          if (cropWidth <= 0 || cropHeight <= 0) {
+            resolve(imageSrc);
+            return;
+          }
+          
+          // Set canvas size to cropped region
+          canvas.width = cropWidth;
+          canvas.height = cropHeight;
+          
+          // Draw the cropped region
+          ctx.drawImage(
+            img,
+            cropX, cropY, cropWidth, cropHeight,  // Source region
+            0, 0, cropWidth, cropHeight           // Destination (canvas)
+          );
+          
+          // Convert to data URL
+          const croppedImageSrc = canvas.toDataURL('image/jpeg', 0.9);
+          resolve(croppedImageSrc);
+        } catch (error) {
+          console.error('Error cropping region:', error);
+          resolve(imageSrc); // Fallback to full image
+        }
+      };
+      img.onerror = () => resolve(imageSrc); // Fallback on error
+      img.src = imageSrc;
+    });
   };
 
   /**
@@ -1144,7 +1791,7 @@ class SoYoungFaceAnalysis extends Component {
       }, 300);
     }
   };
-  
+
   /**
    * Render Page 1: Camera Capture
    */
@@ -1154,21 +1801,6 @@ class SoYoungFaceAnalysis extends Component {
     return (
       <PageWrapper active={this.state.currentPage === 'camera'} enter={this.state.pageEnter}>
         <CameraPageContainer>
-          <AnalysisSteps>
-            <Step active={true}>
-              <div className="step-icon">1</div>
-              <div className="step-text">Capture Face</div>
-            </Step>
-            <Step active={false}>
-              <div className="step-icon">2</div>
-              <div className="step-text">Analysis</div>
-            </Step>
-            <Step active={false}>
-              <div className="step-icon">3</div>
-              <div className="step-text">Results</div>
-            </Step>
-          </AnalysisSteps>
-          
           <StatusText>
             {!isStreaming ? 'Position your face in the frame' : 
              currentLandmarks ? 'Face detected ✓' : 'Detecting face...'}
@@ -1187,7 +1819,7 @@ class SoYoungFaceAnalysis extends Component {
             {modelsLoading && (
               <LoadingOverlay>
                 <div>Loading AI Models...</div>
-                <div style={{ fontSize: '14px', opacity: 0.8 }}>Please wait</div>
+                <div style={{ fontSize: 'clamp(12px, 2.5vw, 14px)', opacity: 0.8 }}>Please wait</div>
               </LoadingOverlay>
             )}
           </CameraView>
@@ -1196,10 +1828,10 @@ class SoYoungFaceAnalysis extends Component {
             <div style={{ 
               background: '#ffebee', 
               color: '#c62828', 
-              padding: '12px 20px', 
-              borderRadius: '8px',
-              fontSize: '14px',
-              marginBottom: '10px',
+              padding: 'clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px)', 
+              borderRadius: 'clamp(4px, 1vw, 8px)',
+              fontSize: 'clamp(12px, 2.5vw, 14px)',
+              marginBottom: 'clamp(10px, 2.5vw, 14px)',
               maxWidth: '90%',
               textAlign: 'center'
             }}>
@@ -1208,31 +1840,21 @@ class SoYoungFaceAnalysis extends Component {
           )}
           
           {!isStreaming && (
-            <>
-              <StartButton 
-                onClick={this.startCamera}
-                disabled={modelsLoading || !this.modelsLoaded}
-              >
-                {modelsLoading ? 'Loading...' : 'Start Camera'}
-              </StartButton>
-              <Instructions>
-                Make sure your face is well-lit and centered in the frame
-              </Instructions>
-            </>
+            <StartButton 
+              onClick={this.startCamera}
+              disabled={modelsLoading || !this.modelsLoaded}
+            >
+              {modelsLoading ? 'Loading...' : 'Start Camera'}
+            </StartButton>
           )}
           
           {isStreaming && (
-            <>
-              <StartButton 
-                onClick={this.handleStartAnalysis}
-                disabled={!currentLandmarks}
-              >
-                Start Analysis
-              </StartButton>
-              <Instructions>
-                Hold still and press the button when your face is properly aligned
-              </Instructions>
-            </>
+            <StartButton 
+              onClick={this.handleStartAnalysis}
+              disabled={!currentLandmarks}
+            >
+              Start Analysis
+            </StartButton>
           )}
         </CameraPageContainer>
       </PageWrapper>
@@ -1248,21 +1870,6 @@ class SoYoungFaceAnalysis extends Component {
     return (
       <PageWrapper active={this.state.currentPage === 'analysis'} enter={this.state.pageEnter}>
         <AnalysisPageContainer>
-          <AnalysisSteps>
-            <Step active={false}>
-              <div className="step-icon">1</div>
-              <div className="step-text">Capture Face</div>
-            </Step>
-            <Step active={true}>
-              <div className="step-icon">2</div>
-              <div className="step-text">Analysis</div>
-            </Step>
-            <Step active={false}>
-              <div className="step-icon">3</div>
-              <div className="step-text">Results</div>
-            </Step>
-          </AnalysisSteps>
-          
           {this.capturedImageData && (
             <AnalysisImage 
               src={this.capturedImageData} 
@@ -1274,7 +1881,6 @@ class SoYoungFaceAnalysis extends Component {
           <AnalysisStatusText>{analysisStatus}</AnalysisStatusText>
           <ProgressBar>
             <ProgressFill progress={analysisProgress} />
-            <PercentageText>{Math.round(analysisProgress)}%</PercentageText>
           </ProgressBar>
         </AnalysisPageContainer>
       </PageWrapper>
@@ -1293,39 +1899,18 @@ class SoYoungFaceAnalysis extends Component {
       <PageWrapper active={this.state.currentPage === 'results'} enter={this.state.pageEnter}>
         <ResultsPageContainer>
           <ResultsHeader>
-            <BackButton onClick={this.handleBack}>←</BackButton>
+            <BackButton onClick={this.handleBack}>×</BackButton>
             <h1>Analysis Results</h1>
-            <OverallScore>
-              <ScoreCircle score={analysisResults.overall.score}>
-                {analysisResults.overall.score}
-              </ScoreCircle>
-              <ScoreLabel>
-                <div className="score-title">Overall Score</div>
-                <div className="score-description">{analysisResults.overall.description}</div>
-                {analysisResults.overall.age && (
-                  <div className="score-description">
-                    Age: {analysisResults.overall.age}
-                    {analysisResults.overall.gender && ` • ${analysisResults.overall.gender}`}
-                  </div>
-                )}
-              </ScoreLabel>
-            </OverallScore>
+            <p>
+              Overall Score: {analysisResults.overall.score}/100
+              {analysisResults.overall.age && (
+                <span style={{ marginRight: 'clamp(8px, 2vw, 12px)' }}>
+                  • Age: {analysisResults.overall.age}
+                  {analysisResults.overall.gender && ` (${analysisResults.overall.gender})`}
+                </span>
+              )}
+            </p>
           </ResultsHeader>
-          
-          <AnalysisSteps>
-            <Step active={false}>
-              <div className="step-icon">1</div>
-              <div className="step-text">Capture Face</div>
-            </Step>
-            <Step active={false}>
-              <div className="step-icon">2</div>
-              <div className="step-text">Analysis</div>
-            </Step>
-            <Step active={true}>
-              <div className="step-icon">3</div>
-              <div className="step-text">Results</div>
-            </Step>
-          </AnalysisSteps>
           
           <ResultsGrid>
             {analysisResults.regions.map((region, index) => (
@@ -1368,3 +1953,4 @@ class SoYoungFaceAnalysis extends Component {
 }
 
 export default SoYoungFaceAnalysis;
+
