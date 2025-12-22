@@ -11,6 +11,228 @@ import {
 const Container = styled.div`
   width: 100%;
   direction: rtl;
+  min-height: 100vh;
+  background: ${props => props.page === 'welcome' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#f5f5f5'};
+  position: relative;
+  overflow: hidden;
+`;
+
+const Page = styled.div`
+  width: 100%;
+  height: 100%;
+  position: ${props => props.show ? 'relative' : 'absolute'};
+  opacity: ${props => props.show ? 1 : 0};
+  pointer-events: ${props => props.show ? 'auto' : 'none'};
+  transition: opacity 0.5s ease-in-out;
+  z-index: ${props => props.show ? 1 : 0};
+`;
+
+// Welcome Page Styles
+const WelcomePage = styled(Page)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  text-align: center;
+  color: white;
+`;
+
+const WelcomeImage = styled.div`
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+  backdrop-filter: blur(10px);
+`;
+
+const WelcomeTitle = styled.h1`
+  font-size: 0.36rem;
+  font-weight: 600;
+  margin: 0 0 0.15rem 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+`;
+
+const WelcomeSubtitle = styled.p`
+  font-size: 0.18rem;
+  opacity: 0.9;
+  margin: 0 0 0.4rem 0;
+  line-height: 1.5;
+`;
+
+const StartButton = styled.button`
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.22rem;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+// Results Page Styles
+const ResultsPage = styled(Page)`
+  background: #f5f5f5;
+  padding: 0.2rem;
+  overflow-y: auto;
+`;
+
+const ResultsHeader = styled.div`
+  background: white;
+  padding: 0.3rem;
+  border-radius: 0.15rem;
+  margin-bottom: 0.2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+`;
+
+const ThumbnailImage = styled.img`
+  width: 100%;
+  max-width: 3rem;
+  height: auto;
+  border-radius: 0.1rem;
+  margin-bottom: 0.15rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const ResultsTitle = styled.h2`
+  font-size: 0.24rem;
+  font-weight: 600;
+  margin: 0 0 0.1rem 0;
+  color: #333;
+`;
+
+const ResultsSubtitle = styled.p`
+  font-size: 0.16rem;
+  color: #666;
+  margin: 0;
+`;
+
+const RegionCards = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+`;
+
+const RegionCard = styled.div`
+  background: white;
+  border-radius: 0.15rem;
+  padding: 0.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: ${props => props.active ? '2px solid #667eea' : '2px solid transparent'};
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const RegionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-bottom: 0.1rem;
+`;
+
+const RegionIcon = styled.div`
+  font-size: 0.24rem;
+`;
+
+const RegionName = styled.h3`
+  font-size: 0.2rem;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+`;
+
+const RegionDescription = styled.p`
+  font-size: 0.16rem;
+  color: #666;
+  margin: 0.1rem 0 0 0;
+  line-height: 1.4;
+`;
+
+const RegionDetailView = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  opacity: ${props => props.show ? 1 : 0};
+  pointer-events: ${props => props.show ? 'auto' : 'none'};
+  transition: opacity 0.3s ease;
+`;
+
+const DetailImage = styled.img`
+  max-width: 100%;
+  max-height: 60vh;
+  border-radius: 0.1rem;
+  margin-bottom: 0.3rem;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+`;
+
+const DetailContent = styled.div`
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 0.15rem;
+  padding: 0.3rem;
+  color: white;
+  text-align: center;
+  max-width: 4rem;
+  width: 100%;
+`;
+
+const DetailTitle = styled.h2`
+  font-size: 0.28rem;
+  font-weight: 600;
+  margin: 0 0 0.15rem 0;
+`;
+
+const DetailText = styled.p`
+  font-size: 0.18rem;
+  line-height: 1.6;
+  margin: 0 0 0.2rem 0;
+  opacity: 0.9;
+`;
+
+const CloseButton = styled.button`
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.15rem 0.3rem;
+  font-size: 0.18rem;
+  border-radius: 0.1rem;
+  cursor: pointer;
+  margin-top: 0.2rem;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 `;
 
 const CameraContainer = styled.div`
@@ -223,6 +445,10 @@ class FaceAnalysis extends Component {
   }
 
   state = {
+    // Page navigation
+    currentPage: 'welcome', // 'welcome', 'camera', 'analyzing', 'results'
+    
+    // Camera state
     isStreaming: false,
     capturedImage: null,
     isAnalyzing: false,
@@ -239,7 +465,11 @@ class FaceAnalysis extends Component {
     
     // Detected regions data
     detectedRegions: null,
-    measurements: null
+    measurements: null,
+    
+    // Results page
+    selectedRegion: null, // 'eyes', 'nose', 'mouth', 'skin', 'proportions'
+    analysisResults: null
   };
 
   componentDidMount() {
@@ -346,8 +576,16 @@ class FaceAnalysis extends Component {
     ctx.drawImage(video, 0, 0);
     
     const imageData = canvas.toDataURL('image/jpeg');
-    this.setState({ capturedImage: imageData });
+    this.setState({ 
+      capturedImage: imageData,
+      currentPage: 'analyzing'
+    });
     this.stopCamera();
+    
+    // Start analysis automatically
+    setTimeout(() => {
+      this.analyzeFace();
+    }, 500);
   };
 
   drawMedicalOverlay = (landmarks, canvas, image, step) => {
@@ -1858,9 +2096,11 @@ class FaceAnalysis extends Component {
     }
     
     setTimeout(() => {
-      // Show results card
+      // Move to results page
       this.setState({
-        showResultsCard: true,
+        currentPage: 'results',
+        analysisResults: this.pendingAnalysis,
+        showResultsCard: false,
         statusText: ''
       });
       
@@ -1871,8 +2111,16 @@ class FaceAnalysis extends Component {
     }, 1500);
   };
 
+  handleStart = () => {
+    this.setState({ currentPage: 'camera' });
+    setTimeout(() => {
+      this.startCamera();
+    }, 300);
+  };
+
   handleRetake = () => {
     this.setState({ 
+      currentPage: 'camera',
       capturedImage: null, 
       showOverlay: false,
       zoomTransform: null,
@@ -1881,22 +2129,97 @@ class FaceAnalysis extends Component {
       showResultsCard: false,
       showMetricsChart: false,
       detectedRegions: null,
-      measurements: null
+      measurements: null,
+      selectedRegion: null,
+      analysisResults: null
     });
     if (this.overlayCanvasRef.current) {
       const ctx = this.overlayCanvasRef.current.getContext('2d');
       ctx.clearRect(0, 0, this.overlayCanvasRef.current.width, this.overlayCanvasRef.current.height);
     }
-    this.startCamera();
+    setTimeout(() => {
+      this.startCamera();
+    }, 300);
   };
 
-  render() {
-    const { isStreaming, capturedImage, isAnalyzing, error, modelsLoading } = this.state;
-    const showVideo = isStreaming && !capturedImage;
-    const showImage = capturedImage && !isStreaming;
+  handleRegionClick = (region) => {
+    this.setState({ selectedRegion: region });
+  };
+
+  handleCloseDetail = () => {
+    this.setState({ selectedRegion: null });
+  };
+
+  getRegionDetails = (region) => {
+    const { analysisResults, detectedRegions } = this.state;
+    if (!analysisResults || !detectedRegions) return null;
+
+    const details = {
+      eyes: {
+        icon: '👁️',
+        title: 'تحليل العينين والحاجبين',
+        description: analysisResults.eyebrows ? 
+          `التناسق: ${analysisResults.eyebrows.symmetry}، النقاط: ${analysisResults.eyebrows.score || 'N/A'}` :
+          'تحليل العينين والحاجبين',
+        zoomRegion: detectedRegions.eyes
+      },
+      nose: {
+        icon: '👃',
+        title: 'تحليل الأنف والمسام',
+        description: analysisResults.advancedSkin ? 
+          `المسام: ${analysisResults.advancedSkin.pores || 'N/A'}` :
+          'تحليل الأنف والمسام',
+        zoomRegion: detectedRegions.nose
+      },
+      mouth: {
+        icon: '👄',
+        title: 'تحليل حالة الشفاه',
+        description: analysisResults.mouth ? 
+          `الحجم: ${analysisResults.mouth.size}${analysisResults.mouth.needsFiller ? ' - يحتاج فيلر' : ''}` :
+          'تحليل حالة الشفاه',
+        zoomRegion: detectedRegions.mouth
+      },
+      skin: {
+        icon: '✨',
+        title: 'تحليل البشرة',
+        description: analysisResults.advancedSkin ? 
+          `النوع: ${analysisResults.advancedSkin.type}، الترطيب: ${analysisResults.advancedSkin.hydration || 'N/A'}` :
+          'تحليل البشرة',
+        zoomRegion: null
+      },
+      proportions: {
+        icon: '📐',
+        title: 'نسب الوجه',
+        description: analysisResults.facialProportions ? 
+          `التناسق: ${analysisResults.facialProportions.symmetry}%، النسبة الذهبية: ${analysisResults.facialProportions.goldenRatio}%` :
+          'نسب الوجه',
+        zoomRegion: null
+      }
+    };
+
+    return details[region] || null;
+  };
+
+  renderWelcomePage = () => (
+    <WelcomePage show={this.state.currentPage === 'welcome'}>
+      <WelcomeImage>🔬</WelcomeImage>
+      <WelcomeTitle>تحليل البشرة بالذكاء الاصطناعي</WelcomeTitle>
+      <WelcomeSubtitle>
+        احصل على تحليل شامل لبشرتك ونسب وجهك<br />
+        باستخدام أحدث تقنيات الذكاء الاصطناعي
+      </WelcomeSubtitle>
+      <StartButton onClick={this.handleStart}>
+        ابدأ
+      </StartButton>
+    </WelcomePage>
+  );
+
+  renderCameraPage = () => {
+    const { isStreaming, error, modelsLoading } = this.state;
+    const showVideo = isStreaming;
 
     return (
-      <Container>
+      <Page show={this.state.currentPage === 'camera'}>
         <CameraContainer>
           <Video 
             ref={this.videoRef}
@@ -1906,34 +2229,9 @@ class FaceAnalysis extends Component {
             show={showVideo}
           />
           <Canvas ref={this.canvasRef} show={false} />
-          <ImageWrapper>
-            <CapturedImage 
-              ref={this.imageRef}
-              src={capturedImage}
-              alt="Captured face"
-              show={showImage}
-              zoomTransform={this.state.zoomTransform}
-              transitionDuration={this.state.zoomTransform?.transitionDuration || 0.8}
-              transformOrigin="center center"
-            />
-            <AnalysisOverlayCanvas
-              ref={this.overlayCanvasRef}
-              show={showImage && (isAnalyzing || this.state.showOverlay)}
-            />
-            <AnalysisStatusText 
-              visible={!!this.state.statusText}
-            >
-              {this.state.statusText}
-            </AnalysisStatusText>
-            {this.state.showMetricsChart && (
-              <MetricsChart visible={this.state.showMetricsChart}>
-                <canvas ref={el => { if (el) this.metricsChartCanvas = el; }} width={120} height={120} />
-              </MetricsChart>
-            )}
-          </ImageWrapper>
-          {(isAnalyzing || modelsLoading) && (
+          {modelsLoading && (
             <LoadingOverlay>
-              {modelsLoading ? 'جاري تحميل النماذج...' : 'جاري تحليل الوجه...'}
+              جاري تحميل النماذج...
             </LoadingOverlay>
           )}
         </CameraContainer>
@@ -1941,7 +2239,7 @@ class FaceAnalysis extends Component {
         {error && <ErrorMessage>{error}</ErrorMessage>}
 
         <Controls>
-          {!isStreaming && !capturedImage && (
+          {!isStreaming && (
             <Button 
               primary 
               onClick={this.startCamera}
@@ -1956,38 +2254,163 @@ class FaceAnalysis extends Component {
               <Button primary onClick={this.captureImage}>
                 📸 التقاط صورة
               </Button>
-              <Button secondary onClick={this.stopCamera}>
+              <Button secondary onClick={() => this.setState({ currentPage: 'welcome' })}>
                 ❌ إلغاء
               </Button>
             </>
           )}
-          
-          {capturedImage && (
-            <>
-              <Button 
-                primary 
-                onClick={this.analyzeFace}
-                disabled={isAnalyzing || !this.modelsLoaded}
-              >
-                🔬 تحليل الوجه
-              </Button>
-              <Button secondary onClick={this.handleRetake}>
-                🔄 إعادة التقاط
-              </Button>
-            </>
-          )}
         </Controls>
-        
-        <ResultsCard visible={this.state.showResultsCard}>
-          <div style={{ textAlign: 'center', padding: '0.2rem' }}>
-            <h2 style={{ margin: '0 0 0.1rem 0', color: '#333', fontFamily: '"SF Pro Display", sans-serif', fontWeight: 400, fontSize: '0.22rem', letterSpacing: '0.02rem' }}>
-              ANALYSIS COMPLETE
-            </h2>
-            <p style={{ margin: 0, color: '#666', fontSize: '0.14rem', fontFamily: '"SF Pro Display", sans-serif' }}>
-              Facial structure analysis completed
-            </p>
-          </div>
-        </ResultsCard>
+      </Page>
+    );
+  };
+
+  renderAnalyzingPage = () => {
+    const { capturedImage } = this.state;
+    const showImage = !!capturedImage;
+
+    return (
+      <Page show={this.state.currentPage === 'analyzing'}>
+        <CameraContainer style={{ height: '100vh' }}>
+          <ImageWrapper style={{ height: '100%' }}>
+            <CapturedImage 
+              ref={this.imageRef}
+              src={capturedImage}
+              alt="Captured face"
+              show={showImage}
+              zoomTransform={this.state.zoomTransform}
+              transitionDuration={this.state.zoomTransform?.transitionDuration || 0.8}
+              transformOrigin="center center"
+            />
+            <AnalysisOverlayCanvas
+              ref={this.overlayCanvasRef}
+              show={showImage && this.state.showOverlay}
+            />
+            <AnalysisStatusText 
+              visible={!!this.state.statusText}
+            >
+              {this.state.statusText}
+            </AnalysisStatusText>
+            {this.state.showMetricsChart && (
+              <MetricsChart visible={this.state.showMetricsChart}>
+                <canvas ref={el => { if (el) this.metricsChartCanvas = el; }} width={120} height={120} />
+              </MetricsChart>
+            )}
+          </ImageWrapper>
+        </CameraContainer>
+      </Page>
+    );
+  };
+
+  renderResultsPage = () => {
+    const { capturedImage, selectedRegion, analysisResults } = this.state;
+    const regionDetails = selectedRegion ? this.getRegionDetails(selectedRegion) : null;
+
+    const regions = [
+      { key: 'eyes', icon: '👁️', name: 'العينين والحاجبين' },
+      { key: 'nose', icon: '👃', name: 'الأنف والمسام' },
+      { key: 'mouth', icon: '👄', name: 'الشفاه' },
+      { key: 'skin', icon: '✨', name: 'البشرة' },
+      { key: 'proportions', icon: '📐', name: 'نسب الوجه' }
+    ];
+
+    return (
+      <>
+        <ResultsPage show={this.state.currentPage === 'results'}>
+          <ResultsHeader>
+            <ThumbnailImage src={capturedImage} alt="Face" />
+            <ResultsTitle>نتائج التحليل</ResultsTitle>
+            <ResultsSubtitle>انقر على أي قسم لعرض التفاصيل</ResultsSubtitle>
+          </ResultsHeader>
+
+          <RegionCards>
+            {regions.map(region => {
+              const details = this.getRegionDetails(region.key);
+              return (
+                <RegionCard 
+                  key={region.key}
+                  active={selectedRegion === region.key}
+                  onClick={() => this.handleRegionClick(region.key)}
+                >
+                  <RegionHeader>
+                    <RegionIcon>{region.icon}</RegionIcon>
+                    <RegionName>{details?.title || region.name}</RegionName>
+                  </RegionHeader>
+                  <RegionDescription>
+                    {details?.description || 'انقر لعرض التفاصيل'}
+                  </RegionDescription>
+                </RegionCard>
+              );
+            })}
+          </RegionCards>
+
+          <Controls style={{ marginTop: '0.3rem' }}>
+            <Button primary onClick={this.handleRetake}>
+              🔄 تحليل جديد
+            </Button>
+          </Controls>
+        </ResultsPage>
+
+        {/* Region Detail Modal */}
+        {regionDetails && (
+          <RegionDetailView show={selectedRegion !== null}>
+            <DetailImage 
+              src={capturedImage} 
+              alt={regionDetails.title}
+              style={{
+                transform: regionDetails.zoomRegion ? 
+                  `scale(${regionDetails.zoomRegion.width > 20 ? 2 : 1.5}) translate(${(50 - (regionDetails.zoomRegion.centerX || 50)) / (regionDetails.zoomRegion.width > 20 ? 2 : 1.5)}%, ${(50 - (regionDetails.zoomRegion.centerY || 50)) / (regionDetails.zoomRegion.width > 20 ? 2 : 1.5)}%)` :
+                  'scale(1)',
+                transformOrigin: 'center center',
+                transition: 'transform 0.5s ease',
+                objectFit: 'contain'
+              }}
+            />
+            <DetailContent>
+              <DetailTitle>{regionDetails.icon} {regionDetails.title}</DetailTitle>
+              <DetailText>{regionDetails.description}</DetailText>
+              {analysisResults && selectedRegion === 'eyes' && analysisResults.eyebrows && (
+                <DetailText>
+                  النقاط: {analysisResults.eyebrows.score || 'N/A'} | 
+                  التناسق: {analysisResults.eyebrows.symmetry || 'N/A'}
+                </DetailText>
+              )}
+              {analysisResults && selectedRegion === 'mouth' && analysisResults.mouth && (
+                <DetailText>
+                  الحجم: {analysisResults.mouth.size} | 
+                  {analysisResults.mouth.needsFiller && ' يُنصح بالفيلر'}
+                </DetailText>
+              )}
+              {analysisResults && selectedRegion === 'skin' && analysisResults.advancedSkin && (
+                <DetailText>
+                  النوع: {analysisResults.advancedSkin.type}<br />
+                  الترطيب: {analysisResults.advancedSkin.hydration || 'N/A'} | 
+                  الزهم: {analysisResults.advancedSkin.sebum || 'N/A'}
+                </DetailText>
+              )}
+              {analysisResults && selectedRegion === 'proportions' && analysisResults.facialProportions && (
+                <DetailText>
+                  التناسق: {analysisResults.facialProportions.symmetry}%<br />
+                  النسبة الذهبية: {analysisResults.facialProportions.goldenRatio}%<br />
+                  شكل الوجه: {analysisResults.facialProportions.faceShape || 'N/A'}
+                </DetailText>
+              )}
+              <CloseButton onClick={this.handleCloseDetail}>
+                إغلاق
+              </CloseButton>
+            </DetailContent>
+          </RegionDetailView>
+        )}
+      </>
+    );
+  };
+
+  render() {
+    return (
+      <Container page={this.state.currentPage}>
+        {this.renderWelcomePage()}
+        {this.renderCameraPage()}
+        {this.renderAnalyzingPage()}
+        {this.renderResultsPage()}
       </Container>
     );
   }
