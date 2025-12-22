@@ -260,7 +260,8 @@ const AnalysisCanvas = styled.canvas`
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: 3;
+  pointer-events: none;
 `;
 
 const AnalysisImage = styled.img`
@@ -273,6 +274,7 @@ const AnalysisImage = styled.img`
   z-index: 2;
   border-radius: 0.2rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  object-fit: contain;
 `;
 
 const ScanningLine = styled.div`
@@ -912,30 +914,41 @@ class SoYoungFaceAnalysis extends Component {
    * Draw analysis animation with lines, scanning, measurements, and particles (Page 2)
    */
   drawAnalysisAnimation = (canvas, image, landmarks, progress) => {
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
+    if (!canvas || !image || !landmarks || !landmarks.positions) return;
     
-    // Set canvas size
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Get container dimensions
+    const container = canvas.parentElement;
+    if (!container) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    const containerWidth = containerRect.width || window.innerWidth;
+    const containerHeight = containerRect.height || window.innerHeight;
+    
+    // Set canvas size to match container
+    canvas.width = containerWidth;
+    canvas.height = containerHeight;
     
     // Clear
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Calculate image position (centered)
+    // Calculate image position (centered, matching AnalysisImage styling)
     const imgAspect = image.width / image.height;
-    const canvasAspect = canvas.width / canvas.height;
+    const containerAspect = containerWidth / containerHeight;
     let imgWidth, imgHeight, imgX, imgY;
     
-    if (imgAspect > canvasAspect) {
-      imgWidth = canvas.width * 0.9;
+    // Match the 90% max-width/max-height logic from AnalysisImage
+    if (imgAspect > containerAspect) {
+      imgWidth = containerWidth * 0.9;
       imgHeight = imgWidth / imgAspect;
     } else {
-      imgHeight = canvas.height * 0.9;
+      imgHeight = containerHeight * 0.9;
       imgWidth = imgHeight * imgAspect;
     }
-    imgX = (canvas.width - imgWidth) / 2;
-    imgY = (canvas.height - imgHeight) / 2;
+    imgX = (containerWidth - imgWidth) / 2;
+    imgY = (containerHeight - imgHeight) / 2;
     
     const positions = landmarks.positions;
     const scaleX = imgWidth / image.width;
