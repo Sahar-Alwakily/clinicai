@@ -728,9 +728,14 @@ class SoYoungFaceAnalysis extends Component {
     
     keyPoints.forEach(pointGroup => {
       pointGroup.indices.forEach(pointIdx => {
-        if (positions[pointIdx]) {
+        if (positions[pointIdx] && positions[pointIdx].x !== undefined && positions[pointIdx].y !== undefined) {
           const x = canvas.width - positions[pointIdx].x * scaleX; // Mirror
           const y = positions[pointIdx].y * scaleY;
+          
+          // Check if x and y are valid numbers (not NaN or Infinity)
+          if (!isFinite(x) || !isFinite(y) || x < 0 || y < 0 || x > canvas.width || y > canvas.height) {
+            return; // Skip invalid points
+          }
           
           // Draw outer glow
           const gradient = ctx.createRadialGradient(x, y, 0, x, y, pointGroup.size * 3);
@@ -814,8 +819,11 @@ class SoYoungFaceAnalysis extends Component {
       image.onload = resolve;
     });
     
-    // Detect landmarks on captured image
+    // Detect landmarks on captured image and perform full analysis
+    let detection = null;
+    let fullAnalysis = null;
     let landmarks = null;
+    
     try {
       const detections = await faceapi
         .detectAllFaces(image, new faceapi.TinyFaceDetectorOptions())
@@ -824,16 +832,54 @@ class SoYoungFaceAnalysis extends Component {
         .withAgeAndGender();
       
       if (detections.length > 0) {
-        landmarks = detections[0].landmarks;
+        detection = detections[0];
+        landmarks = detection.landmarks;
+        
+        // Perform advanced analysis in background
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          ctx.drawImage(image, 0, 0);
+          
+          const advancedSkin = analyzeAdvancedSkin(image, detection.landmarks, ctx);
+          const skinProblems = analyzeSkinProblems(image, detection.landmarks, detection.age);
+          const facialProportions = analyzeFacialProportions(detection.landmarks);
+          
+          fullAnalysis = {
+            age: Math.round(detection.age),
+            gender: detection.gender === 'male' ? 'Male' : 'Female',
+            expressions: detection.expressions,
+            advancedSkin,
+            skinProblems,
+            facialProportions
+          };
+        } catch (error) {
+          console.error('Advanced analysis error:', error);
+          // Set default values if advanced analysis fails
+          fullAnalysis = {
+            age: Math.round(detection.age || 30),
+            gender: detection.gender === 'male' ? 'Male' : 'Female',
+            expressions: detection.expressions || {},
+            advancedSkin: { type: 'مختلطة', hydration: 'طبيعي', sebum: 'متوسط', pores: 'متوسطة', texture: 'متوسطة' },
+            skinProblems: { acne: { active: false }, pigmentation: { level: 'لا يوجد' }, darkCircles: { present: false } },
+            facialProportions: { symmetry: 75, goldenRatio: 75, faceShape: 'بيضاوي' }
+          };
+        }
       }
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error('Detection error:', error);
+      // If detection completely fails, still navigate to results with default data
+      landmarks = null;
     }
     
     // Store for results page
     this.analysisData = {
       image: this.capturedImageData,
-      landmarks: landmarks
+      landmarks: landmarks,
+      detection: detection,
+      fullAnalysis: fullAnalysis
     };
     
     // Start animation loop

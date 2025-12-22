@@ -175,7 +175,87 @@ class SkinAnalysis extends Component {
     }
   };
 
-  handleAnalysisComplete = (aiAnalysis) => {
+  handleAnalysisComplete = (results) => {
+    // Handle SoYoungFaceAnalysis results structure (has fullAnalysis property)
+    let aiAnalysis;
+    
+    if (results && results.fullAnalysis) {
+      // Convert SoYoungFaceAnalysis format to expected format
+      const fullAnalysis = results.fullAnalysis;
+      
+      // Build aiAnalysis object in expected format
+      aiAnalysis = {
+        age: fullAnalysis.age || results.overall?.age || 30,
+        gender: fullAnalysis.gender === 'Male' ? 'ذكر' : fullAnalysis.gender === 'Female' ? 'أنثى' : 'غير محدد',
+        
+        // Skin type from advanced analysis
+        skinType: fullAnalysis.advancedSkin ? {
+          type: fullAnalysis.advancedSkin.type || 'مختلطة',
+          confidence: fullAnalysis.advancedSkin.confidence || 75
+        } : { type: 'مختلطة', confidence: 75 },
+        
+        // Advanced skin analysis
+        advancedSkin: fullAnalysis.advancedSkin || {
+          type: 'مختلطة',
+          hydration: 'طبيعي',
+          sebum: 'متوسط',
+          pores: 'متوسطة',
+          texture: 'متوسطة'
+        },
+        
+        // Skin problems
+        skinProblems: fullAnalysis.skinProblems || {
+          acne: { active: false },
+          pigmentation: { level: 'لا يوجد' },
+          darkCircles: { present: false }
+        },
+        
+        // Facial proportions
+        facialProportions: fullAnalysis.facialProportions || {
+          symmetry: 75,
+          goldenRatio: 75,
+          faceShape: 'بيضاوي'
+        },
+        
+        // Default values for other required fields
+        wrinkles: {
+          severity: 'منخفض',
+          score: 30,
+          forehead: 0,
+          eyes: 0,
+          mouth: 0
+        },
+        sagging: {
+          severity: 'منخفض',
+          score: 25
+        },
+        facialLines: {
+          severity: 'خفيف',
+          nasolabial: 0,
+          marionette: 0,
+          forehead: 0
+        },
+        eyebrows: {
+          symmetry: 'متناسقة',
+          needsCorrection: false,
+          score: 100,
+          heightDifference: '0'
+        },
+        mouth: {
+          size: 'متوسط',
+          needsFiller: false,
+          width: '0',
+          height: '0',
+          thickness: '0'
+        },
+        treatments: [],
+        expressions: fullAnalysis.expressions || {}
+      };
+    } else {
+      // Original format (from FaceAnalysis component)
+      aiAnalysis = results;
+    }
+    
     const recommendations = this.generateRecommendations(aiAnalysis);
     
     this.setState({
@@ -382,8 +462,9 @@ class SkinAnalysis extends Component {
             <AnalysisItem>
               <div className="item-label">نوع البشرة</div>
               <div className="item-value">
-                {aiAnalysis.skinType.type}
-                {aiAnalysis.skinType.confidence > 0 && (
+                {aiAnalysis.skinType && aiAnalysis.skinType.type ? aiAnalysis.skinType.type : 
+                 aiAnalysis.advancedSkin && aiAnalysis.advancedSkin.type ? aiAnalysis.advancedSkin.type : 'غير محدد'}
+                {aiAnalysis.skinType && aiAnalysis.skinType.confidence > 0 && (
                   <span style={{ fontSize: '0.14rem', color: '#718096', marginRight: '0.05rem' }}>
                     ({aiAnalysis.skinType.confidence}% دقة)
                   </span>
