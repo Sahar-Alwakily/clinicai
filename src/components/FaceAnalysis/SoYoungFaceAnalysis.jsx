@@ -603,6 +603,149 @@ const BackButton = styled.button`
   }
 `;
 
+const Instructions = styled.div`
+  color: rgba(255, 255, 255, 0.8);
+  font-size: clamp(12px, 2.5vw, 14px);
+  text-align: center;
+  max-width: min(400px, 90vw);
+  margin-top: clamp(8px, 2vh, 12px);
+  font-family: 'SF Pro Display', -apple-system, sans-serif;
+  line-height: 1.5;
+  
+  @media (min-width: 768px) {
+    font-size: 14px;
+  }
+`;
+
+const PercentageText = styled.div`
+  position: absolute;
+  top: -25px;
+  left: 0;
+  color: white;
+  font-size: clamp(12px, 2.5vw, 14px);
+  font-weight: 600;
+  font-family: 'SF Pro Display', -apple-system, sans-serif;
+  
+  @media (min-width: 768px) {
+    font-size: 14px;
+  }
+`;
+
+const OverallScore = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 20px);
+  margin: clamp(12px, 3vh, 20px) 0;
+  
+  @media (min-width: 768px) {
+    gap: 20px;
+    margin: 20px 0;
+  }
+`;
+
+const ScoreCircle = styled.div`
+  width: clamp(60px, 15vw, 80px);
+  height: clamp(60px, 15vw, 80px);
+  border-radius: 50%;
+  background: ${props => {
+    if (props.score >= 80) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+    if (props.score >= 60) return 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)';
+    return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
+  }};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: clamp(18px, 4.5vw, 24px);
+  font-weight: 700;
+  font-family: 'SF Pro Display', -apple-system, sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  
+  @media (min-width: 768px) {
+    width: 80px;
+    height: 80px;
+    font-size: 24px;
+  }
+`;
+
+const ScoreLabel = styled.div`
+  display: flex;
+  flex-direction: column;
+  
+  .score-title {
+    font-size: clamp(16px, 4vw, 18px);
+    font-weight: 600;
+    margin-bottom: clamp(4px, 1vh, 6px);
+    
+    @media (min-width: 768px) {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+  }
+  
+  .score-description {
+    font-size: clamp(12px, 3vw, 14px);
+    opacity: 0.8;
+    
+    @media (min-width: 768px) {
+      font-size: 14px;
+    }
+  }
+`;
+
+const AnalysisSteps = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: clamp(20px, 5vw, 40px);
+  margin: clamp(20px, 5vh, 30px) 0;
+  padding: 0 clamp(10px, 2.5vw, 20px);
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(15px, 3vh, 20px);
+  }
+`;
+
+const Step = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 2vh, 10px);
+  
+  .step-icon {
+    width: clamp(40px, 10vw, 50px);
+    height: clamp(40px, 10vw, 50px);
+    border-radius: 50%;
+    background: ${props => props.active ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#e2e8f0'};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${props => props.active ? 'white' : '#94a3b8'};
+    font-size: clamp(16px, 4vw, 20px);
+    font-weight: bold;
+    
+    @media (min-width: 768px) {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+  }
+  
+  .step-text {
+    font-size: clamp(12px, 2.8vw, 14px);
+    color: ${props => props.active ? '#2d3748' : '#94a3b8'};
+    font-weight: ${props => props.active ? '600' : '400'};
+    text-align: center;
+    font-family: 'SF Pro Display', -apple-system, sans-serif;
+    
+    @media (min-width: 768px) {
+      font-size: 14px;
+    }
+  }
+`;
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -1801,6 +1944,21 @@ class SoYoungFaceAnalysis extends Component {
     return (
       <PageWrapper active={this.state.currentPage === 'camera'} enter={this.state.pageEnter}>
         <CameraPageContainer>
+          <AnalysisSteps>
+            <Step active={true}>
+              <div className="step-icon">1</div>
+              <div className="step-text">Capture Face</div>
+            </Step>
+            <Step active={false}>
+              <div className="step-icon">2</div>
+              <div className="step-text">Analysis</div>
+            </Step>
+            <Step active={false}>
+              <div className="step-icon">3</div>
+              <div className="step-text">Results</div>
+            </Step>
+          </AnalysisSteps>
+          
           <StatusText>
             {!isStreaming ? 'Position your face in the frame' : 
              currentLandmarks ? 'Face detected ✓' : 'Detecting face...'}
@@ -1840,21 +1998,31 @@ class SoYoungFaceAnalysis extends Component {
           )}
           
           {!isStreaming && (
-            <StartButton 
-              onClick={this.startCamera}
-              disabled={modelsLoading || !this.modelsLoaded}
-            >
-              {modelsLoading ? 'Loading...' : 'Start Camera'}
-            </StartButton>
+            <>
+              <StartButton 
+                onClick={this.startCamera}
+                disabled={modelsLoading || !this.modelsLoaded}
+              >
+                {modelsLoading ? 'Loading...' : 'Start Camera'}
+              </StartButton>
+              <Instructions>
+                Make sure your face is well-lit and centered in the frame
+              </Instructions>
+            </>
           )}
           
           {isStreaming && (
-            <StartButton 
-              onClick={this.handleStartAnalysis}
-              disabled={!currentLandmarks}
-            >
-              Start Analysis
-            </StartButton>
+            <>
+              <StartButton 
+                onClick={this.handleStartAnalysis}
+                disabled={!currentLandmarks}
+              >
+                Start Analysis
+              </StartButton>
+              <Instructions>
+                Hold still and press the button when your face is properly aligned
+              </Instructions>
+            </>
           )}
         </CameraPageContainer>
       </PageWrapper>
@@ -1870,6 +2038,21 @@ class SoYoungFaceAnalysis extends Component {
     return (
       <PageWrapper active={this.state.currentPage === 'analysis'} enter={this.state.pageEnter}>
         <AnalysisPageContainer>
+          <AnalysisSteps>
+            <Step active={false}>
+              <div className="step-icon">1</div>
+              <div className="step-text">Capture Face</div>
+            </Step>
+            <Step active={true}>
+              <div className="step-icon">2</div>
+              <div className="step-text">Analysis</div>
+            </Step>
+            <Step active={false}>
+              <div className="step-icon">3</div>
+              <div className="step-text">Results</div>
+            </Step>
+          </AnalysisSteps>
+          
           {this.capturedImageData && (
             <AnalysisImage 
               src={this.capturedImageData} 
@@ -1881,6 +2064,7 @@ class SoYoungFaceAnalysis extends Component {
           <AnalysisStatusText>{analysisStatus}</AnalysisStatusText>
           <ProgressBar>
             <ProgressFill progress={analysisProgress} />
+            <PercentageText>{Math.round(analysisProgress)}%</PercentageText>
           </ProgressBar>
         </AnalysisPageContainer>
       </PageWrapper>
@@ -1899,18 +2083,39 @@ class SoYoungFaceAnalysis extends Component {
       <PageWrapper active={this.state.currentPage === 'results'} enter={this.state.pageEnter}>
         <ResultsPageContainer>
           <ResultsHeader>
-            <BackButton onClick={this.handleBack}>×</BackButton>
+            <BackButton onClick={this.handleBack}>←</BackButton>
             <h1>Analysis Results</h1>
-            <p>
-              Overall Score: {analysisResults.overall.score}/100
-              {analysisResults.overall.age && (
-                <span style={{ marginRight: 'clamp(8px, 2vw, 12px)' }}>
-                  • Age: {analysisResults.overall.age}
-                  {analysisResults.overall.gender && ` (${analysisResults.overall.gender})`}
-                </span>
-              )}
-            </p>
+            <OverallScore>
+              <ScoreCircle score={analysisResults.overall.score}>
+                {analysisResults.overall.score}
+              </ScoreCircle>
+              <ScoreLabel>
+                <div className="score-title">Overall Score</div>
+                <div className="score-description">{analysisResults.overall.description}</div>
+                {analysisResults.overall.age && (
+                  <div className="score-description">
+                    Age: {analysisResults.overall.age}
+                    {analysisResults.overall.gender && ` • ${analysisResults.overall.gender}`}
+                  </div>
+                )}
+              </ScoreLabel>
+            </OverallScore>
           </ResultsHeader>
+          
+          <AnalysisSteps>
+            <Step active={false}>
+              <div className="step-icon">1</div>
+              <div className="step-text">Capture Face</div>
+            </Step>
+            <Step active={false}>
+              <div className="step-icon">2</div>
+              <div className="step-text">Analysis</div>
+            </Step>
+            <Step active={true}>
+              <div className="step-icon">3</div>
+              <div className="step-text">Results</div>
+            </Step>
+          </AnalysisSteps>
           
           <ResultsGrid>
             {analysisResults.regions.map((region, index) => (
