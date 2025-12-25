@@ -311,43 +311,65 @@ const Particle = styled.div`
 
 const AnalysisStatusText = styled.div`
   position: absolute;
-  bottom: 2rem;
+  bottom: 1.5rem;
   left: 50%;
   transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 0.32rem;
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.98);
+  font-size: 0.18rem;
+  font-weight: 600;
   text-align: center;
   z-index: 10;
   pointer-events: none;
-  letter-spacing: 0.05rem;
+  letter-spacing: 0.02rem;
   font-family: 'SF Pro Display', -apple-system, sans-serif;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9), 0 0 20px rgba(102, 126, 234, 0.5);
   animation: ${glowPulse} 2s ease-in-out infinite;
-  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.12rem 0.24rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 const ProgressBar = styled.div`
   position: absolute;
-  bottom: 1rem;
+  bottom: 0.8rem;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 6rem;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  width: 70%;
+  max-width: 5rem;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 2px;
   overflow: hidden;
   z-index: 10;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 `;
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   border-radius: 2px;
   width: ${props => props.progress || 0}%;
   transition: width 0.1s linear;
-  box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.8), 0 0 30px rgba(118, 75, 162, 0.4);
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
 `;
 
 // ============================================
@@ -954,37 +976,39 @@ class SoYoungFaceAnalysis extends Component {
     const scaleX = imgWidth / image.width;
     const scaleY = imgHeight / image.height;
     
-    // Draw connecting lines (animated based on progress)
+    // Draw connecting lines (animated based on progress) - more subtle
     this.drawAnimatedConnections(ctx, positions, imgX, imgY, scaleX, scaleY, progress);
     
     // Draw facial measurements with Arabic labels (animated)
-    if (progress > 20) { // Start showing measurements after 20% progress
-      const measurementProgress = Math.min(1, (progress - 20) / 60); // Show over 20-80% progress
+    if (progress > 25) { // Start showing measurements after 25% progress
+      const measurementProgress = Math.min(1, (progress - 25) / 55); // Show over 25-80% progress
       this.drawFacialMeasurements(ctx, positions, imgX, imgY, scaleX, scaleY, image, measurementProgress);
     }
     
-    // Draw scanning line
+    // Draw scanning line - more visible
     const scanY = imgY + (progress / 100) * imgHeight;
     this.drawScanningLine(ctx, imgX, scanY, imgX + imgWidth);
     
-    // Draw particles
-    this.drawParticles(ctx, positions, imgX, imgY, scaleX, scaleY, progress);
+    // Draw particles - more subtle
+    if (progress > 10) {
+      this.drawParticles(ctx, positions, imgX, imgY, scaleX, scaleY, progress);
+    }
   };
 
   /**
-   * Draw animated connecting lines between landmarks
+   * Draw animated connecting lines between landmarks - more subtle
    */
   drawAnimatedConnections = (ctx, positions, offsetX, offsetY, scaleX, scaleY, progress) => {
     const connections = [
-      { points: Array.from({ length: 17 }, (_, i) => i), color: 'rgba(102, 126, 234, 0.5)' },
-      { points: [17, 18, 19, 20, 21], color: 'rgba(102, 126, 234, 0.6)' },
-      { points: [22, 23, 24, 25, 26], color: 'rgba(102, 126, 234, 0.6)' },
-      { points: [27, 28, 29, 30], color: 'rgba(102, 126, 234, 0.7)' },
-      { points: [31, 32, 33, 34, 35], color: 'rgba(102, 126, 234, 0.6)' },
-      { points: [36, 37, 38, 39, 40, 41, 36], color: 'rgba(135, 206, 250, 0.7)' },
-      { points: [42, 43, 44, 45, 46, 47, 42], color: 'rgba(135, 206, 250, 0.7)' },
-      { points: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 48], color: 'rgba(236, 72, 153, 0.6)' },
-      { points: [60, 61, 62, 63, 64, 65, 66, 67, 60], color: 'rgba(236, 72, 153, 0.5)' }
+      { points: Array.from({ length: 17 }, (_, i) => i), color: 'rgba(102, 126, 234, 0.3)' },
+      { points: [17, 18, 19, 20, 21], color: 'rgba(102, 126, 234, 0.35)' },
+      { points: [22, 23, 24, 25, 26], color: 'rgba(102, 126, 234, 0.35)' },
+      { points: [27, 28, 29, 30], color: 'rgba(102, 126, 234, 0.4)' },
+      { points: [31, 32, 33, 34, 35], color: 'rgba(102, 126, 234, 0.35)' },
+      { points: [36, 37, 38, 39, 40, 41, 36], color: 'rgba(135, 206, 250, 0.4)' },
+      { points: [42, 43, 44, 45, 46, 47, 42], color: 'rgba(135, 206, 250, 0.4)' },
+      { points: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 48], color: 'rgba(236, 72, 153, 0.35)' },
+      { points: [60, 61, 62, 63, 64, 65, 66, 67, 60], color: 'rgba(236, 72, 153, 0.3)' }
     ];
     
     connections.forEach((connection, connIdx) => {
@@ -993,10 +1017,10 @@ class SoYoungFaceAnalysis extends Component {
       if (connectionProgress <= 0) return;
       
       ctx.strokeStyle = connection.color;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.globalAlpha = connectionProgress;
+      ctx.globalAlpha = connectionProgress * 0.8; // More subtle
       
       ctx.beginPath();
       connection.points.forEach((pointIdx, idx) => {
@@ -1021,48 +1045,59 @@ class SoYoungFaceAnalysis extends Component {
   };
 
   /**
-   * Draw scanning line effect
+   * Draw scanning line effect - more visible and modern
    */
   drawScanningLine = (ctx, x1, y, x2) => {
-    const gradient = ctx.createLinearGradient(x1, y - 15, x1, y + 15);
+    const gradient = ctx.createLinearGradient(x1, y - 20, x1, y + 20);
     gradient.addColorStop(0, 'rgba(102, 126, 234, 0)');
-    gradient.addColorStop(0.5, 'rgba(102, 126, 234, 0.9)');
-    gradient.addColorStop(1, 'rgba(102, 126, 234, 0)');
+    gradient.addColorStop(0.3, 'rgba(102, 126, 234, 0.6)');
+    gradient.addColorStop(0.5, 'rgba(102, 126, 234, 1)');
+    gradient.addColorStop(0.7, 'rgba(118, 75, 162, 0.6)');
+    gradient.addColorStop(1, 'rgba(118, 75, 162, 0)');
     
     ctx.strokeStyle = gradient;
-    ctx.lineWidth = 4;
-    ctx.shadowBlur = 30;
-    ctx.shadowColor = 'rgba(102, 126, 234, 0.8)';
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = 'rgba(102, 126, 234, 0.9)';
     ctx.beginPath();
     ctx.moveTo(x1, y);
     ctx.lineTo(x2, y);
     ctx.stroke();
+    
+    // Add a bright center dot
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = 'rgba(102, 126, 234, 1)';
+    ctx.beginPath();
+    ctx.arc((x1 + x2) / 2, y, 3, 0, Math.PI * 2);
+    ctx.fill();
     ctx.shadowBlur = 0;
   };
 
   /**
-   * Draw particle effects
+   * Draw particle effects - more subtle and elegant
    */
   drawParticles = (ctx, positions, offsetX, offsetY, scaleX, scaleY, progress) => {
-    // Generate particles around key points
+    // Generate particles around key points - less frequent
     const keyPoints = [30, 36, 45, 51]; // nose tip, eyes, mouth
     
     keyPoints.forEach(pointIdx => {
-      if (positions[pointIdx] && Math.random() < 0.3) {
+      if (positions[pointIdx] && Math.random() < 0.15) { // Less frequent
         const baseX = offsetX + (ctx.canvas.width - positions[pointIdx].x * scaleX);
         const baseY = offsetY + positions[pointIdx].y * scaleY;
         
-        const particleX = baseX + (Math.random() - 0.5) * 40;
-        const particleY = baseY + (Math.random() - 0.5) * 40;
-        const size = 2 + Math.random() * 2;
+        const particleX = baseX + (Math.random() - 0.5) * 30;
+        const particleY = baseY + (Math.random() - 0.5) * 30;
+        const size = 1.5 + Math.random() * 1.5;
         
-        const gradient = ctx.createRadialGradient(particleX, particleY, 0, particleX, particleY, size * 2);
-        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
+        const gradient = ctx.createRadialGradient(particleX, particleY, 0, particleX, particleY, size * 3);
+        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.5)');
+        gradient.addColorStop(0.5, 'rgba(118, 75, 162, 0.3)');
         gradient.addColorStop(1, 'transparent');
         
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(particleX, particleY, size * 2, 0, Math.PI * 2);
+        ctx.arc(particleX, particleY, size * 3, 0, Math.PI * 2);
         ctx.fill();
       }
     });
@@ -1108,7 +1143,7 @@ class SoYoungFaceAnalysis extends Component {
     if (!positions || positions.length < 68) return;
     
     ctx.save();
-    ctx.globalAlpha = progress;
+    ctx.globalAlpha = progress * 0.85; // Slightly more transparent
     
     // Calculate image width on canvas
     const imgWidth = image.width * scaleX;
@@ -1119,10 +1154,10 @@ class SoYoungFaceAnalysis extends Component {
     const mirrorY = (y) => offsetY + (y * scaleY);
     
     // Set up text style - smaller, cleaner, more organized
-    ctx.font = 'bold 12px Arial, "Segoe UI", sans-serif';
+    ctx.font = '500 10px "Segoe UI", Arial, sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.lineWidth = 3;
     ctx.textAlign = 'right'; // Right align for Arabic
     ctx.textBaseline = 'middle';
     
@@ -1135,28 +1170,32 @@ class SoYoungFaceAnalysis extends Component {
       const leftEyeInner = { x: mirrorX(positions[39].x), y: mirrorY(positions[39].y) };
       const rightEyeInner = { x: mirrorX(positions[42].x), y: mirrorY(positions[42].y) };
       
-      // Draw dashed line
-      ctx.setLineDash([6, 3]);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.lineWidth = 1.5;
+      // Draw dashed line - thinner and more subtle
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(102, 126, 234, 0.7)';
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = 'rgba(102, 126, 234, 0.5)';
       ctx.beginPath();
       ctx.moveTo(leftEyeInner.x, leftEyeInner.y);
       ctx.lineTo(rightEyeInner.x, rightEyeInner.y);
       ctx.stroke();
       ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
       
-      // Label positioned above the line, centered
+      // Label positioned above the line, centered - smaller
       const midX = (leftEyeInner.x + rightEyeInner.x) / 2;
-      const midY = Math.min(leftEyeInner.y, rightEyeInner.y) - 25;
-      const labelText = `المسافة بين العينين: ${innerEyeDistCm.toFixed(2)} سم`;
+      const midY = Math.min(leftEyeInner.y, rightEyeInner.y) - 18;
+      const labelText = `بين العينين: ${innerEyeDistCm.toFixed(1)} سم`;
       const textMetrics = ctx.measureText(labelText);
       
-      // Draw background rectangle
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-      ctx.fillRect(midX - textMetrics.width / 2 - 6, midY - 9, textMetrics.width + 12, 18);
+      // Draw background rectangle - more compact
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(midX - textMetrics.width / 2 - 5, midY - 7, textMetrics.width + 10, 14);
       
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
+      ctx.font = '500 9px "Segoe UI", Arial, sans-serif';
       ctx.fillText(labelText, midX, midY);
     }
     
@@ -1169,27 +1208,31 @@ class SoYoungFaceAnalysis extends Component {
       const noseTop = { x: mirrorX(positions[27].x), y: mirrorY(positions[27].y) };
       const noseTip = { x: mirrorX(positions[33].x), y: mirrorY(positions[33].y) };
       
-      // Draw vertical dashed line
-      ctx.setLineDash([6, 3]);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.lineWidth = 1.5;
+      // Draw vertical dashed line - thinner
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(236, 72, 153, 0.7)';
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = 'rgba(236, 72, 153, 0.5)';
       ctx.beginPath();
       ctx.moveTo(noseTip.x, noseTop.y);
       ctx.lineTo(noseTip.x, noseTip.y);
       ctx.stroke();
       ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
       
-      // Label positioned to the right side
-      const noseLabelText = `طول الأنف: ${noseLengthCm.toFixed(2)} سم`;
+      // Label positioned to the right side - smaller
+      const noseLabelText = `الأنف: ${noseLengthCm.toFixed(1)} سم`;
       const noseTextMetrics = ctx.measureText(noseLabelText);
-      const noseLabelX = noseTip.x + 20;
+      const noseLabelX = noseTip.x + 15;
       const noseLabelY = (noseTop.y + noseTip.y) / 2;
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-      ctx.fillRect(noseLabelX - noseTextMetrics.width - 6, noseLabelY - 9, noseTextMetrics.width + 12, 18);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(noseLabelX - noseTextMetrics.width - 5, noseLabelY - 7, noseTextMetrics.width + 10, 14);
       
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'right';
+      ctx.font = '500 9px "Segoe UI", Arial, sans-serif';
       ctx.fillText(noseLabelText, noseLabelX, noseLabelY);
       
       // Golden triangle (المثلث الذهبي) - angle between eye corners and nose tip
@@ -1204,26 +1247,30 @@ class SoYoungFaceAnalysis extends Component {
         const p2 = { x: mirrorX(rightEyeInner.x), y: mirrorY(rightEyeInner.y) };
         const p3 = { x: mirrorX(noseTipPos.x), y: mirrorY(noseTipPos.y) };
         
-        ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = 'rgba(255, 215, 0, 0.4)';
         ctx.beginPath();
         ctx.moveTo(p1.x, p1.y);
         ctx.lineTo(p3.x, p3.y);
         ctx.lineTo(p2.x, p2.y);
         ctx.closePath();
         ctx.stroke();
+        ctx.shadowBlur = 0;
         
-        // Label angle - positioned below triangle, centered
-        const triangleLabelText = `المثلث الذهبي: ${goldenAngle.toFixed(1)}°`;
+        // Label angle - positioned below triangle, centered - smaller
+        const triangleLabelText = `المثلث: ${goldenAngle.toFixed(1)}°`;
         const triangleTextMetrics = ctx.measureText(triangleLabelText);
         const triangleLabelX = p3.x;
-        const triangleLabelY = p3.y + 25;
+        const triangleLabelY = p3.y + 18;
         
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-        ctx.fillRect(triangleLabelX - triangleTextMetrics.width / 2 - 6, triangleLabelY - 9, triangleTextMetrics.width + 12, 18);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(triangleLabelX - triangleTextMetrics.width / 2 - 5, triangleLabelY - 7, triangleTextMetrics.width + 10, 14);
         
         ctx.fillStyle = '#ffd700';
         ctx.textAlign = 'center';
+        ctx.font = '500 9px "Segoe UI", Arial, sans-serif';
         ctx.fillText(triangleLabelText, triangleLabelX, triangleLabelY);
       }
     }
@@ -1237,27 +1284,31 @@ class SoYoungFaceAnalysis extends Component {
       const mouthLeft = { x: mirrorX(positions[48].x), y: mirrorY(positions[48].y) };
       const mouthRight = { x: mirrorX(positions[54].x), y: mirrorY(positions[54].y) };
       
-      // Draw dashed line
-      ctx.setLineDash([6, 3]);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.lineWidth = 1.5;
+      // Draw dashed line - thinner
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.7)';
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = 'rgba(251, 191, 36, 0.5)';
       ctx.beginPath();
       ctx.moveTo(mouthLeft.x, mouthLeft.y);
       ctx.lineTo(mouthRight.x, mouthRight.y);
       ctx.stroke();
       ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
       
-      // Label positioned below mouth, centered
+      // Label positioned below mouth, centered - smaller
       const mouthMidX = (mouthLeft.x + mouthRight.x) / 2;
-      const mouthMidY = Math.max(mouthLeft.y, mouthRight.y) + 20;
-      const mouthLabelText = `عرض الفم: ${mouthWidthCm.toFixed(2)} سم`;
+      const mouthMidY = Math.max(mouthLeft.y, mouthRight.y) + 15;
+      const mouthLabelText = `الفم: ${mouthWidthCm.toFixed(1)} سم`;
       const mouthTextMetrics = ctx.measureText(mouthLabelText);
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-      ctx.fillRect(mouthMidX - mouthTextMetrics.width / 2 - 6, mouthMidY - 9, mouthTextMetrics.width + 12, 18);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(mouthMidX - mouthTextMetrics.width / 2 - 5, mouthMidY - 7, mouthTextMetrics.width + 10, 14);
       
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
+      ctx.font = '500 9px "Segoe UI", Arial, sans-serif';
       ctx.fillText(mouthLabelText, mouthMidX, mouthMidY);
     }
     
@@ -1269,27 +1320,31 @@ class SoYoungFaceAnalysis extends Component {
       const leftFace = { x: mirrorX(positions[0].x), y: mirrorY(positions[0].y) };
       const rightFace = { x: mirrorX(positions[16].x), y: mirrorY(positions[16].y) };
       
-      // Draw horizontal dashed line at jawline
-      ctx.setLineDash([6, 3]);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.lineWidth = 1.5;
+      // Draw horizontal dashed line at jawline - thinner
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.7)';
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = 'rgba(16, 185, 129, 0.5)';
       ctx.beginPath();
       ctx.moveTo(leftFace.x, leftFace.y);
       ctx.lineTo(rightFace.x, rightFace.y);
       ctx.stroke();
       ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
       
-      // Label positioned below jawline, centered
+      // Label positioned below jawline, centered - smaller
       const faceMidX = (leftFace.x + rightFace.x) / 2;
-      const faceLabelText = `عرض الوجه: ${faceWidthCm.toFixed(2)} سم`;
+      const faceLabelText = `الوجه: ${faceWidthCm.toFixed(1)} سم`;
       const faceTextMetrics = ctx.measureText(faceLabelText);
-      const faceLabelY = Math.max(leftFace.y, rightFace.y) + 20;
+      const faceLabelY = Math.max(leftFace.y, rightFace.y) + 15;
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-      ctx.fillRect(faceMidX - faceTextMetrics.width / 2 - 6, faceLabelY - 9, faceTextMetrics.width + 12, 18);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(faceMidX - faceTextMetrics.width / 2 - 5, faceLabelY - 7, faceTextMetrics.width + 10, 14);
       
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
+      ctx.font = '500 9px "Segoe UI", Arial, sans-serif';
       ctx.fillText(faceLabelText, faceMidX, faceLabelY);
     }
     
@@ -1769,7 +1824,12 @@ class SoYoungFaceAnalysis extends Component {
           )}
           <AnalysisCanvas ref={this.analysisCanvasRef} />
           <ScanningLine />
-          <AnalysisStatusText>{analysisStatus}</AnalysisStatusText>
+          <AnalysisStatusText>
+            {analysisProgress < 30 ? 'جاري التحليل...' :
+             analysisProgress < 60 ? 'تحليل البشرة' :
+             analysisProgress < 90 ? 'تحليل الوجه' :
+             'اكتمال التحليل'}
+          </AnalysisStatusText>
           <ProgressBar>
             <ProgressFill progress={analysisProgress} />
           </ProgressBar>
