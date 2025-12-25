@@ -78,7 +78,7 @@ class App extends Component {
           <Route path="/login" component={Login}></Route>
           <Route path="/register" component={Register}></Route>
           <Route path="/patient-form" component={PatientForm}></Route>
-          <Route path="/mianbulunkuo:name" component={Mianbulunkuo}></Route>
+          <Route path="/mianbulunkuo/:name" component={Mianbulunkuo}></Route>
           <Route path="/details" component={Details}></Route>
           <Route path="/catalog" component={Catalog}></Route>
           <Route path="/trends" component={Trends}></Route>
