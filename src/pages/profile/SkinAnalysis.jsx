@@ -273,6 +273,9 @@ class SkinAnalysis extends Component {
         // Specific regions analysis (for smile lines, fine lines, etc.)
         specificRegions: fullAnalysis.specificRegions || {},
         
+        // Professional analysis (structured JSON format)
+        professionalAnalysis: fullAnalysis.professionalAnalysis || null,
+        
         // Store regions for thumbnails
         regions: regions,
         originalImage: originalImage,
@@ -1028,6 +1031,38 @@ class SkinAnalysis extends Component {
     return 'success';
   };
 
+  // تحويل القيم الإنجليزية إلى عربية للعرض
+  translateProfessionalValue = (value) => {
+    const translations = {
+      // Skin types
+      'oily': 'دهنية',
+      'dry': 'جافة',
+      'combination': 'مختلطة',
+      'sensitive': 'حساسة',
+      'normal': 'عادية',
+      // Severity
+      'none': 'لا يوجد',
+      'mild': 'خفيف',
+      'moderate': 'متوسط',
+      'severe': 'شديد',
+      // Texture
+      'smooth': 'ناعم',
+      'rough': 'خشن',
+      'uneven': 'غير متساوي',
+      // Tone
+      'even': 'متساوي',
+      // Pores
+      'normal': 'طبيعي',
+      'enlarged': 'متوسعة',
+      // Lips condition
+      'plump': 'ممتلئة',
+      // Boolean
+      'true': 'موجود',
+      'false': 'لا يوجد'
+    };
+    return translations[value] || value;
+  };
+
   render() {
     const { analysis, aiAnalysis } = this.state;
 
@@ -1166,8 +1201,173 @@ class SkinAnalysis extends Component {
             </>
           )}
 
+          {/* 4. التحليل الاحترافي - عرض منظم */}
+          {aiAnalysis.professionalAnalysis && (
+            <>
+              <SectionTitle style={{ marginTop: '0.2rem' }}>📋 التحليل الاحترافي المفصل</SectionTitle>
+              
+              {/* نوع البشرة والحالة العامة */}
+              <AnalysisItem style={{ 
+                background: 'rgba(102, 126, 234, 0.05)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(102, 126, 234, 0.15)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  نوع البشرة والحالة العامة:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  <div>• نوع البشرة: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.skinType)}</strong></div>
+                  <div>• الملمس: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.overallSkin.texture)}</strong></div>
+                  <div>• اللون: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.overallSkin.tone)}</strong></div>
+                  <div>• العيوب: <strong>{aiAnalysis.professionalAnalysis.overallSkin.imperfections ? 'موجودة' : 'لا توجد'}</strong></div>
+                </div>
+              </AnalysisItem>
+              
+              {/* الجبهة */}
+              <AnalysisItem style={{ 
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  الجبهة:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  <div>1. التجاعيد: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.forehead.wrinkles)}</strong></div>
+                  <div>2. الخطوط: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.forehead.lines)}</strong></div>
+                  <div>3. التصبغات: <strong>{aiAnalysis.professionalAnalysis.forehead.pigmentation ? 'موجودة' : 'لا توجد'}</strong></div>
+                </div>
+              </AnalysisItem>
+              
+              {/* العيون */}
+              <AnalysisItem style={{ 
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  العيون والمنطقة المحيطة:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  <div>1. الهالات السوداء: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.eyes.darkCircles)}</strong></div>
+                  <div>2. الانتفاخ: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.eyes.puffiness)}</strong></div>
+                  <div>3. Crow's feet: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.eyes.crowFeet)}</strong></div>
+                  <div>4. الترهل: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.eyes.sagging)}</strong></div>
+                </div>
+              </AnalysisItem>
+              
+              {/* الأنف */}
+              <AnalysisItem style={{ 
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  الأنف:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  <div>1. المسام: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.nose.pores)}</strong></div>
+                  <div>2. الرؤوس السوداء: <strong>{aiAnalysis.professionalAnalysis.nose.blackheads ? 'موجودة' : 'لا توجد'}</strong></div>
+                  <div>3. الاحمرار: <strong>{aiAnalysis.professionalAnalysis.nose.redness ? 'موجود' : 'لا يوجد'}</strong></div>
+                </div>
+              </AnalysisItem>
+              
+              {/* الفم */}
+              <AnalysisItem style={{ 
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  الفم والمنطقة المحيطة:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  <div>1. خطوط الابتسامة: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.mouthArea.smileLines)}</strong></div>
+                  <div>2. حالة الشفاه: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.mouthArea.lipsCondition)}</strong></div>
+                  <div>3. الترهل: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.mouthArea.sagging)}</strong></div>
+                </div>
+              </AnalysisItem>
+              
+              {/* الخدود */}
+              <AnalysisItem style={{ 
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  الخدود:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  <div>1. حب الشباب: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.cheeks.acne)}</strong></div>
+                  <div>2. التصبغات: <strong>{aiAnalysis.professionalAnalysis.cheeks.pigmentation ? 'موجودة' : 'لا توجد'}</strong></div>
+                  <div>3. الترهل: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.cheeks.sagging)}</strong></div>
+                </div>
+              </AnalysisItem>
+              
+              {/* خط الفك */}
+              <AnalysisItem style={{ 
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  خط الفك:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  <div>1. الترهل: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.jawline.sagging)}</strong></div>
+                </div>
+              </AnalysisItem>
+              
+              {/* الذقن */}
+              <AnalysisItem style={{ 
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(0, 0, 0, 0.08)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  الذقن:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  <div>1. الملمس: <strong>{this.translateProfessionalValue(aiAnalysis.professionalAnalysis.chin.texture)}</strong></div>
+                  <div>2. البقع: <strong>{aiAnalysis.professionalAnalysis.chin.blemishes ? 'موجودة' : 'لا توجد'}</strong></div>
+                </div>
+              </AnalysisItem>
+              
+              {/* الملخص */}
+              <AnalysisItem style={{ 
+                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                borderRadius: '0.12rem',
+                padding: '0.18rem',
+                marginBottom: '0.15rem',
+                border: '1px solid rgba(102, 126, 234, 0.2)'
+              }}>
+                <div style={{ fontSize: '0.19rem', fontWeight: 700, color: '#1a202c', marginBottom: '0.1rem' }}>
+                  الملخص:
+                </div>
+                <div style={{ fontSize: '0.16rem', color: '#4a5568', lineHeight: '1.6' }}>
+                  {aiAnalysis.professionalAnalysis.summary}
+                </div>
+              </AnalysisItem>
+            </>
+          )}
 
-          {/* 4. المشاكل الجلدية مع الصور المصغرة والتوصيات */}
+          {/* 5. المشاكل الجلدية - قائمة مرقمة بسيطة */}
           {aiAnalysis.problemRecommendations && aiAnalysis.problemRecommendations.length > 0 && (
             <>
               <SectionTitle style={{ marginTop: '0.2rem' }}>⚠️ المشاكل المكتشفة</SectionTitle>

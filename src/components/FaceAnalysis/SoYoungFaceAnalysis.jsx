@@ -23,6 +23,7 @@ import {
   analyzeFacialProportions,
   analyzeSpecificRegions
 } from "../../utils/advancedFaceAnalysis";
+import { performProfessionalFaceAnalysis } from "../../utils/professionalFaceAnalysis";
 
 // ============================================
 // ANIMATIONS
@@ -935,6 +936,14 @@ class SoYoungFaceAnalysis extends Component {
           const facialProportions = analyzeFacialProportions(detection.landmarks);
           const specificRegions = analyzeSpecificRegions(image, detection.landmarks);
           
+          // Perform professional face analysis
+          let professionalAnalysis = null;
+          try {
+            professionalAnalysis = performProfessionalFaceAnalysis(image, detection.landmarks, detection.age);
+          } catch (error) {
+            console.error('Professional analysis error:', error);
+          }
+          
           fullAnalysis = {
             age: Math.round(detection.age),
             gender: detection.gender === 'male' ? 'Male' : 'Female',
@@ -942,7 +951,8 @@ class SoYoungFaceAnalysis extends Component {
             advancedSkin,
             skinProblems,
             facialProportions,
-            specificRegions
+            specificRegions,
+            professionalAnalysis // Add professional analysis
           };
         } catch (error) {
           console.error('Advanced analysis error:', error);
