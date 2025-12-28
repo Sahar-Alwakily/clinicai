@@ -65,6 +65,17 @@ export const analyzeAdvancedSkin = (imageElement, landmarks, ctx) => {
     skinType = 'عادية';
   }
 
+  // تقييم حالة البشرة العامة
+  const isDry = hydrationScore < 40 && sebumScore < 35;
+  const isOily = sebumScore > 65 || (sebumScore > 55 && poreScore > 50);
+  const isUnevenTexture = textureAnalysis.score < 50 || textureAnalysis.sensitivity > 60;
+  
+  // تقييم شامل لحالة البشرة
+  let overallCondition = 'متوازنة';
+  if (isDry) overallCondition = 'جافة';
+  else if (isOily) overallCondition = 'دهنية';
+  else if (isUnevenTexture) overallCondition = 'ملمس غير متساوي';
+  
   return {
     type: skinType,
     hydration: hydrationAnalysis.level,
@@ -75,9 +86,17 @@ export const analyzeAdvancedSkin = (imageElement, landmarks, ctx) => {
     poresScore: poreAnalysis.score,
     texture: textureAnalysis.quality,
     textureScore: textureAnalysis.score,
-    sensitivity: textureAnalysis.sensitivity
+    sensitivity: textureAnalysis.sensitivity,
+    // حالة البشرة العامة
+    overallCondition: overallCondition,
+    isDry: isDry,
+    isOily: isOily,
+    isUnevenTexture: isUnevenTexture,
+    dryness: isDry ? 'جافة' : hydrationScore < 50 ? 'قليلة الترطيب' : 'مترطبة',
+    oiliness: isOily ? 'دهنية' : sebumScore < 40 ? 'قليلة الزهم' : 'متوازنة',
+    textureEvenness: isUnevenTexture ? 'غير متساوي' : 'متساوي'
   };
-};
+}
 
 /**
  * تحليل المشاكل الجلدية
@@ -114,6 +133,9 @@ export const analyzeSkinProblems = (imageElement, landmarks, age) => {
 
   // تحليل الندوب
   const scarsAnalysis = analyzeScars(ctx, positions, canvas.width, canvas.height);
+  
+  // تحليل الترهل (Skin Sagging) - تقييم المرونة والترهل
+  const saggingAnalysis = analyzeSagging(ctx, positions, canvas.width, canvas.height, age);
 
   return {
     acne: acneAnalysis,
@@ -121,6 +143,7 @@ export const analyzeSkinProblems = (imageElement, landmarks, age) => {
     darkCircles: darkCirclesAnalysis,
     wrinkles: wrinklesAnalysis,
     scars: scarsAnalysis,
+    sagging: saggingAnalysis,
     medicalAcne: analyzeMedicalAcneTypes(ctx, positions, canvas.width, canvas.height, acneAnalysis)
   };
 };
@@ -601,37 +624,84 @@ function analyzeAcneInRegion(ctx, region, width, height) {
 }
 
 function analyzePigmentation(ctx, positions, width, height) {
-  // تحليل التصبغات
+  // تحليل شامل للتصبغات: البقع، فرط التصبغ، الكلف، النمش
   const cheekRegion = positions.slice(1, 15);
+  const foreheadRegion = positions.slice(17, 27); // منطقة الجبهة
+  const noseRegion = positions.slice(27, 36); // منطقة الأنف
+  
   let darkSpots = 0;
+  let hyperpigmentationAreas = 0;
+  let melasmaAreas = 0;
+  const allRegions = [...cheekRegion, ...foreheadRegion, ...noseRegion];
 
-  cheekRegion.forEach(point => {
+  allRegions.forEach(point => {
     const x = Math.floor(point.x);
     const y = Math.floor(point.y);
     if (x >= 0 && x < width && y >= 0 && y < height) {
       const imgData = ctx.getImageData(x, y, 1, 1);
       const brightness = (imgData.data[0] + imgData.data[1] + imgData.data[2]) / 3;
-      if (brightness < 100) darkSpots++;
+      const r = imgData.data[0];
+      const g = imgData.data[1];
+      const b = imgData.data[2];
+      
+      // البقع الداكنة العامة
+      if (brightness < 100) {
+        darkSpots++;
+      }
+      
+      // فرط التصبغ - مناطق بنية/داكنة
+      if (brightness < 120 && r < 130 && g < 130 && b < 130) {
+        hyperpigmentationAreas++;
+      }
+      
+      // الكلف - بقع بنية كبيرة في منطقة الخدود والجبهة
+      if (brightness < 110 && (cheekRegion.includes(point) || foreheadRegion.includes(point))) {
+        melasmaAreas++;
+      }
     }
   });
 
-  const level = darkSpots > 5 ? 'عالي' : darkSpots > 2 ? 'متوسط' : 'منخفض';
-  const types = darkSpots > 3 ? ['كلف', 'نمش'] : darkSpots > 1 ? ['نمش'] : [];
+  const totalSpots = darkSpots + hyperpigmentationAreas;
+  const level = totalSpots > 8 ? 'عالي' : totalSpots > 4 ? 'متوسط' : totalSpots > 1 ? 'منخفض' : 'لا يوجد';
+  
+  const types = [];
+  if (melasmaAreas > 2) types.push('كلف');
+  if (hyperpigmentationAreas > 3) types.push('فرط التصبغ');
+  if (darkSpots > 2) types.push('بقع داكنة');
+  if (darkSpots > 0 && darkSpots <= 2) types.push('نمش');
 
-  return { level, types, count: darkSpots };
+  return { 
+    level, 
+    types, 
+    count: totalSpots,
+    darkSpots,
+    hyperpigmentation: hyperpigmentationAreas > 3 ? 'موجود' : 'غير موجود',
+    melasma: melasmaAreas > 2 ? 'موجود' : 'غير موجود',
+    melasmaCount: melasmaAreas,
+    hyperpigmentationCount: hyperpigmentationAreas
+  };
 }
 
 function analyzeDarkCircles(ctx, positions, width, height) {
-  // تحليل الهالات السوداء
+  // تحليل شامل للعيون: الهالات السوداء، الانتفاخ، علامات التعب
   const leftEye = positions.slice(36, 42);
   const rightEye = positions.slice(42, 48);
-  const underEyePoints = [
-    ...leftEye.map(p => ({ x: p.x, y: p.y + 10 })),
-    ...rightEye.map(p => ({ x: p.x, y: p.y + 10 }))
-  ];
+  
+  // منطقة تحت العينين (أوسع)
+  const underEyePoints = [];
+  leftEye.forEach((p, i) => {
+    underEyePoints.push({ x: p.x, y: p.y + 15 });
+    underEyePoints.push({ x: p.x, y: p.y + 25 });
+  });
+  rightEye.forEach((p, i) => {
+    underEyePoints.push({ x: p.x, y: p.y + 15 });
+    underEyePoints.push({ x: p.x, y: p.y + 25 });
+  });
 
   let totalBrightness = 0;
   let count = 0;
+  let variance = 0;
+  const brightnessValues = [];
 
   underEyePoints.forEach(point => {
     const x = Math.floor(point.x);
@@ -640,15 +710,42 @@ function analyzeDarkCircles(ctx, positions, width, height) {
       const imgData = ctx.getImageData(x, y, 1, 1);
       const brightness = (imgData.data[0] + imgData.data[1] + imgData.data[2]) / 3;
       totalBrightness += brightness;
+      brightnessValues.push(brightness);
       count++;
     }
   });
 
   const avgBrightness = count > 0 ? totalBrightness / count : 200;
+  
+  // حساب التباين للكشف عن الانتفاخ (المناطق الفاتحة والداكنة)
+  if (brightnessValues.length > 0) {
+    const mean = avgBrightness;
+    variance = brightnessValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / brightnessValues.length;
+  }
+
+  // تحليل الهالات السوداء
   const present = avgBrightness < 140;
   const severity = avgBrightness < 100 ? 'واضح' : avgBrightness < 130 ? 'متوسط' : 'خفيف';
+  
+  // تحليل الانتفاخ (puffiness) - يظهر كمناطق فاتحة ومنتفخة
+  const puffiness = variance > 800 && avgBrightness > 150 ? 'موجود' : 'غير موجود';
+  const puffinessSeverity = variance > 1200 ? 'واضح' : variance > 800 ? 'متوسط' : 'خفيف';
+  
+  // تحليل علامات التعب - مزيج من الهالات الداكنة والانتفاخ
+  const fatigueSigns = (present && avgBrightness < 120) || (puffiness === 'موجود' && variance > 1000);
+  const fatigueLevel = avgBrightness < 100 && variance > 1000 ? 'عالي' : 
+                       (present || puffiness === 'موجود') ? 'متوسط' : 'منخفض';
 
-  return { present, severity };
+  return { 
+    present, 
+    severity,
+    puffiness,
+    puffinessSeverity,
+    fatigueSigns,
+    fatigueLevel,
+    avgBrightness: Math.round(avgBrightness),
+    variance: Math.round(variance)
+  };
 }
 
 function analyzeMedicalAcneTypes(ctx, positions, width, height, acneAnalysis) {
@@ -709,23 +806,43 @@ function analyzeMedicalAcneTypes(ctx, positions, width, height, acneAnalysis) {
 }
 
 function analyzeDetailedWrinkles(positions, age) {
-  // تحليل مفصل للتجاعيد
-  const foreheadPoints = positions.slice(27, 36);
+  // تحليل شامل للتجاعيد: خطوط الجبهة، crow's feet، خطوط الابتسامة، الخطوط حول الفم
+  const foreheadPoints = positions.slice(17, 27); // منطقة الجبهة (الحواجب)
   const leftEye = positions.slice(36, 42);
   const rightEye = positions.slice(42, 48);
   const mouth = positions.slice(48, 68);
+  
+  // Crow's feet - الزوايا الخارجية للعيون
+  const leftEyeOuter = [positions[36], positions[39], positions[40]];
+  const rightEyeOuter = [positions[42], positions[45], positions[46]];
+  
+  // خطوط الابتسامة (nasolabial lines) - من الأنف إلى زوايا الفم
+  const nasolabialLeft = [positions[31], positions[48]]; // من الأنف إلى زاوية الفم اليسرى
+  const nasolabialRight = [positions[35], positions[54]]; // من الأنف إلى زاوية الفم اليمنى
+  
+  // الخطوط حول الفم (marionette lines) - من زوايا الفم إلى الذقن
+  const marionetteLeft = [positions[48], positions[8]]; // من زاوية الفم اليسرى إلى الذقن
+  const marionetteRight = [positions[54], positions[8]]; // من زاوية الفم اليمنى إلى الذقن
 
   const foreheadWrinkles = estimateWrinkles(foreheadPoints);
   const eyeWrinkles = estimateWrinkles(leftEye) + estimateWrinkles(rightEye);
+  const crowFeetWrinkles = estimateWrinkles(leftEyeOuter) + estimateWrinkles(rightEyeOuter);
+  const nasolabialWrinkles = estimateWrinkles(nasolabialLeft) + estimateWrinkles(nasolabialRight);
+  const marionetteWrinkles = estimateWrinkles(marionetteLeft) + estimateWrinkles(marionetteRight);
   const mouthWrinkles = estimateWrinkles(mouth);
 
   const ageFactor = Math.max(1, age / 30);
 
   return {
-    total: Math.round((foreheadWrinkles + eyeWrinkles + mouthWrinkles) * ageFactor),
+    total: Math.round((foreheadWrinkles + eyeWrinkles + crowFeetWrinkles + nasolabialWrinkles + marionetteWrinkles + mouthWrinkles) * ageFactor),
     forehead: Math.round(foreheadWrinkles * ageFactor),
     eyes: Math.round(eyeWrinkles * ageFactor),
-    mouth: Math.round(mouthWrinkles * ageFactor)
+    crowFeet: Math.round(crowFeetWrinkles * ageFactor), // Crow's feet
+    nasolabial: Math.round(nasolabialWrinkles * ageFactor), // خطوط الابتسامة
+    marionette: Math.round(marionetteWrinkles * ageFactor), // خطوط ماريونيت
+    mouth: Math.round(mouthWrinkles * ageFactor),
+    smileLines: Math.round(nasolabialWrinkles * ageFactor), // خطوط الابتسامة
+    fineLinesAroundMouth: Math.round((marionetteWrinkles + mouthWrinkles) * ageFactor) // الخطوط الدقيقة حول الفم
   };
 }
 
@@ -748,6 +865,93 @@ function analyzeScars(ctx, positions, width, height) {
     present: scarCount > 2,
     count: Math.min(scarCount, 10)
   };
+}
+
+function analyzeSagging(ctx, positions, width, height, age) {
+  // تحليل الترهل: تقييم المناطق ذات الجلد المترهل أو قلة المرونة
+  // المناطق المعرضة للترهل: الخدود، خط الفك، الرقبة، تحت العينين
+  
+  const cheekRegion = positions.slice(1, 15);
+  const jawlineRegion = positions.slice(0, 17);
+  const underEyeRegion = [
+    ...positions.slice(36, 42).map(p => ({ x: p.x, y: p.y + 15 })),
+    ...positions.slice(42, 48).map(p => ({ x: p.x, y: p.y + 15 }))
+  ];
+  
+  let totalSaggingScore = 0;
+  let count = 0;
+  
+  // تحليل الخدود - الترهل يظهر كمناطق أقل كثافة
+  cheekRegion.forEach(point => {
+    const x = Math.floor(point.x);
+    const y = Math.floor(point.y);
+    if (x >= 1 && x < width - 1 && y >= 1 && y < height - 1) {
+      const imgData = ctx.getImageData(x, y, 1, 1);
+      const brightness = (imgData.data[0] + imgData.data[1] + imgData.data[2]) / 3;
+      // البشرة المترهلة تميل إلى أن تكون أقل كثافة (أفتح)
+      if (brightness > 180) totalSaggingScore += 1;
+      count++;
+    }
+  });
+  
+  // تحليل خط الفك - الترهل يظهر كفقدان التعريف
+  const jawDefinition = calculateJawDefinition(jawlineRegion);
+  
+  // تحليل تحت العينين
+  let underEyeSagging = 0;
+  underEyeRegion.forEach(point => {
+    const x = Math.floor(point.x);
+    const y = Math.floor(point.y);
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+      const imgData = ctx.getImageData(x, y, 1, 1);
+      const brightness = (imgData.data[0] + imgData.data[1] + imgData.data[2]) / 3;
+      // الانتفاخ أو الترهل تحت العين
+      if (brightness > 170) underEyeSagging++;
+    }
+  });
+  
+  const avgSaggingScore = count > 0 ? (totalSaggingScore / count) * 100 : 0;
+  const ageFactor = Math.max(1, (age - 25) / 10); // يزداد الترهل مع العمر
+  const finalScore = Math.min(100, avgSaggingScore * ageFactor + (underEyeSagging / underEyeRegion.length) * 30);
+  
+  const severity = finalScore > 70 ? 'عالي' : finalScore > 50 ? 'متوسط' : finalScore > 30 ? 'خفيف' : 'منخفض';
+  const hasLooseSkin = finalScore > 50;
+  const reducedElasticity = finalScore > 40;
+  
+  return {
+    severity: severity,
+    score: Math.round(finalScore),
+    hasLooseSkin: hasLooseSkin,
+    reducedElasticity: reducedElasticity,
+    jawDefinition: jawDefinition < 0.7 ? 'ضعيف' : jawDefinition < 0.85 ? 'متوسط' : 'واضح',
+    underEyeSagging: underEyeSagging > underEyeRegion.length * 0.3 ? 'موجود' : 'غير موجود',
+    areas: {
+      cheeks: avgSaggingScore > 60 ? 'مترهل' : 'طبيعي',
+      jawline: jawDefinition < 0.7 ? 'مترهل' : 'طبيعي',
+      underEyes: underEyeSagging > underEyeRegion.length * 0.3 ? 'مترهل' : 'طبيعي'
+    }
+  };
+}
+
+function calculateJawDefinition(jawlineRegion) {
+  // حساب وضوح خط الفك - كلما كان أكثر وضوحاً، كان أفضل
+  if (!jawlineRegion || jawlineRegion.length < 3) return 0.8;
+  
+  let totalAngle = 0;
+  for (let i = 1; i < jawlineRegion.length - 1; i++) {
+    const prev = jawlineRegion[i - 1];
+    const curr = jawlineRegion[i];
+    const next = jawlineRegion[i + 1];
+    
+    const angle1 = Math.atan2(curr.y - prev.y, curr.x - prev.x);
+    const angle2 = Math.atan2(next.y - curr.y, next.x - curr.x);
+    const angleDiff = Math.abs(angle1 - angle2);
+    totalAngle += angleDiff;
+  }
+  
+  const avgAngle = totalAngle / (jawlineRegion.length - 2);
+  // زاوية أكبر = خط فك أكثر وضوحاً
+  return Math.min(1, avgAngle / Math.PI);
 }
 
 function calculateSymmetry(positions) {
@@ -1281,6 +1485,7 @@ function analyzeCheeks(ctx, positions, width, height) {
 }
 
 function analyzeLips(positions) {
+  // تحليل شامل للفم: الشفاه، خطوط الابتسامة، الخطوط الدقيقة حول الفم
   const mouth = positions.slice(48, 68);
   const width = Math.sqrt(
     Math.pow(positions[54].x - positions[48].x, 2) + 
@@ -1291,9 +1496,51 @@ function analyzeLips(positions) {
     Math.pow(positions[57].y - positions[51].y, 2)
   );
 
+  // تحليل خطوط الابتسامة (nasolabial lines)
+  const nasolabialLeftLength = Math.sqrt(
+    Math.pow(positions[48].x - positions[31].x, 2) + 
+    Math.pow(positions[48].y - positions[31].y, 2)
+  );
+  const nasolabialRightLength = Math.sqrt(
+    Math.pow(positions[54].x - positions[35].x, 2) + 
+    Math.pow(positions[54].y - positions[35].y, 2)
+  );
+  const avgNasolabialLength = (nasolabialLeftLength + nasolabialRightLength) / 2;
+  
+  // تحليل الخطوط الدقيقة حول الفم (marionette lines)
+  const marionetteLeftLength = Math.sqrt(
+    Math.pow(positions[8].x - positions[48].x, 2) + 
+    Math.pow(positions[8].y - positions[48].y, 2)
+  );
+  const marionetteRightLength = Math.sqrt(
+    Math.pow(positions[8].x - positions[54].x, 2) + 
+    Math.pow(positions[8].y - positions[54].y, 2)
+  );
+  const avgMarionetteLength = (marionetteLeftLength + marionetteRightLength) / 2;
+
+  // تقييم خطوط الابتسامة (كلما كانت أطول، كانت أعمق)
+  const smileLinesSeverity = avgNasolabialLength > 80 ? 'واضح' : 
+                              avgNasolabialLength > 60 ? 'متوسط' : 'خفيف';
+  const hasSmileLines = avgNasolabialLength > 60;
+
+  // تقييم الخطوط الدقيقة حول الفم
+  const fineLinesSeverity = avgMarionetteLength > 70 ? 'واضح' : 
+                            avgMarionetteLength > 50 ? 'متوسط' : 'خفيف';
+  const hasFineLines = avgMarionetteLength > 50;
+
   return {
     size: width / height > 3 ? 'كبير' : width / height < 2.5 ? 'صغير' : 'متوسط',
-    condition: 'صحي'
+    condition: 'صحي',
+    smileLines: {
+      present: hasSmileLines,
+      severity: smileLinesSeverity,
+      length: Math.round(avgNasolabialLength)
+    },
+    fineLinesAroundMouth: {
+      present: hasFineLines,
+      severity: fineLinesSeverity,
+      length: Math.round(avgMarionetteLength)
+    }
   };
 }
 
