@@ -1174,186 +1174,65 @@ class SkinAnalysis extends Component {
               
               {aiAnalysis.problemRecommendations.map((item, index) => {
                 // تخطي الحالات الممتازة - لا نعرضها
-                if (problem.isExcellent) return null;
-                
-                // تحديد لون الكارد حسب نوع المشكلة
-                const getCardStyle = () => {
-                  if (problem.problem.includes('البشرة')) {
-                    return {
-                      background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
-                      border: '1px solid rgba(102, 126, 234, 0.2)',
-                      borderLeft: '4px solid #667eea'
-                    };
-                  } else if (problem.problem.includes('التجاعيد') || problem.problem.includes('خطوط')) {
-                    return {
-                      background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.08) 0%, rgba(255, 87, 34, 0.08) 100%)',
-                      border: '1px solid rgba(255, 152, 0, 0.2)',
-                      borderLeft: '4px solid #ff9800'
-                    };
-                  } else {
-                    return {
-                      background: 'linear-gradient(135deg, rgba(255, 243, 205, 0.5) 0%, rgba(255, 224, 178, 0.5) 100%)',
-                      border: '1px solid rgba(255, 193, 7, 0.3)',
-                      borderLeft: '4px solid #ffc107'
-                    };
-                  }
-                };
-                
-                const cardStyle = getCardStyle();
+                if (item.isExcellent) return null;
                 
                 return (
                   <AnalysisItem key={index} style={{ 
-                    ...cardStyle,
+                    background: 'rgba(255, 255, 255, 0.9)',
                     borderRadius: '0.15rem',
                     padding: '0.2rem',
                     marginBottom: '0.2rem',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                    transition: 'all 0.3s ease',
-                    position: 'relative',
-                    overflow: 'hidden'
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                    border: '1px solid rgba(0, 0, 0, 0.08)'
                   }}>
-                    {/* تأثير خلفي متطور */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                      width: '100%',
-                      height: '100%',
-                      background: 'radial-gradient(circle at top right, rgba(102, 126, 234, 0.05) 0%, transparent 70%)',
-                      pointerEvents: 'none'
-                    }} />
-                    
-                    <div style={{ display: 'flex', gap: '0.2rem', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
-                      {/* صورة مصغرة محسّنة */}
-                      {problem.thumbnail && (
+                    <div style={{ display: 'flex', gap: '0.15rem', alignItems: 'flex-start' }}>
+                      {/* صورة مصغرة */}
+                      {item.thumbnail && (
                         <div style={{
-                          width: '1.4rem',
-                          height: '1.4rem',
-                          borderRadius: '0.12rem',
+                          width: '1.2rem',
+                          height: '1.2rem',
+                          borderRadius: '0.1rem',
                           overflow: 'hidden',
                           flexShrink: 0,
-                          border: '2px solid rgba(102, 126, 234, 0.3)',
-                          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
-                          background: 'white',
-                          padding: '0.02rem'
+                          border: '2px solid rgba(102, 126, 234, 0.2)',
+                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                         }}>
                           <img 
-                            src={problem.thumbnail} 
-                            alt={problem.problem}
+                            src={item.thumbnail} 
+                            alt={item.region || item.problem}
                             style={{
                               width: '100%',
                               height: '100%',
-                              objectFit: 'cover',
-                              borderRadius: '0.1rem'
+                              objectFit: 'cover'
                             }}
                           />
                         </div>
                       )}
                       
-                      {/* معلومات المشكلة والحلول */}
+                      {/* قائمة المشاكل المرقمة */}
                       <div style={{ flex: 1 }}>
                         <div style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '0.12rem', 
-                          marginBottom: '0.15rem',
-                          flexWrap: 'wrap'
+                          fontSize: '0.2rem', 
+                          fontWeight: 700,
+                          color: '#1a202c',
+                          marginBottom: '0.12rem'
                         }}>
-                          <div className="item-label" style={{ 
-                            margin: 0, 
-                            fontSize: '0.2rem', 
-                            fontWeight: 700,
-                            color: '#1a202c',
-                            letterSpacing: '0.01rem'
-                          }}>
-                            {problem.problem}
-                            {problem.count && (
-                              <span style={{ 
-                                fontSize: '0.16rem', 
-                                color: '#718096',
-                                fontWeight: 500,
-                                marginRight: '0.08rem'
-                              }}>
-                                ({problem.count})
-                              </span>
-                            )}
-                          </div>
-                          <Badge type={
-                            problem.severity === 'شديد' || problem.severity === 'عالي' 
-                            ? 'danger' 
-                            : problem.severity === 'متوسط'
-                            ? 'warning'
-                            : 'success'
-                          }>
-                            {problem.severity}
-                          </Badge>
+                          {item.region || item.problem}:
                         </div>
-                        
-                        {/* معلومات البشرة (إذا كانت موجودة) */}
-                        {problem.skinInfo && problem.skinInfo.length > 0 && (
-                          <div style={{
-                            marginBottom: '0.12rem',
-                            padding: '0.1rem 0.12rem',
-                            background: 'rgba(255, 255, 255, 0.6)',
-                            borderRadius: '0.08rem',
-                            fontSize: '0.15rem',
-                            color: '#4a5568',
-                            lineHeight: '1.6'
-                          }}>
-                            {problem.skinInfo.map((info, infoIndex) => (
-                              <div key={infoIndex} style={{ marginBottom: '0.05rem' }}>
-                                {info}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {/* الحلول */}
-                        {problem.solutions && problem.solutions.length > 0 && (
-                          <div style={{ marginTop: '0.15rem' }}>
-                            <div style={{ 
-                              fontSize: '0.17rem', 
-                              fontWeight: 700, 
-                              color: '#667eea',
-                              marginBottom: '0.12rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.1rem'
+                        <div style={{
+                          paddingRight: '0.15rem'
+                        }}>
+                          {item.problems && item.problems.map((problem, pIndex) => (
+                            <div key={pIndex} style={{
+                              fontSize: '0.17rem',
+                              color: '#4a5568',
+                              marginBottom: '0.08rem',
+                              lineHeight: '1.6'
                             }}>
-                              <span style={{ fontSize: '0.2rem' }}>💡</span>
-                              <span>الحلول المقترحة:</span>
+                              {pIndex + 1}. {problem}
                             </div>
-                            <div style={{ 
-                              padding: '0.15rem',
-                              background: 'rgba(255, 255, 255, 0.95)',
-                              borderRadius: '0.12rem',
-                              fontSize: '0.155rem',
-                              lineHeight: '1.8',
-                              border: '1px solid rgba(0, 0, 0, 0.06)',
-                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)'
-                            }}>
-                              {problem.solutions.map((solution, solIndex) => (
-                                <div key={solIndex} style={{ 
-                                  marginBottom: '0.1rem', 
-                                  color: '#2d3748',
-                                  paddingRight: '0.12rem',
-                                  display: 'flex',
-                                  alignItems: 'flex-start',
-                                  gap: '0.08rem'
-                                }}>
-                                  <span style={{ 
-                                    color: '#667eea', 
-                                    marginLeft: '0.05rem',
-                                    fontSize: '0.18rem',
-                                    fontWeight: 700,
-                                    lineHeight: '1.6'
-                                  }}>•</span>
-                                  <span style={{ flex: 1 }}>{solution}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </AnalysisItem>
