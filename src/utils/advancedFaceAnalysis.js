@@ -814,52 +814,76 @@ function determineFaceShape(positions) {
   const faceWidth = Math.max(topWidth, cheekWidth, jawWidth);
 
   // حساب النسب - تحسين الدقة
-  const foreheadToJawRatio = topWidth / jawWidth;
-  const cheekToForeheadRatio = cheekWidth / topWidth;
-  const cheekToJawRatio = cheekWidth / jawWidth;
-  const lengthToWidthRatio = faceLength / faceWidth;
+  const foreheadToJawRatio = topWidth / (jawWidth || 1); // Avoid division by zero
+  const cheekToForeheadRatio = cheekWidth / (topWidth || 1);
+  const cheekToJawRatio = cheekWidth / (jawWidth || 1);
+  const lengthToWidthRatio = faceLength / (faceWidth || 1);
+  
+  // Debug logging (يمكن إزالته لاحقاً)
+  console.log('Face Shape Analysis:', {
+    foreheadWidth: topWidth.toFixed(1),
+    cheekWidth: cheekWidth.toFixed(1),
+    jawWidth: jawWidth.toFixed(1),
+    faceLength: faceLength.toFixed(1),
+    ratios: {
+      foreheadToJaw: foreheadToJawRatio.toFixed(2),
+      cheekToForehead: cheekToForeheadRatio.toFixed(2),
+      cheekToJaw: cheekToJawRatio.toFixed(2),
+      lengthToWidth: lengthToWidthRatio.toFixed(2)
+    }
+  });
   
   // حساب الفرق المطلق (أكثر دقة)
-  const cheekWiderThanForehead = cheekWidth > topWidth * 1.05; // الخدود أوسع من الجبهة بنسبة 5% على الأقل
-  const cheekWiderThanJaw = cheekWidth > jawWidth * 1.05;      // الخدود أوسع من الفك بنسبة 5% على الأقل
-  const foreheadWiderThanJaw = topWidth > jawWidth * 1.1;      // الجبهة أوسع من الفك بنسبة 10% على الأقل
-  const jawWiderThanForehead = jawWidth > topWidth * 1.1;       // الفك أوسع من الجبهة بنسبة 10% على الأقل
+  const cheekWiderThanForehead = cheekWidth > topWidth * 1.03; // الخدود أوسع من الجبهة بنسبة 3% على الأقل
+  const cheekWiderThanJaw = cheekWidth > jawWidth * 1.03;      // الخدود أوسع من الفك بنسبة 3% على الأقل
+  const foreheadWiderThanJaw = topWidth > jawWidth * 1.08;      // الجبهة أوسع من الفك بنسبة 8% على الأقل
+  const jawWiderThanForehead = jawWidth > topWidth * 1.08;       // الفك أوسع من الجبهة بنسبة 8% على الأقل
 
   // تحديد شكل الوجه بناءً على النسب - التحقق من الماس أولاً (الأكثر تحديداً)
   
   // ماس (Diamond): الخدود أوسع من الجبهة والفك بشكل واضح
   // هذا هو الشكل الأكثر تحديداً، لذا نتحقق منه أولاً
-  if (cheekWiderThanForehead && cheekWiderThanJaw && cheekToForeheadRatio > 1.05 && cheekToJawRatio > 1.05) {
+  // شروط أكثر صرامة للماس
+  if (cheekWiderThanForehead && cheekWiderThanJaw && 
+      cheekToForeheadRatio > 1.03 && cheekToJawRatio > 1.03 &&
+      cheekToForeheadRatio > 1 && cheekToJawRatio > 1) {
+    console.log('Detected: ماس (Diamond)');
     return 'ماس';
   }
   
   // قلب (Heart): الجبهة أوسع بكثير من الفك، والخدود أضيق من الجبهة
-  if (foreheadWiderThanJaw && cheekToForeheadRatio < 0.98) {
+  if (foreheadWiderThanJaw && cheekToForeheadRatio < 0.95) {
+    console.log('Detected: قلب (Heart)');
     return 'قلب';
   }
   
   // مثلث (Triangle): الفك أوسع من الجبهة بشكل واضح
-  if (jawWiderThanForehead && foreheadToJawRatio < 0.9) {
+  if (jawWiderThanForehead && foreheadToJawRatio < 0.92) {
+    console.log('Detected: مثلث (Triangle)');
     return 'مثلث';
   }
   
   // مربع (Square): الجبهة والفك متساويان تقريباً، والوجه قصير نسبياً
   if (foreheadToJawRatio >= 0.92 && foreheadToJawRatio <= 1.08 && lengthToWidthRatio < 1.35) {
+    console.log('Detected: مربع (Square)');
     return 'مربع';
   }
   
   // دائري (Round): الجبهة والفك متساويان، والوجه متوسط الطول
   if (foreheadToJawRatio >= 0.92 && foreheadToJawRatio <= 1.08 && lengthToWidthRatio >= 1.35 && lengthToWidthRatio < 1.55) {
+    console.log('Detected: دائري (Round)');
     return 'دائري';
   }
   
   // مستطيل (Rectangle/Oblong): الجبهة والفك متساويان، والوجه طويل جداً
   if (foreheadToJawRatio >= 0.92 && foreheadToJawRatio <= 1.08 && lengthToWidthRatio > 1.55) {
+    console.log('Detected: مستطيل (Rectangle)');
     return 'مستطيل';
   }
   
   // بيضاوي (Oval): الجبهة والفك متساويان تقريباً، والوجه طويل نسبياً (الأكثر شيوعاً)
   // أو أي حالة أخرى لا تنطبق عليها الشروط أعلاه
+  console.log('Detected: بيضاوي (Oval) - default');
   return 'بيضاوي';
 }
 

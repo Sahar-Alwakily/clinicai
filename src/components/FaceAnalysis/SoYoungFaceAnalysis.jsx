@@ -576,7 +576,14 @@ class SoYoungFaceAnalysis extends Component {
       const MODEL_URL = '/models/';
       const CDN_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/';
       
+      // Check if models are already loaded
+      if (this.modelsLoaded) {
+        this.setState({ modelsLoading: false });
+        return;
+      }
+      
       try {
+        // Try local first
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -587,14 +594,29 @@ class SoYoungFaceAnalysis extends Component {
         console.log('Models loaded from local directory');
       } catch (localError) {
         console.log('Local models not found, trying CDN...', localError);
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(CDN_URL),
-          faceapi.nets.faceLandmark68Net.loadFromUri(CDN_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(CDN_URL),
-          faceapi.nets.faceExpressionNet.loadFromUri(CDN_URL),
-          faceapi.nets.ageGenderNet.loadFromUri(CDN_URL)
-        ]);
-        console.log('Models loaded from CDN');
+        try {
+          // Try CDN with timeout
+          const loadWithTimeout = (promise, timeout = 30000) => {
+            return Promise.race([
+              promise,
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), timeout)
+              )
+            ]);
+          };
+          
+          await loadWithTimeout(Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(CDN_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(CDN_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(CDN_URL),
+            faceapi.nets.faceExpressionNet.loadFromUri(CDN_URL),
+            faceapi.nets.ageGenderNet.loadFromUri(CDN_URL)
+          ]));
+          console.log('Models loaded from CDN');
+        } catch (cdnError) {
+          console.error('CDN load failed:', cdnError);
+          throw new Error('Failed to load models from both local and CDN. Please check your internet connection.');
+        }
       }
       
       this.modelsLoaded = true;
@@ -607,7 +629,7 @@ class SoYoungFaceAnalysis extends Component {
       console.error('Error loading models:', error);
       this.setState({ 
         modelsLoading: false, 
-        error: 'Failed to load AI models. Please check your internet connection.' 
+        error: error.message || 'Failed to load AI models. Please check your internet connection and refresh the page.' 
       });
     }
   };
@@ -619,29 +641,69 @@ class SoYoungFaceAnalysis extends Component {
     try {
       this.setState({ error: null });
       
+      // Check if getUserMedia is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera access is not supported in this browser. Please use a modern browser.');
+      }
+      
+      // Mobile-friendly camera settings
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const videoConstraints = isMobile ? {
+        facingMode: 'user',
+        width: { ideal: 640, max: 1280 },
+        height: { ideal: 480, max: 720 }
+      } : {
+        facingMode: 'user',
+        width: { ideal: 640 },
+        height: { ideal: 480 }
+      };
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'user',
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        } 
+        video: videoConstraints
       });
       
       if (this.videoRef.current) {
         this.videoRef.current.srcObject = stream;
-        await this.videoRef.current.play();
+        
+        // Wait for video to be ready
+        await new Promise((resolve, reject) => {
+          const video = this.videoRef.current;
+          if (!video) {
+            reject(new Error('Video element not found'));
+            return;
+          }
+          
+          const onLoadedMetadata = () => {
+            video.removeEventListener('loadedmetadata', onLoadedMetadata);
+            resolve();
+          };
+          
+          video.addEventListener('loadedmetadata', onLoadedMetadata);
+          video.play().catch(reject);
+        });
+        
         this.setState({ isStreaming: true });
         
-        // Start real-time detection
+        // Start real-time detection with longer delay on mobile
         setTimeout(() => {
           this.startRealTimeDetection();
-        }, 500);
+        }, isMobile ? 1000 : 500);
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      this.setState({ 
-        error: 'Cannot access camera. Please check permissions.' 
-      });
+      let errorMessage = 'Cannot access camera. ';
+      
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage += 'Please allow camera access in your browser settings.';
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        errorMessage += 'No camera found. Please connect a camera.';
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        errorMessage += 'Camera is being used by another application.';
+      } else {
+        errorMessage += error.message || 'Please check permissions and try again.';
+      }
+      
+      this.setState({ error: errorMessage });
     }
   };
 
@@ -1893,6 +1955,38 @@ class SoYoungFaceAnalysis extends Component {
   };
 
   render() {
+    // Error boundary - show error message if critical error
+    if (this.state.error && !this.state.isStreaming && !this.state.modelsLoading) {
+      return (
+        <Container page={this.state.currentPage}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '100vh',
+            padding: '1rem',
+            textAlign: 'center',
+            color: '#fff',
+            background: 'linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%)'
+          }}>
+            <div style={{ fontSize: '0.24rem', marginBottom: '0.2rem', fontWeight: 700 }}>
+              ⚠️ خطأ في التحميل
+            </div>
+            <div style={{ fontSize: '0.16rem', marginBottom: '0.3rem', opacity: 0.9 }}>
+              {this.state.error}
+            </div>
+            <StartButton onClick={() => {
+              this.setState({ error: null });
+              this.loadModels();
+            }}>
+              إعادة المحاولة
+            </StartButton>
+          </div>
+        </Container>
+      );
+    }
+
     return (
       <Container page={this.state.currentPage}>
         {this.renderCameraPage()}
