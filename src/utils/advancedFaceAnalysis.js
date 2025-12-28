@@ -783,34 +783,47 @@ function determineFaceShape(positions) {
     return 'بيضاوي'; // Default
   }
 
-  // النقاط الرئيسية - استخدام نقاط أكثر دقة
+  // النقاط الرئيسية
   const chin = positions[8];              // الذقن (النقطة 8)
-  const foreheadLeft = positions[0];      // الجانب الأيسر من الجبهة/الفك
-  const foreheadRight = positions[16];   // الجانب الأيمن من الجبهة/الفك
+  const noseTop = positions[27];         // أعلى الأنف
   
-  // للخدود: استخدام نقاط في منتصف الخدود (أوسع جزء)
-  // النقاط 3 و 13 هي في منتصف الخدود تقريباً
-  const cheekLeft = positions[3] || positions[4];   // الخد الأيسر (أوسع جزء)
-  const cheekRight = positions[13] || positions[12]; // الخد الأيمن (أوسع جزء)
-  
-  // للفك: استخدام نقاط في أسفل الفك
-  const jawLeft = positions[2];          // الفك الأيسر السفلي
-  const jawRight = positions[14];       // الفك الأيمن السفلي
-  
-  // للجبهة: استخدام نقاط الحواجب (17 و 26) أو أعلى النقاط
+  // للجبهة: استخدام نقاط الحواجب (17 و 26) فقط - هذه تمثل عرض الجبهة
   const eyebrowLeft = positions[17];     // الحاجب الأيسر الخارجي
   const eyebrowRight = positions[26];    // الحاجب الأيمن الخارجي
-  const noseTop = positions[27];         // أعلى الأنف
+  
+  // للخدود: استخدام عدة نقاط لإيجاد أوسع جزء من الخدود
+  // النقاط 1-5 للخد الأيسر، 11-15 للخد الأيمن
+  // نبحث عن أوسع مسافة في منطقة الخدود (منتصف الوجه)
+  let maxCheekWidth = 0;
+  let cheekLeftPoint = positions[3];
+  let cheekRightPoint = positions[13];
+  
+  // البحث عن أوسع مسافة في منطقة الخدود
+  // نبحث في منطقة أعلى قليلاً (النقاط 2-4 و 12-14) لأنها تمثل أوسع جزء من الخدود
+  for (let i = 2; i <= 4; i++) {
+    for (let j = 12; j <= 14; j++) {
+      const width = Math.abs(positions[j].x - positions[i].x);
+      if (width > maxCheekWidth) {
+        maxCheekWidth = width;
+        cheekLeftPoint = positions[i];
+        cheekRightPoint = positions[j];
+      }
+    }
+  }
+  
+  // للفك: استخدام نقاط في أسفل الفك (2 و 14 أو 4 و 12)
+  // نستخدم النقاط في أسفل الفك
+  const jawLeft = positions[4] || positions[2];          // الفك الأيسر السفلي
+  const jawRight = positions[12] || positions[14];    // الفك الأيمن السفلي
 
-  // حساب القياسات - استخدام أفضل النقاط
-  const foreheadWidth = Math.abs(foreheadRight.x - foreheadLeft.x);
+  // حساب القياسات
   const eyebrowWidth = Math.abs(eyebrowRight.x - eyebrowLeft.x);
-  const cheekWidth = Math.abs(cheekRight.x - cheekLeft.x);
+  const cheekWidth = Math.abs(cheekRightPoint.x - cheekLeftPoint.x);
   const jawWidth = Math.abs(jawRight.x - jawLeft.x);
   const faceLength = Math.abs(chin.y - noseTop.y);
   
-  // استخدام أوسع عرض للجبهة (بين الجبهة والحواجب)
-  const topWidth = Math.max(foreheadWidth, eyebrowWidth);
+  // للجبهة: نستخدم فقط عرض الحواجب (17 و 26) لأنها تمثل الجبهة
+  const topWidth = eyebrowWidth;
   const faceWidth = Math.max(topWidth, cheekWidth, jawWidth);
 
   // حساب النسب - تحسين الدقة
@@ -821,7 +834,9 @@ function determineFaceShape(positions) {
   
   // Debug logging (يمكن إزالته لاحقاً)
   console.log('Face Shape Analysis:', {
-    foreheadWidth: topWidth.toFixed(1),
+    foreheadTopWidth: foreheadTopWidth.toFixed(1),
+    eyebrowWidth: eyebrowWidth.toFixed(1),
+    topWidth: topWidth.toFixed(1),
     cheekWidth: cheekWidth.toFixed(1),
     jawWidth: jawWidth.toFixed(1),
     faceLength: faceLength.toFixed(1),
@@ -834,20 +849,20 @@ function determineFaceShape(positions) {
   });
   
   // حساب الفرق المطلق (أكثر دقة)
-  const cheekWiderThanForehead = cheekWidth > topWidth * 1.03; // الخدود أوسع من الجبهة بنسبة 3% على الأقل
-  const cheekWiderThanJaw = cheekWidth > jawWidth * 1.03;      // الخدود أوسع من الفك بنسبة 3% على الأقل
-  const foreheadWiderThanJaw = topWidth > jawWidth * 1.08;      // الجبهة أوسع من الفك بنسبة 8% على الأقل
-  const jawWiderThanForehead = jawWidth > topWidth * 1.08;       // الفك أوسع من الجبهة بنسبة 8% على الأقل
+  // للماس: الخدود يجب أن تكون أوسع من الجبهة والفك
+  const cheekWiderThanForehead = cheekWidth > topWidth * 1.02; // الخدود أوسع من الجبهة بنسبة 2% على الأقل
+  const cheekWiderThanJaw = cheekWidth > jawWidth * 1.02;      // الخدود أوسع من الفك بنسبة 2% على الأقل
+  const foreheadWiderThanJaw = topWidth > jawWidth * 1.05;      // الجبهة أوسع من الفك بنسبة 5% على الأقل
+  const jawWiderThanForehead = jawWidth > topWidth * 1.05;       // الفك أوسع من الجبهة بنسبة 5% على الأقل
 
   // تحديد شكل الوجه بناءً على النسب - التحقق من الماس أولاً (الأكثر تحديداً)
   
   // ماس (Diamond): الخدود أوسع من الجبهة والفك بشكل واضح
   // هذا هو الشكل الأكثر تحديداً، لذا نتحقق منه أولاً
-  // شروط أكثر صرامة للماس
+  // شروط محسّنة للماس - الخدود يجب أن تكون أوسع من كليهما
   if (cheekWiderThanForehead && cheekWiderThanJaw && 
-      cheekToForeheadRatio > 1.03 && cheekToJawRatio > 1.03 &&
-      cheekToForeheadRatio > 1 && cheekToJawRatio > 1) {
-    console.log('Detected: ماس (Diamond)');
+      cheekToForeheadRatio > 1.01 && cheekToJawRatio > 1.01) {
+    console.log('Detected: ماس (Diamond) - Cheeks are widest');
     return 'ماس';
   }
   
