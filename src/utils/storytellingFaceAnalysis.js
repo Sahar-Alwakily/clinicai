@@ -232,6 +232,42 @@ const generateForeheadNarrative = (professionalAnalysis) => {
 };
 
 /**
+ * Generate nose analysis narrative
+ */
+const generateNoseNarrative = (professionalAnalysis) => {
+  if (!professionalAnalysis?.nose) {
+    return '';
+  }
+  
+  const nose = professionalAnalysis.nose;
+  
+  let narrative = '👃 الأنف:\n"';
+  
+  const issues = [];
+  
+  if (nose.pores === 'enlarged') {
+    issues.push('مسام متوسعة');
+  }
+  
+  if (nose.blackheads) {
+    issues.push('رؤوس سوداء');
+  }
+  
+  if (nose.redness) {
+    issues.push('احمرار');
+  }
+  
+  if (issues.length > 0) {
+    narrative += issues.join(' و ') + ' واضحة في منطقة الأنف.';
+    narrative += ' هذه المنطقة تحتاج تنظيف عميق وعلاج مخصص للمسام والرؤوس السوداء لإعادة النضارة."';
+  } else {
+    narrative += 'منطقة الأنف في حالة ممتازة، بدون مشاكل واضحة."';
+  }
+  
+  return narrative;
+};
+
+/**
  * Generate mouth area analysis narrative
  */
 const generateMouthNarrative = (professionalAnalysis) => {
@@ -420,17 +456,23 @@ export const generateStorytellingAnalysis = (fullAnalysis, professionalAnalysis,
   // Get regional analyses
   const eyesNarrative = generateEyesNarrative(professionalAnalysis);
   const foreheadNarrative = generateForeheadNarrative(professionalAnalysis);
+  const noseNarrative = generateNoseNarrative(professionalAnalysis);
   const mouthNarrative = generateMouthNarrative(professionalAnalysis);
   const cheeksNarrative = generateCheeksNarrative(professionalAnalysis);
   const summaryNarrative = generateProfessionalSummary(professionalAnalysis);
   
+  // Get detailed personality analysis
+  const personalityDetails = fullAnalysis?.facialProportions?.personalityAnalysis || {};
+  
   return {
     faceShape: `🔷 شكل الوجه:\n"وجهك ${faceShapeNarrative} دعينا نغوص في كل منطقة من وجهك لتكتشفي أسراره."`,
     personality: `💎 الانطباع والشخصية:\n"${personalityNarrative}"`,
+    personalityDetails: personalityDetails, // Add full personality details
     ageAppearance: `⏳ العمر المتوقع للبشرة وحالتها:\n"${ageAppearanceNarrative}"`,
     skinCharacteristics: skinCharacteristicsNarrative,
     eyes: eyesNarrative,
     forehead: foreheadNarrative,
+    nose: noseNarrative,
     mouth: mouthNarrative,
     cheeks: cheeksNarrative,
     summary: summaryNarrative
