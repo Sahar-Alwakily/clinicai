@@ -3,6 +3,7 @@ import { withRouter } from "react-router-dom";
 import styled from "styled-components";
 import BottomNav from "../../components/bottomNav/BottomNav";
 import SoYoungFaceAnalysis from "../../components/FaceAnalysis/SoYoungFaceAnalysis";
+import { generateStorytellingAnalysis } from "../../utils/storytellingFaceAnalysis";
 
 const SkinAnalysisContainer = styled.div`
   min-height: 100vh;
@@ -328,12 +329,23 @@ class SkinAnalysis extends Component {
     
     const recommendations = this.generateRecommendations(aiAnalysis);
     
+    // Generate storytelling analysis - pass fullAnalysis if available
+    let storytellingAnalysis = null;
+    if (results && results.fullAnalysis) {
+      storytellingAnalysis = generateStorytellingAnalysis(
+        results.fullAnalysis,
+        aiAnalysis.professionalAnalysis,
+        ageAppearanceAnalysis
+      );
+    }
+    
     this.setState({
       aiAnalysis: {
         ...aiAnalysis,
         ageAppearanceAnalysis,
         problemRecommendations,
-        recommendations
+        recommendations,
+        storytellingAnalysis
       }
     });
   };
@@ -1092,112 +1104,192 @@ class SkinAnalysis extends Component {
         <AnalysisCard>
             <SectionTitle>📊 نتائج التحليل</SectionTitle>
           
-          {/* 1. شكل الوجه - أول شيء */}
-          {aiAnalysis.facialProportions && (
+          {/* التحليل القصصي التفاعلي */}
+          {aiAnalysis.storytellingAnalysis && (
             <>
-              <SectionTitle style={{ marginTop: '0.2rem' }}>👤 شكل الوجه</SectionTitle>
-              
-              <AnalysisItem>
-                <div className="item-label">شكل الوجه</div>
-                <div className="item-value" style={{ fontSize: '0.22rem', fontWeight: 700, color: '#667eea' }}>
-                  {aiAnalysis.facialProportions.faceShape}
-                </div>
-              </AnalysisItem>
-            </>
-          )}
-
-          {/* 2. تحليل الشخصية والانطباع */}
-          {aiAnalysis.facialProportions && aiAnalysis.facialProportions.personalityAnalysis && (
-            <>
-              <SectionTitle style={{ marginTop: '0.2rem' }}>🧠 تحليل الشخصية والانطباع</SectionTitle>
-              
-              {aiAnalysis.facialProportions.personalityAnalysis.faceShapeDescription && (
-                <AnalysisItem>
-                  <div className="item-label">شكل الوجه</div>
-                  <div className="item-description" style={{ 
-                    fontSize: '0.16rem', 
-                    lineHeight: '1.6',
-                    color: '#4a5568',
-                    marginTop: '0.08rem'
-                  }}>
-                    {aiAnalysis.facialProportions.personalityAnalysis.faceShapeDescription}
-                  </div>
-                </AnalysisItem>
-              )}
-
-              {aiAnalysis.facialProportions.personalityAnalysis.ageAppearance && (
-                <AnalysisItem>
-                  <div className="item-label">مظهر العمر</div>
-                  <div className="item-description" style={{ 
-                    fontSize: '0.16rem', 
-                    lineHeight: '1.6',
-                    color: '#4a5568',
-                    marginTop: '0.08rem'
-                  }}>
-                    {aiAnalysis.facialProportions.personalityAnalysis.ageAppearance}
-                  </div>
-                </AnalysisItem>
-              )}
-
-              {aiAnalysis.facialProportions.personalityAnalysis.intelligence && (
-                <AnalysisItem>
-                  <div className="item-label">الذكاء</div>
-                  <div className="item-description" style={{ 
-                    fontSize: '0.16rem', 
-                    lineHeight: '1.6',
-                    color: '#4a5568',
-                    marginTop: '0.08rem'
-                  }}>
-                    {aiAnalysis.facialProportions.personalityAnalysis.intelligence}
-                  </div>
-                </AnalysisItem>
-              )}
-
-              {aiAnalysis.facialProportions.personalityAnalysis.distance && (
-                <AnalysisItem>
-                  <div className="item-label">المسافة والانطباع</div>
-                  <div className="item-description" style={{ 
-                    fontSize: '0.16rem', 
-                    lineHeight: '1.6',
-                    color: '#4a5568',
-                    marginTop: '0.08rem'
-                  }}>
-                    {aiAnalysis.facialProportions.personalityAnalysis.distance}
-                  </div>
-                </AnalysisItem>
-              )}
-            </>
-          )}
-
-          {/* 3. العمر المتوقع للبشرة */}
-          {aiAnalysis.ageAppearanceAnalysis && (
-            <>
-              <SectionTitle style={{ marginTop: '0.2rem' }}>⏰ العمر المتوقع للبشرة</SectionTitle>
-              
-              <AnalysisItem>
-                <div className="item-label">العمر المتوقع</div>
-                <div className="item-value">
-                  {aiAnalysis.ageAppearanceAnalysis.apparentAge} سنة
-                  {aiAnalysis.ageAppearanceAnalysis.isOlder && (
-                    <Badge type="warning" style={{ marginRight: '0.05rem' }}>
-                      أكبر بـ {Math.abs(aiAnalysis.ageAppearanceAnalysis.ageDifference)} سنة
-                    </Badge>
-                  )}
-                  {aiAnalysis.ageAppearanceAnalysis.isYounger && (
-                    <Badge type="success" style={{ marginRight: '0.05rem' }}>
-                      أصغر بـ {Math.abs(aiAnalysis.ageAppearanceAnalysis.ageDifference)} سنة
-                    </Badge>
-                  )}
-                </div>
-                <div className="item-description" style={{ 
-                  fontSize: '0.16rem', 
-                  lineHeight: '1.6',
-                  color: '#4a5568',
-                  marginTop: '0.08rem'
+              {/* 1. شكل الوجه */}
+              {aiAnalysis.storytellingAnalysis.faceShape && (
+                <AnalysisItem style={{ 
+                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(102, 126, 234, 0.2)'
                 }}>
-                  {aiAnalysis.ageAppearanceAnalysis.description}
-                </div>
-              </AnalysisItem>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.faceShape}
+                  </div>
+                </AnalysisItem>
+              )}
+
+              {/* 2. الانطباع والشخصية */}
+              {aiAnalysis.storytellingAnalysis.personality && (
+                <AnalysisItem style={{ 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.personality}
+                  </div>
+                </AnalysisItem>
+              )}
+
+              {/* 3. العمر المتوقع للبشرة */}
+              {aiAnalysis.storytellingAnalysis.ageAppearance && (
+                <AnalysisItem style={{ 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.ageAppearance}
+                  </div>
+                </AnalysisItem>
+              )}
+
+              {/* 4. سمات البشرة العامة */}
+              {aiAnalysis.storytellingAnalysis.skinCharacteristics && (
+                <AnalysisItem style={{ 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.skinCharacteristics}
+                  </div>
+                </AnalysisItem>
+              )}
+
+              {/* 5. التحليل الاحترافي حسب المناطق */}
+              <SectionTitle style={{ marginTop: '0.2rem' }}>🔍 التحليل الاحترافي حسب المناطق:</SectionTitle>
+              
+              {/* العيون */}
+              {aiAnalysis.storytellingAnalysis.eyes && (
+                <AnalysisItem style={{ 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.eyes}
+                  </div>
+                </AnalysisItem>
+              )}
+
+              {/* الجبهة */}
+              {aiAnalysis.storytellingAnalysis.forehead && (
+                <AnalysisItem style={{ 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.forehead}
+                  </div>
+                </AnalysisItem>
+              )}
+
+              {/* الفم */}
+              {aiAnalysis.storytellingAnalysis.mouth && (
+                <AnalysisItem style={{ 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.mouth}
+                  </div>
+                </AnalysisItem>
+              )}
+
+              {/* الخدود */}
+              {aiAnalysis.storytellingAnalysis.cheeks && (
+                <AnalysisItem style={{ 
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(0, 0, 0, 0.08)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line'
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.cheeks}
+                  </div>
+                </AnalysisItem>
+              )}
+
+              {/* الخلاصة */}
+              {aiAnalysis.storytellingAnalysis.summary && (
+                <AnalysisItem style={{ 
+                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                  borderRadius: '0.15rem',
+                  padding: '0.2rem',
+                  marginBottom: '0.2rem',
+                  border: '1px solid rgba(102, 126, 234, 0.2)'
+                }}>
+                  <div style={{ 
+                    fontSize: '0.18rem', 
+                    lineHeight: '1.8',
+                    color: '#2d3748',
+                    whiteSpace: 'pre-line',
+                    fontWeight: 500
+                  }}>
+                    {aiAnalysis.storytellingAnalysis.summary}
+                  </div>
+                </AnalysisItem>
+              )}
             </>
           )}
 
