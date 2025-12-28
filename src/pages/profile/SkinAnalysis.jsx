@@ -721,15 +721,18 @@ class SkinAnalysis extends Component {
           <h1>🔬 تحليل البشرة بالذكاء الاصطناعي</h1>
         </Header>
 
-        <AnalysisCard style={{ marginTop: '0.2rem', padding: 0, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-            <SectionTitle style={{ color: 'white', margin: 0 }}>📷 تحليل الوجه</SectionTitle>
-          </div>
-          <SoYoungFaceAnalysis 
-            onAnalysisComplete={this.handleAnalysisComplete}
-            onModelsLoaded={() => console.log('SoYoung models loaded')}
-          />
-        </AnalysisCard>
+        {/* إخفاء قسم تحليل الوجه بعد اكتمال التحليل */}
+        {!aiAnalysis && (
+          <AnalysisCard style={{ marginTop: '0.2rem', padding: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+              <SectionTitle style={{ color: 'white', margin: 0 }}>📷 تحليل الوجه</SectionTitle>
+            </div>
+            <SoYoungFaceAnalysis 
+              onAnalysisComplete={this.handleAnalysisComplete}
+              onModelsLoaded={() => console.log('SoYoung models loaded')}
+            />
+          </AnalysisCard>
+        )}
 
         {aiAnalysis && (
         <AnalysisCard>
