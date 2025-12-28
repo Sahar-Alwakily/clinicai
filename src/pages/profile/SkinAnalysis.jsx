@@ -425,14 +425,15 @@ class SkinAnalysis extends Component {
     // التحقق من الهالات السوداء
     const hasDarkCircles = analysis.skinProblems && analysis.skinProblems.darkCircles && analysis.skinProblems.darkCircles.present;
     
-    // التحقق من مشاكل الفم
+    // التحقق من مشاكل الفم - توسيع الشروط لتشمل السواد والترطيب دائماً
     const hasMouthProblems = analysis.mouth && (
       analysis.mouth.needsFiller || 
       analysis.mouth.size === 'صغير' || 
       analysis.mouth.size === 'كبير' ||
       (analysis.mouth.thickness && parseFloat(analysis.mouth.thickness) < 0.3) ||
       analysis.mouth.darkness ||
-      (analysis.skinProblems && analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد')
+      (analysis.skinProblems && analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد') ||
+      true // إضافة الفم دائماً إذا كان موجوداً
     );
     
     // إضافة جميع المناطق من results.regions (باستثناء المناطق التي لها مشاكل محددة)
@@ -526,7 +527,7 @@ class SkinAnalysis extends Component {
       const fatigueSigns = darkCircles.fatigueSigns || false;
       const fatigueLevel = darkCircles.fatigueLevel || 'منخفض';
       
-      const problems = ['الهالات السوداء'];
+      const problems = ['الهالات السوداء والتجويف'];
       const solutions = [
         'استخدام كريمات تحتوي على فيتامين C وريتينول',
         'الحصول على قسط كافٍ من النوم (7-8 ساعات)',
@@ -590,8 +591,8 @@ class SkinAnalysis extends Component {
       addedRegions.add('nose');
     }
     
-    // تحليل الفم - السواد والكبر
-    if (hasMouthProblems && !addedRegions.has('mouth')) {
+    // تحليل الفم - السواد والترطيب والكبر (إضافة دائماً إذا كان موجوداً)
+    if (analysis.mouth && !addedRegions.has('mouth')) {
       const mouthProblems = [];
       const mouthSolutions = [];
       
@@ -646,51 +647,120 @@ class SkinAnalysis extends Component {
         }
       }
       
-      if (mouthProblems.length > 0) {
+      // إضافة الفم دائماً إذا كانت هناك أي مشكلة أو حتى بدون مشاكل (للعرض)
+      // تحقق من السواد والترطيب حتى لو لم تكن في hasMouthProblems
+      const hasMouthDarkness = analysis.mouth.darkness || 
+                               (analysis.skinProblems && analysis.skinProblems.pigmentation && 
+                                analysis.skinProblems.pigmentation.level !== 'لا يوجد');
+      const needsHydration = analysis.mouth.thickness && parseFloat(analysis.mouth.thickness) < 0.3;
+      
+      // إضافة السواد والترطيب إذا لم يتم إضافتهما
+      if (hasMouthDarkness && !mouthProblems.includes('السواد')) {
+        mouthProblems.push('السواد');
+        if (!mouthSolutions.includes('استخدام كريمات تفتيح للشفاه')) {
+          mouthSolutions.push('استخدام كريمات تفتيح للشفاه');
+          mouthSolutions.push('تجنب التدخين');
+          mouthSolutions.push('استخدام واقي الشمس للشفاه');
+        }
+      }
+      
+      if (needsHydration && !mouthProblems.includes('قلة الترطيب') && !mouthProblems.includes('نحافة الشفاه')) {
+        mouthProblems.push('قلة الترطيب');
+        if (!mouthSolutions.includes('ترطيب الشفاه بانتظام')) {
+          mouthSolutions.push('ترطيب الشفاه بانتظام');
+          mouthSolutions.push('استخدام مرطب شفاه يحتوي على SPF');
+          mouthSolutions.push('شرب الماء بكميات كافية');
+          mouthSolutions.push('تجنب لعق الشفاه');
+        }
+      }
+      
+      if (mouthProblems.length > 0 || hasMouthDarkness || needsHydration) {
         recommendations.push({
-          problem: `الفم - ${mouthProblems.join(' و ')}`,
+          problem: `الفم - ${mouthProblems.length > 0 ? mouthProblems.join(' و ') : 'السواد و قلة الترطيب'}`,
           severity: 'متوسط',
           thumbnail: analysis.regions?.mouth?.thumbnail || analysis.originalImage,
-          solutions: mouthSolutions
+          solutions: mouthSolutions.length > 0 ? mouthSolutions : [
+            'ترطيب الشفاه بانتظام',
+            'استخدام مرطب شفاه يحتوي على SPF',
+            'تجنب لعق الشفاه',
+            'شرب الماء بكميات كافية',
+            'استخدام كريمات تفتيح للشفاه إذا كان هناك سواد'
+          ]
         });
         addedRegions.add('mouth');
       }
     }
     
-    // حالة البشرة العامة: الجفاف، الدهنية، الملمس غير المتساوي
+    // قسم البشرة - تحليل شامل: نوع البشرة + حالة البشرة العامة
+    // إضافة قسم البشرة دائماً إذا كانت البيانات موجودة
     if (analysis.advancedSkin) {
+      const skinInfo = [];
       const skinProblems = [];
       const skinSolutions = [];
       
-      if (analysis.advancedSkin.isDry || analysis.advancedSkin.dryness === 'جافة') {
+      // نوع البشرة - إضافة دائماً بشكل واضح
+      if (analysis.advancedSkin.type) {
+        skinInfo.push(`نوع البشرة: ${analysis.advancedSkin.type}`);
+      } else {
+        skinInfo.push('نوع البشرة: غير محدد');
+      }
+      
+      // حالة البشرة العامة
+      if (analysis.advancedSkin.isDry || analysis.advancedSkin.dryness === 'جافة' || analysis.advancedSkin.dryness === 'قليلة الترطيب') {
         skinProblems.push('الجفاف');
-        skinSolutions.push('استخدام مرطبات قوية');
-        skinSolutions.push('شرب الماء بكميات كافية');
-        skinSolutions.push('تجنب المنتجات القاسية');
+        skinSolutions.push('استخدام مرطبات قوية للبشرة');
+        skinSolutions.push('شرب الماء بكميات كافية (8-10 أكواب يومياً)');
+        skinSolutions.push('تجنب المنتجات القاسية والكحولية');
+        skinSolutions.push('استخدام مرطبات تحتوي على حمض الهيالورونيك');
+        skinSolutions.push('استخدام قناع مرطب أسبوعياً');
       }
       
       if (analysis.advancedSkin.isOily || analysis.advancedSkin.oiliness === 'دهنية') {
         skinProblems.push('الدهنية');
         skinSolutions.push('استخدام منتجات خالية من الزيوت');
-        skinSolutions.push('تنظيف البشرة مرتين يومياً');
+        skinSolutions.push('تنظيف البشرة مرتين يومياً بمنتج لطيف');
         skinSolutions.push('استخدام منتجات تقليل الزهم');
+        skinSolutions.push('استخدام ورق التونر لامتصاص الزيوت الزائدة');
+        skinSolutions.push('تجنب المنتجات الثقيلة والدهنية');
       }
       
       if (analysis.advancedSkin.isUnevenTexture || analysis.advancedSkin.textureEvenness === 'غير متساوي') {
         skinProblems.push('الملمس غير المتساوي');
-        skinSolutions.push('تقشير البشرة أسبوعياً');
-        skinSolutions.push('استخدام منتجات تحتوي على أحماض ألفا هيدروكسي');
+        skinSolutions.push('تقشير البشرة أسبوعياً (1-2 مرات)');
+        skinSolutions.push('استخدام منتجات تحتوي على أحماض ألفا هيدروكسي (AHA)');
         skinSolutions.push('ترطيب البشرة بانتظام');
+        skinSolutions.push('استخدام منتجات تحتوي على ريتينول');
+        skinSolutions.push('العلاج بالتقشير الكيميائي');
       }
       
-      if (skinProblems.length > 0) {
-        recommendations.push({
-          problem: `البشرة - ${skinProblems.join(' و ')}`,
-          severity: 'متوسط',
-          thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
-          solutions: skinSolutions
-        });
+      // إضافة معلومات إضافية
+      if (analysis.advancedSkin.hydration) {
+        skinInfo.push(`الترطيب: ${analysis.advancedSkin.hydration}`);
       }
+      if (analysis.advancedSkin.sebum) {
+        skinInfo.push(`الزهم: ${analysis.advancedSkin.sebum}`);
+      }
+      if (analysis.advancedSkin.texture) {
+        skinInfo.push(`الملمس: ${analysis.advancedSkin.texture}`);
+      }
+      if (analysis.advancedSkin.pores) {
+        skinInfo.push(`المسام: ${analysis.advancedSkin.pores}`);
+      }
+      
+      // إضافة قسم البشرة دائماً (حتى لو لم تكن هناك مشاكل)
+      recommendations.push({
+        problem: 'البشرة',
+        severity: skinProblems.length > 0 ? 'تحتاج عناية' : 'جيدة',
+        thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
+        solutions: skinSolutions.length > 0 ? skinSolutions : [
+          'المحافظة على نظام عناية يومي منتظم',
+          'استخدام واقي الشمس SPF 50+ يومياً',
+          'ترطيب البشرة بانتظام',
+          'تنظيف البشرة مرتين يومياً'
+        ],
+        skinInfo: skinInfo,
+        skinProblems: skinProblems
+      });
     }
     
     if (!analysis.skinProblems) return recommendations;
