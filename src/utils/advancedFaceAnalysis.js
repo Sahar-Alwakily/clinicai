@@ -156,12 +156,16 @@ export const analyzeFacialProportions = (landmarks) => {
   // التوصيات
   const recommendations = generateProportionRecommendations(symmetry, goldenRatio, faceShape);
 
+  // تحليل الشخصية بناءً على شكل الوجه والقياسات
+  const personalityAnalysis = analyzePersonality(positions, faceShape, symmetry, goldenRatio);
+
   return {
     symmetry: Math.round(symmetry),
     goldenRatio: Math.round(goldenRatio),
     faceShape,
     jawAngle: Math.round(jawAngle),
-    recommendations
+    recommendations,
+    personalityAnalysis
   };
 };
 
@@ -931,20 +935,313 @@ function calculateJawAngle(positions) {
 
 function generateProportionRecommendations(symmetry, goldenRatio, faceShape) {
   const recommendations = [];
-
+  
   if (symmetry < 85) {
     recommendations.push('يُنصح بتحسين التناسق الوجهي');
   }
-
+  
   if (goldenRatio < 70) {
     recommendations.push('يمكن تحسين النسب الذهبية للوجه');
   }
-
+  
   if (faceShape === 'مربع') {
     recommendations.push('يمكن استخدام تقنيات لتليين زوايا الوجه');
   }
-
+  
   return recommendations;
+}
+
+/**
+ * تحليل الشخصية بناءً على شكل الوجه والقياسات
+ */
+function analyzePersonality(positions, faceShape, symmetry, goldenRatio) {
+  if (!positions || positions.length < 68) {
+    return {
+      faceShapeDescription: '',
+      ageAppearance: '',
+      intelligence: '',
+      distance: '',
+      fullAnalysis: ''
+    };
+  }
+
+  // تحليل الميزات
+  const noseAnalysis = analyzeNoseFeatures(positions);
+  const eyeAnalysis = analyzeEyeFeatures(positions);
+  const mouthAnalysis = analyzeMouthFeatures(positions);
+  const chinAnalysis = analyzeChinFeatures(positions);
+  const cheekAnalysis = analyzeCheekFeatures(positions);
+  const faceLengthAnalysis = analyzeFaceLength(positions);
+
+  // وصف شكل الوجه
+  const faceShapeDescription = getFaceShapeDescription(faceShape);
+
+  // مظهر العمر
+  const ageAppearance = getAgeAppearance(noseAnalysis, faceLengthAnalysis, cheekAnalysis, chinAnalysis);
+
+  // الذكاء
+  const intelligence = getIntelligenceAnalysis(eyeAnalysis, mouthAnalysis, chinAnalysis);
+
+  // المسافة/الانطباع
+  const distance = getDistanceAnalysis(noseAnalysis, mouthAnalysis, symmetry);
+
+  // التحليل الكامل
+  const fullAnalysis = `${faceShapeDescription}\n\n${ageAppearance}\n\n${intelligence}\n\n${distance}`;
+
+  return {
+    faceShapeDescription,
+    ageAppearance,
+    intelligence,
+    distance,
+    fullAnalysis
+  };
+}
+
+/**
+ * تحليل ميزات الأنف
+ */
+function analyzeNoseFeatures(positions) {
+  const noseTop = positions[27];
+  const noseTip = positions[33];
+  const noseLeft = positions[31];
+  const noseRight = positions[35];
+  const noseBridge = positions[28];
+  
+  const noseLength = Math.abs(noseTip.y - noseTop.y);
+  const noseWidth = Math.abs(noseRight.x - noseLeft.x);
+  const noseBridgeHeight = Math.abs(noseBridge.y - noseTop.y);
+  
+  // حساب زاوية طرف الأنف
+  const noseAngle = Math.atan2(noseTip.y - noseBridge.y, Math.abs(noseTip.x - noseBridge.x)) * 180 / Math.PI;
+  
+  return {
+    length: noseLength,
+    width: noseWidth,
+    bridgeHeight: noseBridgeHeight,
+    angle: noseAngle,
+    hasProminentFolds: noseBridgeHeight > noseLength * 0.3, // طيات الأنف بارزة
+    isStraight: Math.abs(noseBridge.x - noseTip.x) < noseWidth * 0.1, // مستقيم
+    isHooked: noseAngle < 85 // يشبه منقار النسر
+  };
+}
+
+/**
+ * تحليل ميزات العيون
+ */
+function analyzeEyeFeatures(positions) {
+  const leftEyeTop = positions[37];
+  const leftEyeBottom = positions[41];
+  const rightEyeTop = positions[43];
+  const rightEyeBottom = positions[47];
+  
+  const leftEyeHeight = Math.abs(leftEyeBottom.y - leftEyeTop.y);
+  const rightEyeHeight = Math.abs(rightEyeBottom.y - rightEyeTop.y);
+  const avgEyeHeight = (leftEyeHeight + rightEyeHeight) / 2;
+  
+  // جفون مزدوجة (عيون لامعة)
+  const hasDoubleEyelids = avgEyeHeight > 8; // تقريباً
+  
+  return {
+    height: avgEyeHeight,
+    hasDoubleEyelids,
+    isBright: hasDoubleEyelids
+  };
+}
+
+/**
+ * تحليل ميزات الفم
+ */
+function analyzeMouthFeatures(positions) {
+  const mouthTop = positions[51];
+  const mouthBottom = positions[57];
+  const mouthLeft = positions[48];
+  const mouthRight = positions[54];
+  const mouthCorners = [positions[48], positions[54]];
+  
+  const mouthWidth = Math.abs(mouthRight.x - mouthLeft.x);
+  const mouthHeight = Math.abs(mouthBottom.y - mouthTop.y);
+  const lowerLipThickness = Math.abs(positions[57].y - positions[51].y) * 0.6; // سماكة الشفة السفلى
+  
+  // زوايا الفم (متدلية أو مرتفعة)
+  const mouthAngle = Math.atan2(mouthCorners[1].y - mouthCorners[0].y, mouthCorners[1].x - mouthCorners[0].x) * 180 / Math.PI;
+  const isDrooping = mouthAngle < -5; // متدلية
+  
+  return {
+    width: mouthWidth,
+    height: mouthHeight,
+    lowerLipThickness,
+    isDrooping,
+    isThickLowerLip: lowerLipThickness > mouthHeight * 0.4
+  };
+}
+
+/**
+ * تحليل ميزات الذقن
+ */
+function analyzeChinFeatures(positions) {
+  const chin = positions[8];
+  const jawLeft = positions[4];
+  const jawRight = positions[12];
+  const mouthBottom = positions[57];
+  
+  const chinLength = Math.abs(chin.y - mouthBottom.y);
+  const jawWidth = Math.abs(jawRight.x - jawLeft.x);
+  
+  // الذقن مستدير أو حاد
+  const chinRoundness = Math.abs(chin.x - (jawLeft.x + jawRight.x) / 2) / jawWidth;
+  const isRound = chinRoundness < 0.1;
+  const isLong = chinLength > 15; // نسبياً
+  
+  return {
+    length: chinLength,
+    isLong,
+    isRound,
+    isProminent: chinLength > 12
+  };
+}
+
+/**
+ * تحليل ميزات الخدود
+ */
+function analyzeCheekFeatures(positions) {
+  const cheekLeft = positions[3];
+  const cheekRight = positions[13];
+  const eyeLeft = positions[36];
+  const eyeRight = positions[45];
+  
+  const cheekWidth = Math.abs(cheekRight.x - cheekLeft.x);
+  const eyeWidth = Math.abs(eyeRight.x - eyeLeft.x);
+  
+  // عظام وجنتين بارزة أو غائرة
+  const cheekProminence = cheekWidth / eyeWidth;
+  const isProminent = cheekProminence > 1.8;
+  const isHollow = cheekProminence < 1.5;
+  
+  return {
+    width: cheekWidth,
+    isProminent,
+    isHollow
+  };
+}
+
+/**
+ * تحليل طول الوجه
+ */
+function analyzeFaceLength(positions) {
+  const chin = positions[8];
+  const noseTop = positions[27];
+  const foreheadTop = positions[27]; // تقريباً
+  
+  const faceLength = Math.abs(chin.y - noseTop.y);
+  const faceWidth = Math.abs(positions[16].x - positions[0].x);
+  const lengthRatio = faceLength / faceWidth;
+  
+  return {
+    length: faceLength,
+    ratio: lengthRatio,
+    isLong: lengthRatio > 1.5,
+    lowerFaceLong: Math.abs(chin.y - positions[51].y) > faceLength * 0.4 // جزء وجه سفلي طويل
+  };
+}
+
+/**
+ * وصف شكل الوجه
+ */
+function getFaceShapeDescription(faceShape) {
+  const descriptions = {
+    'ماس': 'لديكِ وجه ماسي الشكل، وهو شكل وجه يضفي عليكِ جاذبية قوية وأنثوية. هذا النوع من الوجوه يجعلكِ تبدين ذكية وتتمتعين بشخصية حازمة إلى حد ما. باختصار، هو مزيج من الأنوثة والرقي ولمسة من الغرور.',
+    'قلب': 'لديكِ وجه قلبي الشكل، وهو شكل وجه رومانسي وجذاب. هذا النوع من الوجوه يجعلكِ تبدين لطيفة ومحبة، مع شخصية دافئة ومشجعة. باختصار، هو مزيج من الأنوثة والرقة والجاذبية الطبيعية.',
+    'مثلث': 'لديكِ وجه مثلثي الشكل، وهو شكل وجه قوي وواثق. هذا النوع من الوجوه يجعلكِ تبدين حازمة وواضحة في قراراتك، مع شخصية قيادية. باختصار، هو مزيج من القوة والثقة والوضوح.',
+    'مربع': 'لديكِ وجه مربع الشكل، وهو شكل وجه قوي ومتوازن. هذا النوع من الوجوه يجعلكِ تبدين موثوقة وعملية، مع شخصية مستقرة. باختصار، هو مزيج من القوة والاستقرار والموثوقية.',
+    'دائري': 'لديكِ وجه دائري الشكل، وهو شكل وجه ودود ومريح. هذا النوع من الوجوه يجعلكِ تبدين لطيفة ومقربة، مع شخصية اجتماعية. باختصار، هو مزيج من الدفء والود والجاذبية الطبيعية.',
+    'مستطيل': 'لديكِ وجه مستطيل الشكل، وهو شكل وجه أنيق وممدود. هذا النوع من الوجوه يجعلكِ تبدين راقية ومهذبة، مع شخصية متوازنة. باختصار، هو مزيج من الأناقة والرقي والاتزان.',
+    'بيضاوي': 'لديكِ وجه بيضاوي الشكل، وهو شكل وجه متوازن ومتناسق. هذا النوع من الوجوه يجعلكِ تبدين جميلة ومتناسقة، مع شخصية متوازنة. باختصار، هو مزيج من الجمال الطبيعي والتناسق والأناقة.'
+  };
+  
+  return descriptions[faceShape] || descriptions['بيضاوي'];
+}
+
+/**
+ * تحليل مظهر العمر
+ */
+function getAgeAppearance(noseAnalysis, faceLengthAnalysis, cheekAnalysis, chinAnalysis) {
+  const factors = [];
+  
+  if (noseAnalysis.hasProminentFolds) {
+    factors.push('طيات الأنف لديك بارزة');
+  }
+  
+  if (faceLengthAnalysis.lowerFaceLong) {
+    factors.push('جزء وجهك السفلي طويل');
+  }
+  
+  if (cheekAnalysis.isHollow) {
+    factors.push('عظام وجنتيك غائرة');
+  } else if (cheekAnalysis.isProminent) {
+    factors.push('عظام وجنتيك بارزة');
+  }
+  
+  if (chinAnalysis.isLong) {
+    factors.push('ذقنك طويل نسبياً');
+  }
+  
+  if (factors.length > 0) {
+    return `مظهر العمر: ${factors.join('، ')}، مما يجعلك تبدو${chinAnalysis.isProminent ? ' أكبر' : ' متعباً'}. ${chinAnalysis.isLong && chinAnalysis.isProminent ? 'ذقنك طويل نسبياً وعظام وجنتيك بارزة، لذا تبدو أكبر من عمرك الحقيقي.' : ''}`;
+  }
+  
+  return 'مظهر العمر: ملامحك متوازنة وتناسب عمرك الحقيقي.';
+}
+
+/**
+ * تحليل الذكاء
+ */
+function getIntelligenceAnalysis(eyeAnalysis, mouthAnalysis, chinAnalysis) {
+  const factors = [];
+  
+  if (eyeAnalysis.hasDoubleEyelids) {
+    factors.push('جفناك المزدوجان يجعلان عينيك تبدوان لامعتين وذكيتين');
+  }
+  
+  if (mouthAnalysis.isThickLowerLip) {
+    factors.push('شفتك السفلى سميكة نسبيًا');
+  }
+  
+  if (chinAnalysis.isRound) {
+    factors.push('ذقنك مستدير');
+  }
+  
+  if (factors.length > 0) {
+    return `الذكاء: ${factors.join('، ')}. لذلك، لا تبدو شديد الدهاء ولا ساذجًا بشكل مفرط من حيث الذكاء.`;
+  }
+  
+  return 'الذكاء: ملامحك تعكس ذكاءً متوازناً ووضوحاً في التفكير.';
+}
+
+/**
+ * تحليل المسافة/الانطباع
+ */
+function getDistanceAnalysis(noseAnalysis, mouthAnalysis, symmetry) {
+  const factors = [];
+  
+  if (noseAnalysis.isStraight && noseAnalysis.bridgeHeight > 0) {
+    factors.push('جسر أنفك مرتفع ومستقيم');
+  }
+  
+  if (noseAnalysis.isHooked) {
+    factors.push('طرف أنفك يشبه طرف أنف النسر');
+  }
+  
+  if (mouthAnalysis.isDrooping) {
+    factors.push('زوايا فمك متدلية');
+  }
+  
+  if (factors.length > 0) {
+    const impression = noseAnalysis.isHooked ? 'ماكرًا ومنعزلًا' : 'باردًا';
+    const message = mouthAnalysis.isDrooping ? '، مما يوحي للآخرين بأن الغرباء لا ينبغي لهم الاقتراب منك' : '';
+    return `المسافة: ${factors.join('، ')}، مما يجعلك تبدو ${impression}${message}. من حيث المسافة، تبدو وكأنك تتمتع بهالة باردة.`;
+  }
+  
+  return 'المسافة: ملامحك تعطي انطباعاً متوازناً بين الدفء والاحتراف.';
 }
 
 function analyzeTZone(ctx, positions, width, height) {

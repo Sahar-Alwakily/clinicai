@@ -674,6 +674,69 @@ class SkinAnalysis extends Component {
               </>
             )}
 
+            {/* تحليل الشخصية */}
+            {aiAnalysis.facialProportions && aiAnalysis.facialProportions.personalityAnalysis && (
+              <>
+                <SectionTitle style={{ marginTop: '0.2rem' }}>🧠 تحليل الشخصية والانطباع</SectionTitle>
+                
+                {aiAnalysis.facialProportions.personalityAnalysis.faceShapeDescription && (
+                  <AnalysisItem>
+                    <div className="item-label">شكل الوجه</div>
+                    <div className="item-description" style={{ 
+                      fontSize: '0.16rem', 
+                      lineHeight: '1.6',
+                      color: '#4a5568',
+                      marginTop: '0.08rem'
+                    }}>
+                      {aiAnalysis.facialProportions.personalityAnalysis.faceShapeDescription}
+                    </div>
+                  </AnalysisItem>
+                )}
+
+                {aiAnalysis.facialProportions.personalityAnalysis.ageAppearance && (
+                  <AnalysisItem>
+                    <div className="item-label">مظهر العمر</div>
+                    <div className="item-description" style={{ 
+                      fontSize: '0.16rem', 
+                      lineHeight: '1.6',
+                      color: '#4a5568',
+                      marginTop: '0.08rem'
+                    }}>
+                      {aiAnalysis.facialProportions.personalityAnalysis.ageAppearance}
+                    </div>
+                  </AnalysisItem>
+                )}
+
+                {aiAnalysis.facialProportions.personalityAnalysis.intelligence && (
+                  <AnalysisItem>
+                    <div className="item-label">الذكاء</div>
+                    <div className="item-description" style={{ 
+                      fontSize: '0.16rem', 
+                      lineHeight: '1.6',
+                      color: '#4a5568',
+                      marginTop: '0.08rem'
+                    }}>
+                      {aiAnalysis.facialProportions.personalityAnalysis.intelligence}
+                    </div>
+                  </AnalysisItem>
+                )}
+
+                {aiAnalysis.facialProportions.personalityAnalysis.distance && (
+                  <AnalysisItem>
+                    <div className="item-label">المسافة والانطباع</div>
+                    <div className="item-description" style={{ 
+                      fontSize: '0.16rem', 
+                      lineHeight: '1.6',
+                      color: '#4a5568',
+                      marginTop: '0.08rem'
+                    }}>
+                      {aiAnalysis.facialProportions.personalityAnalysis.distance}
+                    </div>
+                  </AnalysisItem>
+                )}
+              </>
+            )}
+
             {/* المناطق المحددة */}
             {aiAnalysis.specificRegions && (
               <>
