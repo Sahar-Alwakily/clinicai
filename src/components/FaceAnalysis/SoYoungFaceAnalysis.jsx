@@ -1592,6 +1592,46 @@ class SoYoungFaceAnalysis extends Component {
       });
     }
     
+    // Forehead region (for forehead lines)
+    if (regions.forehead && regions.forehead.minX < regions.forehead.maxX) {
+      const foreheadThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.forehead, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
+        id: 'forehead',
+        name: 'Forehead',
+        icon: '🧠',
+        thumbnail: foreheadThumbnail,
+        score: 80,
+        description: 'Forehead region',
+        gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        region: regions.forehead
+      });
+    }
+    
+    // Smile lines region (nasolabial lines)
+    if (regions.smileLines && regions.smileLines.minX < regions.smileLines.maxX) {
+      const smileLinesThumbnail = await this.extractRegionImage(
+        this.analysisData.image, 
+        regions.smileLines, 
+        originalImageWidth, 
+        originalImageHeight
+      );
+      regionResults.push({
+        id: 'smileLines',
+        name: 'Smile Lines',
+        icon: '😊',
+        thumbnail: smileLinesThumbnail,
+        score: 80,
+        description: 'Nasolabial lines region',
+        gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+        region: regions.smileLines
+      });
+    }
+    
     // Add skin quality card if analysis available
     if (fullAnalysis && fullAnalysis.advancedSkin) {
       const skinScore = 100 - (fullAnalysis.advancedSkin.poresScore || 0) / 2;
@@ -1697,6 +1737,20 @@ class SoYoungFaceAnalysis extends Component {
         maxX: Math.max(...[1, 2, 3, 4, 5, 11, 12, 13, 14, 15].map(i => positions[i]?.x || 0)),
         minY: Math.min(...[1, 2, 3, 4, 5, 11, 12, 13, 14, 15].map(i => positions[i]?.y || 0)),
         maxY: Math.max(...[1, 2, 3, 4, 5, 11, 12, 13, 14, 15].map(i => positions[i]?.y || 0))
+      },
+      // منطقة الجبهة (للخطوط)
+      forehead: {
+        minX: Math.min(...[17, 18, 19, 20, 21, 22, 23, 24, 25, 26].map(i => positions[i]?.x || 0)),
+        maxX: Math.max(...[17, 18, 19, 20, 21, 22, 23, 24, 25, 26].map(i => positions[i]?.x || 0)),
+        minY: Math.min(...[17, 18, 19, 20, 21, 22, 23, 24, 25, 26].map(i => positions[i]?.y || 0)) - 30,
+        maxY: Math.max(...[17, 18, 19, 20, 21, 22, 23, 24, 25, 26].map(i => positions[i]?.y || 0))
+      },
+      // منطقة خطوط الابتسامة (من الأنف إلى زوايا الفم)
+      smileLines: {
+        minX: Math.min(positions[31]?.x || 0, positions[35]?.x || 0, positions[48]?.x || 0, positions[54]?.x || 0),
+        maxX: Math.max(positions[31]?.x || 0, positions[35]?.x || 0, positions[48]?.x || 0, positions[54]?.x || 0),
+        minY: Math.min(positions[31]?.y || 0, positions[35]?.y || 0),
+        maxY: Math.max(positions[48]?.y || 0, positions[54]?.y || 0)
       },
       skin: {
         minX: 0,

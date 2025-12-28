@@ -186,15 +186,32 @@ class SkinAnalysis extends Component {
       if (results.regions && results.regions.length > 0) {
         // Try to get image from first region thumbnail
         originalImage = results.regions[0]?.thumbnail;
-        // Extract regions map
-        results.regions.forEach(region => {
-          if (region.thumbnail) {
-            regions[region.id] = {
-              thumbnail: region.thumbnail,
-              region: region.region
-            };
-          }
-        });
+      // Extract regions map (including forehead and smileLines)
+      results.regions.forEach(region => {
+        if (region.thumbnail) {
+          regions[region.id] = {
+            thumbnail: region.thumbnail,
+            region: region.region
+          };
+        }
+      });
+      
+      // Extract forehead and smileLines regions if available
+      const foreheadRegion = results.regions.find(r => r.id === 'forehead');
+      if (foreheadRegion && foreheadRegion.thumbnail) {
+        regions.forehead = {
+          thumbnail: foreheadRegion.thumbnail,
+          region: foreheadRegion.region
+        };
+      }
+      
+      const smileLinesRegion = results.regions.find(r => r.id === 'smileLines');
+      if (smileLinesRegion && smileLinesRegion.thumbnail) {
+        regions.smileLines = {
+          thumbnail: smileLinesRegion.thumbnail,
+          region: smileLinesRegion.region
+        };
+      }
       }
       
       // Store regions data for problem recommendations
@@ -450,43 +467,24 @@ class SkinAnalysis extends Component {
           return;
         }
         
-        // إذا كانت المنطقة ممتازة (score >= 80) ولا توجد مشاكل محددة
-        if (region.score >= 80) {
-          recommendations.push({
-            problem: arabicName,
-            severity: 'ممتازة',
-            thumbnail: region.thumbnail,
-            solutions: [],
-            isExcellent: true
-          });
-          addedRegions.add(region.id);
-        } else {
-          // إذا لم تكن ممتازة، أضف حلول حسب نوع المنطقة
+        // تخطي البشرة - سيتم إضافتها في قسم منفصل
+        if (region.id === 'skin') {
+          addedRegions.add('skin');
+          return;
+        }
+        
+        // إزالة الحالات الممتازة - لا نعرض المناطق الممتازة
+        // فقط نعرض المناطق التي تحتاج تحسين
+        if (region.score < 80) {
           let solutions = [];
           
-          if (region.id === 'eyes') {
-            solutions = [
-              'استخدام كريمات مرطبة خاصة بمنطقة العين',
-              'الحصول على قسط كافٍ من النوم',
-              'استخدام واقي الشمس حول العين',
-              'تجنب فرك العينين',
-              'استخدام منتجات تحتوي على فيتامين C'
-            ];
-          } else if (region.id === 'nose') {
+          if (region.id === 'nose') {
             solutions = [
               'تنظيف الأنف بلطف',
               'استخدام منتجات لتقليص المسام',
               'تجنب لمس الأنف',
               'استخدام واقي الشمس',
               'ترطيب منطقة الأنف'
-            ];
-          } else if (region.id === 'mouth') {
-            solutions = [
-              'ترطيب الشفاه بانتظام',
-              'استخدام مرطب شفاه يحتوي على SPF',
-              'تجنب لعق الشفاه',
-              'شرب الماء بكميات كافية',
-              'استخدام فيلر للشفاه إذا لزم الأمر'
             ];
           } else if (region.id === 'jawline') {
             solutions = [
@@ -504,23 +502,17 @@ class SkinAnalysis extends Component {
               'استخدام واقي الشمس',
               'العلاج بالفيلر للخدود إذا لزم الأمر'
             ];
-          } else if (region.id === 'skin') {
-            solutions = [
-              'تنظيف البشرة مرتين يومياً',
-              'استخدام واقي الشمس SPF 50+',
-              'ترطيب البشرة بانتظام',
-              'تجنب التدخين والتعرض للشمس',
-              'استخدام منتجات مضادة للشيخوخة'
-            ];
           }
           
-          recommendations.push({
-            problem: arabicName,
-            severity: region.score >= 60 ? 'جيدة' : 'تحتاج تحسين',
-            thumbnail: region.thumbnail,
-            solutions: solutions
-          });
-          addedRegions.add(region.id);
+          if (solutions.length > 0) {
+            recommendations.push({
+              problem: arabicName,
+              severity: region.score >= 60 ? 'جيدة' : 'تحتاج تحسين',
+              thumbnail: region.thumbnail,
+              solutions: solutions
+            });
+            addedRegions.add(region.id);
+          }
         }
       });
     }
@@ -758,53 +750,87 @@ class SkinAnalysis extends Component {
       });
     }
     
-    // التجاعيد - تحليل شامل: خطوط الجبهة، Crow's feet، خطوط الابتسامة
+    // التجاعيد - كل نوع في قسم منفصل مع صورة
     if (analysis.skinProblems && analysis.skinProblems.wrinkles) {
       const wrinkles = analysis.skinProblems.wrinkles;
-      const problems = [];
-      const solutions = [
-        'استخدام كريمات مضادة للشيخوخة تحتوي على ريتينول',
-        'استخدام واقي الشمس SPF 50+ يومياً',
-        'ترطيب البشرة بانتظام',
-        'تجنب التدخين والتعرض للشمس'
-      ];
       
-      // خطوط الجبهة
+      // خطوط الجبهة - قسم منفصل
       if (wrinkles.forehead && wrinkles.forehead > 0) {
-        problems.push(`خطوط الجبهة (${wrinkles.forehead})`);
-        solutions.push('العلاج بالبوتوكس للخطوط الديناميكية في الجبهة');
-      }
-      
-      // Crow's feet (خطوط العين)
-      if (wrinkles.crowFeet && wrinkles.crowFeet > 0) {
-        problems.push(`خطوط العين - Crow's feet (${wrinkles.crowFeet})`);
-        solutions.push('العلاج بالبوتوكس حول العين');
-        solutions.push('استخدام كريمات خاصة بمنطقة العين');
-      }
-      
-      // خطوط الابتسامة
-      if (wrinkles.smileLines && wrinkles.smileLines > 0) {
-        problems.push(`خطوط الابتسامة (${wrinkles.smileLines})`);
-        solutions.push('استخدام فيلر للخطوط الثابتة');
-      }
-      
-      // الخطوط الدقيقة حول الفم
-      if (wrinkles.fineLinesAroundMouth && wrinkles.fineLinesAroundMouth > 0) {
-        problems.push(`الخطوط الدقيقة حول الفم (${wrinkles.fineLinesAroundMouth})`);
-        solutions.push('ترطيب منطقة الفم بانتظام');
-        solutions.push('استخدام فيلر للشفاه والمنطقة حول الفم');
-      }
-      
-      if (problems.length > 0 || wrinkles.total > 0) {
-        const severity = wrinkles.total > 10 ? 'عالي' : wrinkles.total > 5 ? 'متوسط' : 'خفيف';
+        const severity = wrinkles.forehead > 5 ? 'عالي' : wrinkles.forehead > 2 ? 'متوسط' : 'خفيف';
         recommendations.push({
-          problem: `التجاعيد - ${problems.length > 0 ? problems.join(' و ') : 'تجاعيد مرئية'}`,
+          problem: 'خطوط الجبهة',
           severity: severity,
-          thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
-          solutions: solutions
+          thumbnail: analysis.regions?.forehead?.thumbnail || analysis.regions?.skin?.thumbnail || analysis.originalImage,
+          solutions: [
+            'استخدام كريمات مضادة للشيخوخة تحتوي على ريتينول',
+            'استخدام واقي الشمس SPF 50+ يومياً',
+            'العلاج بالبوتوكس للخطوط الديناميكية في الجبهة',
+            'ترطيب البشرة بانتظام',
+            'تجنب التعرض المباشر لأشعة الشمس',
+            'استخدام كريمات تحتوي على ببتيدات'
+          ],
+          count: wrinkles.forehead
+        });
+      }
+      
+      // Crow's feet (خطوط العين) - قسم منفصل
+      if (wrinkles.crowFeet && wrinkles.crowFeet > 0) {
+        const severity = wrinkles.crowFeet > 5 ? 'عالي' : wrinkles.crowFeet > 2 ? 'متوسط' : 'خفيف';
+        recommendations.push({
+          problem: 'خطوط العين - Crow\'s feet',
+          severity: severity,
+          thumbnail: analysis.regions?.eyes?.thumbnail || analysis.originalImage,
+          solutions: [
+            'العلاج بالبوتوكس حول العين',
+            'استخدام كريمات خاصة بمنطقة العين',
+            'استخدام واقي الشمس حول العين',
+            'ترطيب منطقة العين بانتظام',
+            'تجنب فرك العينين',
+            'استخدام منتجات تحتوي على فيتامين C'
+          ],
+          count: wrinkles.crowFeet
+        });
+      }
+      
+      // خطوط الابتسامة (Nasolabial) - قسم منفصل
+      if (wrinkles.smileLines && wrinkles.smileLines > 0) {
+        const severity = wrinkles.smileLines > 5 ? 'عالي' : wrinkles.smileLines > 2 ? 'متوسط' : 'خفيف';
+        recommendations.push({
+          problem: 'خطوط الابتسامة',
+          severity: severity,
+          thumbnail: analysis.regions?.smileLines?.thumbnail || analysis.regions?.mouth?.thumbnail || analysis.originalImage,
+          solutions: [
+            'استخدام فيلر للخطوط الثابتة',
+            'العلاج بالبوتوكس للخطوط الديناميكية',
+            'ترطيب البشرة بانتظام',
+            'استخدام كريمات مضادة للشيخوخة',
+            'تجنب التدخين',
+            'العلاج بالليزر أو التقشير الكيميائي'
+          ],
+          count: wrinkles.smileLines
+        });
+      }
+      
+      // الخطوط الدقيقة حول الفم (Marionette) - قسم منفصل
+      if (wrinkles.fineLinesAroundMouth && wrinkles.fineLinesAroundMouth > 0) {
+        const severity = wrinkles.fineLinesAroundMouth > 5 ? 'عالي' : wrinkles.fineLinesAroundMouth > 2 ? 'متوسط' : 'خفيف';
+        recommendations.push({
+          problem: 'الخطوط الدقيقة حول الفم',
+          severity: severity,
+          thumbnail: analysis.regions?.mouth?.thumbnail || analysis.originalImage,
+          solutions: [
+            'ترطيب منطقة الفم بانتظام',
+            'استخدام فيلر للشفاه والمنطقة حول الفم',
+            'استخدام كريمات مضادة للشيخوخة',
+            'تجنب لعق الشفاه',
+            'شرب الماء بكميات كافية',
+            'العلاج بالبوتوكس للخطوط الديناميكية'
+          ],
+          count: wrinkles.fineLinesAroundMouth
         });
       }
     } else if (analysis.wrinkles && (analysis.wrinkles.severity === 'عالي' || analysis.wrinkles.severity === 'متوسط')) {
+      // Fallback للبيانات القديمة
       recommendations.push({
         problem: 'التجاعيد',
         severity: analysis.wrinkles.severity,
@@ -1120,128 +1146,193 @@ class SkinAnalysis extends Component {
             <>
               <SectionTitle style={{ marginTop: '0.2rem' }}>⚠️ للمشاكل الوجه نوصي الحلول</SectionTitle>
               
-              {aiAnalysis.problemRecommendations.map((problem, index) => (
-                <AnalysisItem key={index} style={{ 
-                  background: problem.isExcellent 
-                    ? 'rgba(72, 187, 120, 0.1)' 
-                    : 'rgba(255, 243, 205, 0.4)',
-                  borderRadius: '0.12rem',
-                  padding: '0.18rem',
-                  marginBottom: '0.18rem',
-                  border: problem.isExcellent 
-                    ? '1px solid rgba(72, 187, 120, 0.3)' 
-                    : '1px solid rgba(255, 193, 7, 0.3)',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
-                }}>
-                  <div style={{ display: 'flex', gap: '0.18rem', alignItems: 'flex-start' }}>
-                    {/* صورة مصغرة */}
-                    {problem.thumbnail && (
-                      <div style={{
-                        width: '1.2rem',
-                        height: '1.2rem',
-                        borderRadius: '0.1rem',
-                        overflow: 'hidden',
-                        flexShrink: 0,
-                        border: problem.isExcellent 
-                          ? '2px solid #48bb78' 
-                          : '2px solid #667eea',
-                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                      }}>
-                        <img 
-                          src={problem.thumbnail} 
-                          alt={problem.problem}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                        />
-                      </div>
-                    )}
+              {aiAnalysis.problemRecommendations.map((problem, index) => {
+                // تخطي الحالات الممتازة - لا نعرضها
+                if (problem.isExcellent) return null;
+                
+                // تحديد لون الكارد حسب نوع المشكلة
+                const getCardStyle = () => {
+                  if (problem.problem.includes('البشرة')) {
+                    return {
+                      background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
+                      border: '1px solid rgba(102, 126, 234, 0.2)',
+                      borderLeft: '4px solid #667eea'
+                    };
+                  } else if (problem.problem.includes('التجاعيد') || problem.problem.includes('خطوط')) {
+                    return {
+                      background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.08) 0%, rgba(255, 87, 34, 0.08) 100%)',
+                      border: '1px solid rgba(255, 152, 0, 0.2)',
+                      borderLeft: '4px solid #ff9800'
+                    };
+                  } else {
+                    return {
+                      background: 'linear-gradient(135deg, rgba(255, 243, 205, 0.5) 0%, rgba(255, 224, 178, 0.5) 100%)',
+                      border: '1px solid rgba(255, 193, 7, 0.3)',
+                      borderLeft: '4px solid #ffc107'
+                    };
+                  }
+                };
+                
+                const cardStyle = getCardStyle();
+                
+                return (
+                  <AnalysisItem key={index} style={{ 
+                    ...cardStyle,
+                    borderRadius: '0.15rem',
+                    padding: '0.2rem',
+                    marginBottom: '0.2rem',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    {/* تأثير خلفي متطور */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      width: '100%',
+                      height: '100%',
+                      background: 'radial-gradient(circle at top right, rgba(102, 126, 234, 0.05) 0%, transparent 70%)',
+                      pointerEvents: 'none'
+                    }} />
                     
-                    {/* معلومات المشكلة والحلول */}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '0.12rem', 
-                        marginBottom: problem.isExcellent ? '0.05rem' : '0.12rem',
-                        flexWrap: 'wrap'
-                      }}>
-                        <div className="item-label" style={{ 
-                          margin: 0, 
-                          fontSize: '0.19rem', 
-                          fontWeight: 700,
-                          color: problem.isExcellent ? '#2f855a' : '#2d3748'
+                    <div style={{ display: 'flex', gap: '0.2rem', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
+                      {/* صورة مصغرة محسّنة */}
+                      {problem.thumbnail && (
+                        <div style={{
+                          width: '1.4rem',
+                          height: '1.4rem',
+                          borderRadius: '0.12rem',
+                          overflow: 'hidden',
+                          flexShrink: 0,
+                          border: '2px solid rgba(102, 126, 234, 0.3)',
+                          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+                          background: 'white',
+                          padding: '0.02rem'
                         }}>
-                          {problem.problem}
+                          <img 
+                            src={problem.thumbnail} 
+                            alt={problem.problem}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              borderRadius: '0.1rem'
+                            }}
+                          />
                         </div>
-                        <Badge type={
-                          problem.isExcellent 
-                            ? 'success'
-                            : problem.severity === 'شديد' || problem.severity === 'عالي' 
-                            ? 'danger' 
-                            : problem.severity === 'ممتازة'
-                            ? 'success'
-                            : 'warning'
-                        }>
-                          {problem.severity}
-                        </Badge>
-                      </div>
+                      )}
                       
-                      {/* الحلول */}
-                      {problem.isExcellent ? (
+                      {/* معلومات المشكلة والحلول */}
+                      <div style={{ flex: 1 }}>
                         <div style={{ 
-                          marginTop: '0.12rem',
-                          padding: '0.12rem 0.15rem',
-                          background: 'linear-gradient(135deg, rgba(72, 187, 120, 0.15) 0%, rgba(56, 161, 105, 0.1) 100%)',
-                          borderRadius: '0.1rem',
-                          fontSize: '0.15rem',
-                          color: '#2f855a',
-                          fontWeight: 600,
-                          textAlign: 'center',
-                          border: '1px solid rgba(72, 187, 120, 0.2)'
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '0.12rem', 
+                          marginBottom: '0.15rem',
+                          flexWrap: 'wrap'
                         }}>
-                          ✓ الحالة ممتازة - لا توجد مشاكل
-                        </div>
-                      ) : problem.solutions && problem.solutions.length > 0 ? (
-                        <div style={{ marginTop: '0.12rem' }}>
-                          <div style={{ 
-                            fontSize: '0.16rem', 
-                            fontWeight: 700, 
-                            color: '#667eea',
-                            marginBottom: '0.1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.08rem'
+                          <div className="item-label" style={{ 
+                            margin: 0, 
+                            fontSize: '0.2rem', 
+                            fontWeight: 700,
+                            color: '#1a202c',
+                            letterSpacing: '0.01rem'
                           }}>
-                            <span>💡</span>
-                            <span>الحلول المقترحة:</span>
-                          </div>
-                          <div style={{ 
-                            padding: '0.12rem',
-                            background: 'rgba(255, 255, 255, 0.9)',
-                            borderRadius: '0.1rem',
-                            fontSize: '0.15rem',
-                            lineHeight: '1.7',
-                            border: '1px solid rgba(0, 0, 0, 0.05)'
-                          }}>
-                            {problem.solutions.map((solution, solIndex) => (
-                              <div key={solIndex} style={{ 
-                                marginBottom: '0.08rem', 
-                                color: '#4a5568',
-                                paddingRight: '0.1rem'
+                            {problem.problem}
+                            {problem.count && (
+                              <span style={{ 
+                                fontSize: '0.16rem', 
+                                color: '#718096',
+                                fontWeight: 500,
+                                marginRight: '0.08rem'
                               }}>
-                                <span style={{ color: '#667eea', marginLeft: '0.05rem' }}>•</span> {solution}
+                                ({problem.count})
+                              </span>
+                            )}
+                          </div>
+                          <Badge type={
+                            problem.severity === 'شديد' || problem.severity === 'عالي' 
+                            ? 'danger' 
+                            : problem.severity === 'متوسط'
+                            ? 'warning'
+                            : 'success'
+                          }>
+                            {problem.severity}
+                          </Badge>
+                        </div>
+                        
+                        {/* معلومات البشرة (إذا كانت موجودة) */}
+                        {problem.skinInfo && problem.skinInfo.length > 0 && (
+                          <div style={{
+                            marginBottom: '0.12rem',
+                            padding: '0.1rem 0.12rem',
+                            background: 'rgba(255, 255, 255, 0.6)',
+                            borderRadius: '0.08rem',
+                            fontSize: '0.15rem',
+                            color: '#4a5568',
+                            lineHeight: '1.6'
+                          }}>
+                            {problem.skinInfo.map((info, infoIndex) => (
+                              <div key={infoIndex} style={{ marginBottom: '0.05rem' }}>
+                                {info}
                               </div>
                             ))}
                           </div>
-                        </div>
-                      ) : null}
+                        )}
+                        
+                        {/* الحلول */}
+                        {problem.solutions && problem.solutions.length > 0 && (
+                          <div style={{ marginTop: '0.15rem' }}>
+                            <div style={{ 
+                              fontSize: '0.17rem', 
+                              fontWeight: 700, 
+                              color: '#667eea',
+                              marginBottom: '0.12rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.1rem'
+                            }}>
+                              <span style={{ fontSize: '0.2rem' }}>💡</span>
+                              <span>الحلول المقترحة:</span>
+                            </div>
+                            <div style={{ 
+                              padding: '0.15rem',
+                              background: 'rgba(255, 255, 255, 0.95)',
+                              borderRadius: '0.12rem',
+                              fontSize: '0.155rem',
+                              lineHeight: '1.8',
+                              border: '1px solid rgba(0, 0, 0, 0.06)',
+                              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.05)'
+                            }}>
+                              {problem.solutions.map((solution, solIndex) => (
+                                <div key={solIndex} style={{ 
+                                  marginBottom: '0.1rem', 
+                                  color: '#2d3748',
+                                  paddingRight: '0.12rem',
+                                  display: 'flex',
+                                  alignItems: 'flex-start',
+                                  gap: '0.08rem'
+                                }}>
+                                  <span style={{ 
+                                    color: '#667eea', 
+                                    marginLeft: '0.05rem',
+                                    fontSize: '0.18rem',
+                                    fontWeight: 700,
+                                    lineHeight: '1.6'
+                                  }}>•</span>
+                                  <span style={{ flex: 1 }}>{solution}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </AnalysisItem>
-              ))}
+                  </AnalysisItem>
+                );
+              })}
             </>
           )}
         </AnalysisCard>
