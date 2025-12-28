@@ -377,7 +377,21 @@ class SkinAnalysis extends Component {
   generateProblemRecommendations = (analysis) => {
     const recommendations = [];
     
-    // إضافة جميع المناطق من results.regions
+    // قائمة المناطق التي تمت إضافتها كمشاكل (لتجنب التكرار)
+    const addedRegions = new Set();
+    
+    // التحقق من المشاكل أولاً قبل إضافة المناطق العامة
+    const hasDarkCircles = analysis.skinProblems && analysis.skinProblems.darkCircles && analysis.skinProblems.darkCircles.present;
+    const hasMouthProblems = analysis.mouth && (
+      analysis.mouth.needsFiller || 
+      analysis.mouth.size === 'صغير' || 
+      analysis.mouth.size === 'كبير' ||
+      (analysis.mouth.thickness && parseFloat(analysis.mouth.thickness) < 0.3) ||
+      analysis.mouth.darkness ||
+      (analysis.skinProblems && analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد')
+    );
+    
+    // إضافة جميع المناطق من results.regions (باستثناء المناطق التي لها مشاكل محددة)
     if (analysis.regionsData && analysis.regionsData.length > 0) {
       analysis.regionsData.forEach(region => {
         const regionNames = {
@@ -391,7 +405,19 @@ class SkinAnalysis extends Component {
         
         const arabicName = regionNames[region.id] || region.name;
         
-        // إذا كانت المنطقة ممتازة (score >= 80)، فقط اكتب أنها بحالة ممتازة
+        // تخطي العيون إذا كانت هناك هالات سوداء (سيتم إضافتها لاحقاً)
+        if (region.id === 'eyes' && hasDarkCircles) {
+          addedRegions.add('eyes');
+          return;
+        }
+        
+        // تخطي الفم إذا كان هناك مشاكل (سيتم إضافتها لاحقاً)
+        if (region.id === 'mouth' && hasMouthProblems) {
+          addedRegions.add('mouth');
+          return;
+        }
+        
+        // إذا كانت المنطقة ممتازة (score >= 80) ولا توجد مشاكل محددة
         if (region.score >= 80) {
           recommendations.push({
             problem: arabicName,
@@ -400,6 +426,7 @@ class SkinAnalysis extends Component {
             solutions: [],
             isExcellent: true
           });
+          addedRegions.add(region.id);
         } else {
           // إذا لم تكن ممتازة، أضف حلول حسب نوع المنطقة
           let solutions = [];
@@ -460,14 +487,15 @@ class SkinAnalysis extends Component {
             thumbnail: region.thumbnail,
             solutions: solutions
           });
+          addedRegions.add(region.id);
         }
       });
     }
     
     if (!analysis.skinProblems) return recommendations;
     
-    // الهالات السوداء والتجويف
-    if (analysis.skinProblems.darkCircles && analysis.skinProblems.darkCircles.present) {
+    // الهالات السوداء والتجويف - إضافة كمنطقة مشكلة (تأكد من عدم التكرار)
+    if (analysis.skinProblems.darkCircles && analysis.skinProblems.darkCircles.present && !addedRegions.has('eyes')) {
       const darkCirclesSeverity = analysis.skinProblems.darkCircles.severity || 'متوسط';
       const solutions = [
         'استخدام كريمات تحتوي على فيتامين C وريتينول',
@@ -485,11 +513,12 @@ class SkinAnalysis extends Component {
       }
       
       recommendations.push({
-        problem: 'الهالات السوداء والتجويف',
+        problem: 'العيون - الهالات السوداء والتجويف',
         severity: darkCirclesSeverity,
         thumbnail: analysis.regions?.underEyes?.thumbnail || analysis.regions?.eyes?.thumbnail || analysis.originalImage,
         solutions: solutions
       });
+      addedRegions.add('eyes');
     }
     
     // حب الشباب
@@ -561,8 +590,8 @@ class SkinAnalysis extends Component {
       });
     }
     
-    // تحليل الفم - السواد والكبر
-    if (analysis.mouth) {
+    // تحليل الفم - السواد والكبر (تأكد من عدم التكرار)
+    if (analysis.mouth && !addedRegions.has('mouth')) {
       const mouthProblems = [];
       const mouthSolutions = [];
       
@@ -604,8 +633,9 @@ class SkinAnalysis extends Component {
           thumbnail: analysis.regions?.mouth?.thumbnail || analysis.originalImage,
           solutions: mouthSolutions
         });
+        addedRegions.add('mouth');
       } else if (analysis.mouth.size === 'متوسط' && !analysis.mouth.needsFiller) {
-        // إذا كان الفم ممتاز
+        // إذا كان الفم ممتاز ولا توجد مشاكل
         recommendations.push({
           problem: 'الفم',
           severity: 'ممتازة',
@@ -613,6 +643,7 @@ class SkinAnalysis extends Component {
           solutions: [],
           isExcellent: true
         });
+        addedRegions.add('mouth');
       }
     }
     
@@ -855,21 +886,30 @@ class SkinAnalysis extends Component {
               
               {aiAnalysis.problemRecommendations.map((problem, index) => (
                 <AnalysisItem key={index} style={{ 
-                  background: 'rgba(255, 243, 205, 0.3)',
-                  borderRadius: '0.1rem',
-                  padding: '0.15rem',
-                  marginBottom: '0.15rem'
+                  background: problem.isExcellent 
+                    ? 'rgba(72, 187, 120, 0.1)' 
+                    : 'rgba(255, 243, 205, 0.4)',
+                  borderRadius: '0.12rem',
+                  padding: '0.18rem',
+                  marginBottom: '0.18rem',
+                  border: problem.isExcellent 
+                    ? '1px solid rgba(72, 187, 120, 0.3)' 
+                    : '1px solid rgba(255, 193, 7, 0.3)',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
                 }}>
-                  <div style={{ display: 'flex', gap: '0.15rem', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: '0.18rem', alignItems: 'flex-start' }}>
                     {/* صورة مصغرة */}
                     {problem.thumbnail && (
                       <div style={{
-                        width: '1rem',
-                        height: '1rem',
-                        borderRadius: '0.08rem',
+                        width: '1.2rem',
+                        height: '1.2rem',
+                        borderRadius: '0.1rem',
                         overflow: 'hidden',
                         flexShrink: 0,
-                        border: '2px solid #667eea'
+                        border: problem.isExcellent 
+                          ? '2px solid #48bb78' 
+                          : '2px solid #667eea',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                       }}>
                         <img 
                           src={problem.thumbnail} 
@@ -885,11 +925,30 @@ class SkinAnalysis extends Component {
                     
                     {/* معلومات المشكلة والحلول */}
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.1rem', marginBottom: '0.08rem' }}>
-                        <div className="item-label" style={{ margin: 0, fontSize: '0.18rem', fontWeight: 700 }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.12rem', 
+                        marginBottom: problem.isExcellent ? '0.05rem' : '0.12rem',
+                        flexWrap: 'wrap'
+                      }}>
+                        <div className="item-label" style={{ 
+                          margin: 0, 
+                          fontSize: '0.19rem', 
+                          fontWeight: 700,
+                          color: problem.isExcellent ? '#2f855a' : '#2d3748'
+                        }}>
                           {problem.problem}
                         </div>
-                        <Badge type={problem.severity === 'شديد' || problem.severity === 'عالي' ? 'danger' : 'warning'}>
+                        <Badge type={
+                          problem.isExcellent 
+                            ? 'success'
+                            : problem.severity === 'شديد' || problem.severity === 'عالي' 
+                            ? 'danger' 
+                            : problem.severity === 'ممتازة'
+                            ? 'success'
+                            : 'warning'
+                        }>
                           {problem.severity}
                         </Badge>
                       </div>
@@ -897,37 +956,47 @@ class SkinAnalysis extends Component {
                       {/* الحلول */}
                       {problem.isExcellent ? (
                         <div style={{ 
-                          marginTop: '0.1rem',
-                          padding: '0.1rem',
-                          background: 'rgba(72, 187, 120, 0.2)',
-                          borderRadius: '0.08rem',
-                          fontSize: '0.14rem',
+                          marginTop: '0.12rem',
+                          padding: '0.12rem 0.15rem',
+                          background: 'linear-gradient(135deg, rgba(72, 187, 120, 0.15) 0%, rgba(56, 161, 105, 0.1) 100%)',
+                          borderRadius: '0.1rem',
+                          fontSize: '0.15rem',
                           color: '#2f855a',
                           fontWeight: 600,
-                          textAlign: 'center'
+                          textAlign: 'center',
+                          border: '1px solid rgba(72, 187, 120, 0.2)'
                         }}>
-                          ✓ الحالة ممتازة
+                          ✓ الحالة ممتازة - لا توجد مشاكل
                         </div>
                       ) : problem.solutions && problem.solutions.length > 0 ? (
-                        <div style={{ marginTop: '0.1rem' }}>
+                        <div style={{ marginTop: '0.12rem' }}>
                           <div style={{ 
-                            fontSize: '0.15rem', 
-                            fontWeight: 600, 
+                            fontSize: '0.16rem', 
+                            fontWeight: 700, 
                             color: '#667eea',
-                            marginBottom: '0.08rem'
+                            marginBottom: '0.1rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.08rem'
                           }}>
-                            الحلول المقترحة:
+                            <span>💡</span>
+                            <span>الحلول المقترحة:</span>
                           </div>
                           <div style={{ 
-                            padding: '0.1rem',
-                            background: 'rgba(255, 255, 255, 0.8)',
-                            borderRadius: '0.08rem',
-                            fontSize: '0.14rem',
-                            lineHeight: '1.6'
+                            padding: '0.12rem',
+                            background: 'rgba(255, 255, 255, 0.9)',
+                            borderRadius: '0.1rem',
+                            fontSize: '0.15rem',
+                            lineHeight: '1.7',
+                            border: '1px solid rgba(0, 0, 0, 0.05)'
                           }}>
                             {problem.solutions.map((solution, solIndex) => (
-                              <div key={solIndex} style={{ marginBottom: '0.05rem', color: '#4a5568' }}>
-                                • {solution}
+                              <div key={solIndex} style={{ 
+                                marginBottom: '0.08rem', 
+                                color: '#4a5568',
+                                paddingRight: '0.1rem'
+                              }}>
+                                <span style={{ color: '#667eea', marginLeft: '0.05rem' }}>•</span> {solution}
                               </div>
                             ))}
                           </div>
