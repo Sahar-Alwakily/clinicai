@@ -253,6 +253,9 @@ class SkinAnalysis extends Component {
           faceShape: 'بيضاوي'
         },
         
+        // Specific regions analysis (for smile lines, fine lines, etc.)
+        specificRegions: fullAnalysis.specificRegions || {},
+        
         // Store regions for thumbnails
         regions: regions,
         originalImage: originalImage,
@@ -522,9 +525,16 @@ class SkinAnalysis extends Component {
       });
     }
     
-    // الهالات السوداء والتجويف
+    // العيون - تحليل شامل: الهالات السوداء، الانتفاخ، علامات التعب
     if (hasDarkCircles && !addedRegions.has('eyes')) {
-      const darkCirclesSeverity = analysis.skinProblems.darkCircles.severity || 'متوسط';
+      const darkCircles = analysis.skinProblems.darkCircles;
+      const darkCirclesSeverity = darkCircles.severity || 'متوسط';
+      const puffiness = darkCircles.puffiness || 'غير موجود';
+      const puffinessSeverity = darkCircles.puffinessSeverity || 'خفيف';
+      const fatigueSigns = darkCircles.fatigueSigns || false;
+      const fatigueLevel = darkCircles.fatigueLevel || 'منخفض';
+      
+      const problems = ['الهالات السوداء'];
       const solutions = [
         'استخدام كريمات تحتوي على فيتامين C وريتينول',
         'الحصول على قسط كافٍ من النوم (7-8 ساعات)',
@@ -532,6 +542,25 @@ class SkinAnalysis extends Component {
         'تجنب فرك العينين',
         'استخدام واقي الشمس يومياً'
       ];
+      
+      // إضافة الانتفاخ إذا كان موجوداً
+      if (puffiness === 'موجود') {
+        problems.push('الانتفاخ');
+        solutions.push('استخدام كمادات باردة');
+        solutions.push('تقليل تناول الملح');
+        solutions.push('استخدام كريمات تحتوي على كافيين');
+        if (puffinessSeverity === 'واضح') {
+          solutions.push('استشارة طبيب للتأكد من عدم وجود مشاكل صحية');
+        }
+      }
+      
+      // إضافة علامات التعب
+      if (fatigueSigns) {
+        problems.push(`علامات التعب (${fatigueLevel})`);
+        solutions.push('تحسين جودة النوم');
+        solutions.push('تقليل التوتر والإجهاد');
+        solutions.push('ممارسة التمارين الرياضية بانتظام');
+      }
       
       // إضافة حلول إضافية حسب الشدة
       if (darkCirclesSeverity === 'شديد' || darkCirclesSeverity === 'واضح') {
@@ -541,7 +570,7 @@ class SkinAnalysis extends Component {
       }
       
       recommendations.push({
-        problem: 'العيون - الهالات السوداء والتجويف',
+        problem: `العيون - ${problems.join(' و ')}`,
         severity: darkCirclesSeverity,
         thumbnail: analysis.regions?.underEyes?.thumbnail || analysis.regions?.eyes?.thumbnail || analysis.originalImage,
         solutions: solutions
@@ -605,6 +634,26 @@ class SkinAnalysis extends Component {
         mouthSolutions.push('استخدام منتجات تكثيف الشفاه');
       }
       
+      // تحليل خطوط الابتسامة (من specificRegions)
+      if (analysis.specificRegions && analysis.specificRegions.lips && analysis.specificRegions.lips.smileLines) {
+        const smileLines = analysis.specificRegions.lips.smileLines;
+        if (smileLines.present) {
+          mouthProblems.push(`خطوط الابتسامة (${smileLines.severity})`);
+          mouthSolutions.push('استخدام فيلر للخطوط الثابتة');
+          mouthSolutions.push('العلاج بالبوتوكس للخطوط الديناميكية');
+        }
+      }
+      
+      // تحليل الخطوط الدقيقة حول الفم
+      if (analysis.specificRegions && analysis.specificRegions.lips && analysis.specificRegions.lips.fineLinesAroundMouth) {
+        const fineLines = analysis.specificRegions.lips.fineLinesAroundMouth;
+        if (fineLines.present) {
+          mouthProblems.push(`الخطوط الدقيقة حول الفم (${fineLines.severity})`);
+          mouthSolutions.push('ترطيب منطقة الفم بانتظام');
+          mouthSolutions.push('استخدام كريمات مضادة للشيخوخة');
+        }
+      }
+      
       if (mouthProblems.length > 0) {
         recommendations.push({
           problem: `الفم - ${mouthProblems.join(' و ')}`,
@@ -613,6 +662,42 @@ class SkinAnalysis extends Component {
           solutions: mouthSolutions
         });
         addedRegions.add('mouth');
+      }
+    }
+    
+    // حالة البشرة العامة: الجفاف، الدهنية، الملمس غير المتساوي
+    if (analysis.advancedSkin) {
+      const skinProblems = [];
+      const skinSolutions = [];
+      
+      if (analysis.advancedSkin.isDry || analysis.advancedSkin.dryness === 'جافة') {
+        skinProblems.push('الجفاف');
+        skinSolutions.push('استخدام مرطبات قوية');
+        skinSolutions.push('شرب الماء بكميات كافية');
+        skinSolutions.push('تجنب المنتجات القاسية');
+      }
+      
+      if (analysis.advancedSkin.isOily || analysis.advancedSkin.oiliness === 'دهنية') {
+        skinProblems.push('الدهنية');
+        skinSolutions.push('استخدام منتجات خالية من الزيوت');
+        skinSolutions.push('تنظيف البشرة مرتين يومياً');
+        skinSolutions.push('استخدام منتجات تقليل الزهم');
+      }
+      
+      if (analysis.advancedSkin.isUnevenTexture || analysis.advancedSkin.textureEvenness === 'غير متساوي') {
+        skinProblems.push('الملمس غير المتساوي');
+        skinSolutions.push('تقشير البشرة أسبوعياً');
+        skinSolutions.push('استخدام منتجات تحتوي على أحماض ألفا هيدروكسي');
+        skinSolutions.push('ترطيب البشرة بانتظام');
+      }
+      
+      if (skinProblems.length > 0) {
+        recommendations.push({
+          problem: `البشرة - ${skinProblems.join(' و ')}`,
+          severity: 'متوسط',
+          thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
+          solutions: skinSolutions
+        });
       }
     }
     
@@ -635,25 +720,91 @@ class SkinAnalysis extends Component {
       });
     }
     
-    // التصبغات
+    // التصبغات - تحليل شامل: البقع، فرط التصبغ، الكلف
     if (analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد') {
+      const pigmentation = analysis.skinProblems.pigmentation;
+      const problems = [];
+      const solutions = [
+        'استخدام واقي الشمس SPF 50+ يومياً',
+        'استخدام منتجات تحتوي على فيتامين C أو نياسيناميد',
+        'تجنب التعرض المباشر لأشعة الشمس',
+        'استخدام منتجات تحتوي على أحماض ألفا هيدروكسي'
+      ];
+      
+      if (pigmentation.types && pigmentation.types.length > 0) {
+        problems.push(...pigmentation.types);
+      } else {
+        problems.push('البقع الداكنة');
+      }
+      
+      // إضافة حلول خاصة للكلف
+      if (pigmentation.melasma === 'موجود') {
+        solutions.push('استخدام كريمات تفتيح تحتوي على هيدروكينون (بوصفة طبية)');
+        solutions.push('العلاج بالليزر أو التقشير الكيميائي');
+        solutions.push('تجنب الهرمونات التي قد تسبب الكلف');
+      }
+      
+      // إضافة حلول خاصة لفرط التصبغ
+      if (pigmentation.hyperpigmentation === 'موجود') {
+        solutions.push('استخدام منتجات تحتوي على أزيليك أسيد');
+        solutions.push('العلاج بالليزر للبقع الداكنة');
+      }
+      
       recommendations.push({
-        problem: 'التصبغات والبقع الداكنة',
-        severity: analysis.skinProblems.pigmentation.level,
+        problem: `التصبغات - ${problems.join(' و ')}`,
+        severity: pigmentation.level,
         thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
-        solutions: [
-          'استخدام واقي الشمس SPF 50+ يومياً',
-          'استخدام منتجات تحتوي على فيتامين C أو نياسيناميد',
-          'تجنب التعرض المباشر لأشعة الشمس',
-          'استخدام كريمات تفتيح تحتوي على هيدروكينون (بوصفة طبية)',
-          'العلاج بالليزر أو التقشير الكيميائي',
-          'استخدام منتجات تحتوي على أحماض ألفا هيدروكسي'
-        ]
+        solutions: solutions
       });
     }
     
-    // التجاعيد
-    if (analysis.wrinkles && (analysis.wrinkles.severity === 'عالي' || analysis.wrinkles.severity === 'متوسط')) {
+    // التجاعيد - تحليل شامل: خطوط الجبهة، Crow's feet، خطوط الابتسامة
+    if (analysis.skinProblems && analysis.skinProblems.wrinkles) {
+      const wrinkles = analysis.skinProblems.wrinkles;
+      const problems = [];
+      const solutions = [
+        'استخدام كريمات مضادة للشيخوخة تحتوي على ريتينول',
+        'استخدام واقي الشمس SPF 50+ يومياً',
+        'ترطيب البشرة بانتظام',
+        'تجنب التدخين والتعرض للشمس'
+      ];
+      
+      // خطوط الجبهة
+      if (wrinkles.forehead && wrinkles.forehead > 0) {
+        problems.push(`خطوط الجبهة (${wrinkles.forehead})`);
+        solutions.push('العلاج بالبوتوكس للخطوط الديناميكية في الجبهة');
+      }
+      
+      // Crow's feet (خطوط العين)
+      if (wrinkles.crowFeet && wrinkles.crowFeet > 0) {
+        problems.push(`خطوط العين - Crow's feet (${wrinkles.crowFeet})`);
+        solutions.push('العلاج بالبوتوكس حول العين');
+        solutions.push('استخدام كريمات خاصة بمنطقة العين');
+      }
+      
+      // خطوط الابتسامة
+      if (wrinkles.smileLines && wrinkles.smileLines > 0) {
+        problems.push(`خطوط الابتسامة (${wrinkles.smileLines})`);
+        solutions.push('استخدام فيلر للخطوط الثابتة');
+      }
+      
+      // الخطوط الدقيقة حول الفم
+      if (wrinkles.fineLinesAroundMouth && wrinkles.fineLinesAroundMouth > 0) {
+        problems.push(`الخطوط الدقيقة حول الفم (${wrinkles.fineLinesAroundMouth})`);
+        solutions.push('ترطيب منطقة الفم بانتظام');
+        solutions.push('استخدام فيلر للشفاه والمنطقة حول الفم');
+      }
+      
+      if (problems.length > 0 || wrinkles.total > 0) {
+        const severity = wrinkles.total > 10 ? 'عالي' : wrinkles.total > 5 ? 'متوسط' : 'خفيف';
+        recommendations.push({
+          problem: `التجاعيد - ${problems.length > 0 ? problems.join(' و ') : 'تجاعيد مرئية'}`,
+          severity: severity,
+          thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
+          solutions: solutions
+        });
+      }
+    } else if (analysis.wrinkles && (analysis.wrinkles.severity === 'عالي' || analysis.wrinkles.severity === 'متوسط')) {
       recommendations.push({
         problem: 'التجاعيد',
         severity: analysis.wrinkles.severity,
@@ -670,8 +821,52 @@ class SkinAnalysis extends Component {
       });
     }
     
-    // الترهل
-    if (analysis.sagging && analysis.sagging.severity === 'عالي') {
+    // الترهل - تحليل شامل: المناطق المترهلة، قلة المرونة
+    if (analysis.skinProblems && analysis.skinProblems.sagging) {
+      const sagging = analysis.skinProblems.sagging;
+      const problems = [];
+      const solutions = [
+        'تمارين وجهية يومية',
+        'استخدام منتجات تحتوي على ببتيدات وكولاجين',
+        'استخدام أجهزة شد الوجه المنزلية'
+      ];
+      
+      if (sagging.hasLooseSkin) {
+        problems.push('جلد مترهل');
+      }
+      
+      if (sagging.reducedElasticity) {
+        problems.push('قلة المرونة');
+      }
+      
+      if (sagging.areas) {
+        if (sagging.areas.cheeks === 'مترهل') {
+          problems.push('ترهل الخدود');
+          solutions.push('العلاج بالفيلر للخدود');
+        }
+        if (sagging.areas.jawline === 'مترهل') {
+          problems.push('ترهل خط الفك');
+          solutions.push('العلاج بالخيوط (Thread Lift)');
+        }
+        if (sagging.areas.underEyes === 'مترهل') {
+          problems.push('ترهل تحت العينين');
+          solutions.push('العلاج بالفيلر تحت العين');
+        }
+      }
+      
+      if (problems.length > 0 || sagging.severity === 'عالي' || sagging.severity === 'متوسط') {
+        recommendations.push({
+          problem: `الترهل - ${problems.length > 0 ? problems.join(' و ') : 'ترهل الجلد'}`,
+          severity: sagging.severity || 'متوسط',
+          thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
+          solutions: [
+            ...solutions,
+            'العلاج بالليزر أو الموجات الراديوية',
+            'شد الوجه الجراحي في الحالات المتقدمة'
+          ]
+        });
+      }
+    } else if (analysis.sagging && (analysis.sagging.severity === 'عالي' || analysis.sagging.severity === 'متوسط')) {
       recommendations.push({
         problem: 'الترهل',
         severity: analysis.sagging.severity,

@@ -20,7 +20,8 @@ import * as faceapi from "face-api.js";
 import { 
   analyzeAdvancedSkin, 
   analyzeSkinProblems, 
-  analyzeFacialProportions
+  analyzeFacialProportions,
+  analyzeSpecificRegions
 } from "../../utils/advancedFaceAnalysis";
 
 // ============================================
@@ -932,6 +933,7 @@ class SoYoungFaceAnalysis extends Component {
           const advancedSkin = analyzeAdvancedSkin(image, detection.landmarks, ctx);
           const skinProblems = analyzeSkinProblems(image, detection.landmarks, detection.age);
           const facialProportions = analyzeFacialProportions(detection.landmarks);
+          const specificRegions = analyzeSpecificRegions(image, detection.landmarks);
           
           fullAnalysis = {
             age: Math.round(detection.age),
@@ -939,7 +941,8 @@ class SoYoungFaceAnalysis extends Component {
             expressions: detection.expressions,
             advancedSkin,
             skinProblems,
-            facialProportions
+            facialProportions,
+            specificRegions
           };
         } catch (error) {
           console.error('Advanced analysis error:', error);
