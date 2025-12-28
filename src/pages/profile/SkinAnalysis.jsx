@@ -524,83 +524,73 @@ class SkinAnalysis extends Component {
     }
     
     // العيون - تحليل شامل: الهالات السوداء، الانتفاخ، علامات التعب
-    // إضافة دائماً إذا كانت البيانات موجودة (حتى لو لم تكن present = true)
+    // إضافة دائماً إذا كانت البيانات موجودة (حتى لو كانت خفيفة)
     if (analysis.skinProblems && 
         analysis.skinProblems.darkCircles && 
         !addedRegions.has('eyes')) {
       const darkCircles = analysis.skinProblems.darkCircles;
       
-      // التحقق من وجود الهالات السوداء - تحقق من present أو severity أو avgBrightness
-      const hasDarkCirclesPresent = darkCircles.present || 
-                                    (darkCircles.severity && 
-                                     darkCircles.severity !== 'لا يوجد' &&
-                                     darkCircles.severity !== 'خفيف') ||
-                                    (darkCircles.avgBrightness && darkCircles.avgBrightness < 140);
-      
       // إضافة دائماً إذا كانت هناك أي بيانات عن الهالات السوداء
-      // أو الانتفاخ أو علامات التعب
-      const shouldAdd = hasDarkCirclesPresent || 
-                       darkCircles.puffiness === 'موجود' || 
-                       darkCircles.fatigueSigns ||
-                       (darkCircles.severity && darkCircles.severity !== 'لا يوجد');
+      // حتى لو كانت خفيفة أو severity = 'خفيف' أو present = false
+      // نضيف دائماً إذا كانت البيانات موجودة
+      const darkCirclesSeverity = darkCircles.severity || 
+                                   (darkCircles.avgBrightness !== undefined && darkCircles.avgBrightness < 100 ? 'واضح' : 
+                                    darkCircles.avgBrightness !== undefined && darkCircles.avgBrightness < 130 ? 'متوسط' : 
+                                    darkCircles.avgBrightness !== undefined && darkCircles.avgBrightness < 140 ? 'خفيف' : 'خفيف') ||
+                                   'خفيف';
+      const puffiness = darkCircles.puffiness || 'غير موجود';
+      const puffinessSeverity = darkCircles.puffinessSeverity || 'خفيف';
+      const fatigueSigns = darkCircles.fatigueSigns || false;
+      const fatigueLevel = darkCircles.fatigueLevel || 'منخفض';
       
-      if (shouldAdd) {
-        const darkCirclesSeverity = darkCircles.severity || 
-                                   (darkCircles.avgBrightness && darkCircles.avgBrightness < 100 ? 'واضح' : 
-                                    darkCircles.avgBrightness && darkCircles.avgBrightness < 130 ? 'متوسط' : 'خفيف') ||
-                                   'متوسط';
-        const puffiness = darkCircles.puffiness || 'غير موجود';
-        const puffinessSeverity = darkCircles.puffinessSeverity || 'خفيف';
-        const fatigueSigns = darkCircles.fatigueSigns || false;
-        const fatigueLevel = darkCircles.fatigueLevel || 'منخفض';
-        
-        const problems = [];
-        
-        // إضافة الهالات السوداء والتجويف دائماً
-        problems.push('الهالات السوداء والتجويف');
-        
-        const solutions = [
-          'استخدام كريمات تحتوي على فيتامين C وريتينول',
-          'الحصول على قسط كافٍ من النوم (7-8 ساعات)',
-          'استخدام كريمات مرطبة خاصة بمنطقة تحت العين',
-          'تجنب فرك العينين',
-          'استخدام واقي الشمس يومياً'
-        ];
-        
-        // إضافة الانتفاخ إذا كان موجوداً
-        if (puffiness === 'موجود') {
-          problems.push('الانتفاخ');
-          solutions.push('استخدام كمادات باردة');
-          solutions.push('تقليل تناول الملح');
-          solutions.push('استخدام كريمات تحتوي على كافيين');
-          if (puffinessSeverity === 'واضح') {
-            solutions.push('استشارة طبيب للتأكد من عدم وجود مشاكل صحية');
-          }
+      const problems = [];
+      
+      // إضافة الهالات السوداء والتجويف دائماً (حتى لو كانت خفيفة)
+      // نضيفها دائماً إذا كانت البيانات موجودة
+      problems.push('الهالات السوداء والتجويف');
+      
+      const solutions = [
+        'استخدام كريمات تحتوي على فيتامين C وريتينول',
+        'الحصول على قسط كافٍ من النوم (7-8 ساعات)',
+        'استخدام كريمات مرطبة خاصة بمنطقة تحت العين',
+        'تجنب فرك العينين',
+        'استخدام واقي الشمس يومياً'
+      ];
+      
+      // إضافة الانتفاخ إذا كان موجوداً
+      if (puffiness === 'موجود') {
+        problems.push('الانتفاخ');
+        solutions.push('استخدام كمادات باردة');
+        solutions.push('تقليل تناول الملح');
+        solutions.push('استخدام كريمات تحتوي على كافيين');
+        if (puffinessSeverity === 'واضح') {
+          solutions.push('استشارة طبيب للتأكد من عدم وجود مشاكل صحية');
         }
-        
-        // إضافة علامات التعب
-        if (fatigueSigns) {
-          problems.push(`علامات التعب (${fatigueLevel})`);
-          solutions.push('تحسين جودة النوم');
-          solutions.push('تقليل التوتر والإجهاد');
-          solutions.push('ممارسة التمارين الرياضية بانتظام');
-        }
-        
-        // إضافة حلول إضافية حسب الشدة
-        if (darkCirclesSeverity === 'شديد' || darkCirclesSeverity === 'واضح') {
-          solutions.push('العلاج بالليزر أو الفيلر تحت العين');
-          solutions.push('العلاج بالبوتوكس للخطوط حول العين');
-          solutions.push('استخدام كريمات تحتوي على كافيين');
-        }
-        
-        recommendations.push({
-          problem: `العيون - ${problems.join(' و ')}`,
-          severity: darkCirclesSeverity !== 'لا يوجد' ? darkCirclesSeverity : 'متوسط',
-          thumbnail: analysis.regions?.underEyes?.thumbnail || analysis.regions?.eyes?.thumbnail || analysis.originalImage,
-          solutions: solutions
-        });
-        addedRegions.add('eyes');
       }
+      
+      // إضافة علامات التعب
+      if (fatigueSigns) {
+        problems.push(`علامات التعب (${fatigueLevel})`);
+        solutions.push('تحسين جودة النوم');
+        solutions.push('تقليل التوتر والإجهاد');
+        solutions.push('ممارسة التمارين الرياضية بانتظام');
+      }
+      
+      // إضافة حلول إضافية حسب الشدة
+      if (darkCirclesSeverity === 'شديد' || darkCirclesSeverity === 'واضح') {
+        solutions.push('العلاج بالليزر أو الفيلر تحت العين');
+        solutions.push('العلاج بالبوتوكس للخطوط حول العين');
+        solutions.push('استخدام كريمات تحتوي على كافيين');
+      }
+      
+      // إضافة دائماً - لا نتحقق من الشروط
+      recommendations.push({
+        problem: `العيون - ${problems.join(' و ')}`,
+        severity: darkCirclesSeverity !== 'لا يوجد' ? darkCirclesSeverity : 'خفيف',
+        thumbnail: analysis.regions?.underEyes?.thumbnail || analysis.regions?.eyes?.thumbnail || analysis.originalImage,
+        solutions: solutions
+      });
+      addedRegions.add('eyes');
     }
     
     // تحليل الأنف - الحجم الكبير
