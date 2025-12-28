@@ -373,6 +373,25 @@ class SkinAnalysis extends Component {
     };
   };
 
+  // التحقق من حجم الأنف
+  checkNoseSize = (analysis) => {
+    // إذا كان هناك region للأنف و score منخفض، يعتبر كبير/ضخم
+    if (analysis.regionsData) {
+      const noseRegion = analysis.regionsData.find(r => r.id === 'nose');
+      // إذا كان score أقل من 75، يعتبر الأنف كبير/ضخم
+      if (noseRegion && noseRegion.score < 75) {
+        return true;
+      }
+    }
+    
+    // إذا كان هناك معلومات عن الأنف من facialProportions
+    if (analysis.facialProportions && analysis.facialProportions.personalityAnalysis) {
+      // يمكن إضافة تحليل إضافي هنا
+    }
+    
+    return false;
+  };
+
   // توليد توصيات لكل مشكلة مع صور مصغرة
   generateProblemRecommendations = (analysis) => {
     const recommendations = [];
@@ -380,8 +399,13 @@ class SkinAnalysis extends Component {
     // قائمة المناطق التي تمت إضافتها كمشاكل (لتجنب التكرار)
     const addedRegions = new Set();
     
-    // التحقق من المشاكل أولاً قبل إضافة المناطق العامة
+    // التحقق من مشاكل الأنف
+    const hasNoseProblems = this.checkNoseSize(analysis);
+    
+    // التحقق من الهالات السوداء
     const hasDarkCircles = analysis.skinProblems && analysis.skinProblems.darkCircles && analysis.skinProblems.darkCircles.present;
+    
+    // التحقق من مشاكل الفم
     const hasMouthProblems = analysis.mouth && (
       analysis.mouth.needsFiller || 
       analysis.mouth.size === 'صغير' || 
@@ -405,15 +429,21 @@ class SkinAnalysis extends Component {
         
         const arabicName = regionNames[region.id] || region.name;
         
-        // تخطي العيون إذا كانت هناك هالات سوداء (سيتم إضافتها لاحقاً)
-        if (region.id === 'eyes' && hasDarkCircles) {
-          addedRegions.add('eyes');
+        // تخطي الأنف إذا كان هناك مشاكل (سيتم إضافتها لاحقاً)
+        if (region.id === 'nose' && hasNoseProblems) {
+          addedRegions.add('nose');
           return;
         }
         
         // تخطي الفم إذا كان هناك مشاكل (سيتم إضافتها لاحقاً)
         if (region.id === 'mouth' && hasMouthProblems) {
           addedRegions.add('mouth');
+          return;
+        }
+        
+        // تخطي العيون إذا كانت هناك هالات سوداء (سيتم إضافتها لاحقاً)
+        if (region.id === 'eyes' && hasDarkCircles) {
+          addedRegions.add('eyes');
           return;
         }
         
@@ -492,10 +522,8 @@ class SkinAnalysis extends Component {
       });
     }
     
-    if (!analysis.skinProblems) return recommendations;
-    
-    // الهالات السوداء والتجويف - إضافة كمنطقة مشكلة (تأكد من عدم التكرار)
-    if (analysis.skinProblems.darkCircles && analysis.skinProblems.darkCircles.present && !addedRegions.has('eyes')) {
+    // الهالات السوداء والتجويف
+    if (hasDarkCircles && !addedRegions.has('eyes')) {
       const darkCirclesSeverity = analysis.skinProblems.darkCircles.severity || 'متوسط';
       const solutions = [
         'استخدام كريمات تحتوي على فيتامين C وريتينول',
@@ -520,6 +548,75 @@ class SkinAnalysis extends Component {
       });
       addedRegions.add('eyes');
     }
+    
+    // تحليل الأنف - الحجم الكبير
+    if (hasNoseProblems && !addedRegions.has('nose')) {
+      const solutions = [
+        'جراحة تجميل الأنف (Rhinoplasty) لتقليل حجم الأنف',
+        'استخدام مكياج لتقليل ظهور حجم الأنف',
+        'استخدام تقنيات Contouring لإخفاء حجم الأنف',
+        'استشارة أخصائي تجميل لتحديد أفضل خيار',
+        'العلاج بالخيوط لتقليل عرض الأنف (في بعض الحالات)',
+        'استخدام منتجات العناية بالبشرة لتقليص المسام حول الأنف'
+      ];
+      
+      recommendations.push({
+        problem: 'الأنف - الحجم الكبير/الضخم',
+        severity: 'متوسط',
+        thumbnail: analysis.regions?.nose?.thumbnail || analysis.originalImage,
+        solutions: solutions
+      });
+      addedRegions.add('nose');
+    }
+    
+    // تحليل الفم - السواد والكبر
+    if (hasMouthProblems && !addedRegions.has('mouth')) {
+      const mouthProblems = [];
+      const mouthSolutions = [];
+      
+      // تحليل السواد
+      if (analysis.mouth.darkness || (analysis.skinProblems && analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد')) {
+        mouthProblems.push('السواد');
+        mouthSolutions.push('استخدام كريمات تفتيح للشفاه');
+        mouthSolutions.push('تجنب التدخين');
+        mouthSolutions.push('استخدام واقي الشمس للشفاه');
+        mouthSolutions.push('ترطيب الشفاه بانتظام');
+      }
+      
+      // تحليل الكبر/الصغر
+      if (analysis.mouth.size) {
+        if (analysis.mouth.size === 'صغير' || analysis.mouth.needsFiller) {
+          mouthProblems.push('صغر الحجم');
+          mouthSolutions.push('استخدام فيلر للشفاه');
+          mouthSolutions.push('تمارين لتكبير الشفاه');
+          mouthSolutions.push('استخدام منتجات تكبير الشفاه');
+        } else if (analysis.mouth.size === 'كبير') {
+          mouthProblems.push('كبر الحجم');
+          mouthSolutions.push('استشارة أخصائي تجميل');
+          mouthSolutions.push('العلاج بالليزر لتقليل الحجم');
+        }
+      }
+      
+      // تحليل السماكة
+      if (analysis.mouth.thickness && parseFloat(analysis.mouth.thickness) < 0.3) {
+        mouthProblems.push('نحافة الشفاه');
+        mouthSolutions.push('استخدام فيلر للشفاه');
+        mouthSolutions.push('ترطيب الشفاه بانتظام');
+        mouthSolutions.push('استخدام منتجات تكثيف الشفاه');
+      }
+      
+      if (mouthProblems.length > 0) {
+        recommendations.push({
+          problem: `الفم - ${mouthProblems.join(' و ')}`,
+          severity: 'متوسط',
+          thumbnail: analysis.regions?.mouth?.thumbnail || analysis.originalImage,
+          solutions: mouthSolutions
+        });
+        addedRegions.add('mouth');
+      }
+    }
+    
+    if (!analysis.skinProblems) return recommendations;
     
     // حب الشباب
     if (analysis.skinProblems.acne && analysis.skinProblems.acne.active) {
@@ -590,62 +687,6 @@ class SkinAnalysis extends Component {
       });
     }
     
-    // تحليل الفم - السواد والكبر (تأكد من عدم التكرار)
-    if (analysis.mouth && !addedRegions.has('mouth')) {
-      const mouthProblems = [];
-      const mouthSolutions = [];
-      
-      // تحليل السواد
-      if (analysis.mouth.darkness || (analysis.skinProblems && analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد')) {
-        mouthProblems.push('السواد');
-        mouthSolutions.push('استخدام كريمات تفتيح للشفاه');
-        mouthSolutions.push('تجنب التدخين');
-        mouthSolutions.push('استخدام واقي الشمس للشفاه');
-        mouthSolutions.push('ترطيب الشفاه بانتظام');
-      }
-      
-      // تحليل الكبر/الصغر
-      if (analysis.mouth.size) {
-        if (analysis.mouth.size === 'صغير' || analysis.mouth.needsFiller) {
-          mouthProblems.push('صغر الحجم');
-          mouthSolutions.push('استخدام فيلر للشفاه');
-          mouthSolutions.push('تمارين لتكبير الشفاه');
-          mouthSolutions.push('استخدام منتجات تكبير الشفاه');
-        } else if (analysis.mouth.size === 'كبير') {
-          mouthProblems.push('كبر الحجم');
-          mouthSolutions.push('استشارة أخصائي تجميل');
-          mouthSolutions.push('العلاج بالليزر لتقليل الحجم');
-        }
-      }
-      
-      // تحليل السماكة
-      if (analysis.mouth.thickness && parseFloat(analysis.mouth.thickness) < 0.3) {
-        mouthProblems.push('نحافة الشفاه');
-        mouthSolutions.push('استخدام فيلر للشفاه');
-        mouthSolutions.push('ترطيب الشفاه بانتظام');
-        mouthSolutions.push('استخدام منتجات تكثيف الشفاه');
-      }
-      
-      if (mouthProblems.length > 0) {
-        recommendations.push({
-          problem: `الفم - ${mouthProblems.join(' و ')}`,
-          severity: 'متوسط',
-          thumbnail: analysis.regions?.mouth?.thumbnail || analysis.originalImage,
-          solutions: mouthSolutions
-        });
-        addedRegions.add('mouth');
-      } else if (analysis.mouth.size === 'متوسط' && !analysis.mouth.needsFiller) {
-        // إذا كان الفم ممتاز ولا توجد مشاكل
-        recommendations.push({
-          problem: 'الفم',
-          severity: 'ممتازة',
-          thumbnail: analysis.regions?.mouth?.thumbnail || analysis.originalImage,
-          solutions: [],
-          isExcellent: true
-        });
-        addedRegions.add('mouth');
-      }
-    }
     
     return recommendations;
   };
