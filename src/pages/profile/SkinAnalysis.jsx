@@ -350,7 +350,7 @@ class SkinAnalysis extends Component {
     }
     
     // تحليل المشاكل التي تجعل الوجه يبدو أصغر
-    if (analysis.advancedSkin && analysis.advancedSkin.hydration === 'طبيعي' || analysis.advancedSkin.hydration === 'جيد') {
+    if (analysis.advancedSkin && (analysis.advancedSkin.hydration === 'طبيعي' || analysis.advancedSkin.hydration === 'جيد')) {
       ageDifference -= 0.5;
     }
     
