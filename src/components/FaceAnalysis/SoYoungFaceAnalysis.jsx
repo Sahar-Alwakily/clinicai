@@ -1427,9 +1427,13 @@ class SoYoungFaceAnalysis extends Component {
       analysisProgress: 100
     });
     
-    // Call callback if provided
+    // Call callback if provided - pass results with fullAnalysis and regions
     if (this.props.onAnalysisComplete) {
-      this.props.onAnalysisComplete(results);
+      this.props.onAnalysisComplete({
+        ...results,
+        fullAnalysis: this.analysisData?.fullAnalysis,
+        image: this.analysisData?.image
+      });
     }
   };
 

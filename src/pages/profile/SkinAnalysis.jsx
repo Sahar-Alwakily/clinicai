@@ -172,13 +172,49 @@ class SkinAnalysis extends Component {
     }
   };
 
-  handleAnalysisComplete = (results) => {
+  handleAnalysisComplete = async (results) => {
     // Handle SoYoungFaceAnalysis results structure (has fullAnalysis property)
     let aiAnalysis;
+    let originalImage = null;
+    let regions = {};
     
     if (results && results.fullAnalysis) {
       // Convert SoYoungFaceAnalysis format to expected format
       const fullAnalysis = results.fullAnalysis;
+      
+      // Get original image and regions if available
+      if (results.regions && results.regions.length > 0) {
+        // Try to get image from first region thumbnail
+        originalImage = results.regions[0]?.thumbnail;
+        // Extract regions map
+        results.regions.forEach(region => {
+          if (region.thumbnail) {
+            regions[region.id] = {
+              thumbnail: region.thumbnail,
+              region: region.region
+            };
+          }
+        });
+      }
+      
+      // Extract underEyes region if dark circles are present
+      if (fullAnalysis.skinProblems && fullAnalysis.skinProblems.darkCircles && fullAnalysis.skinProblems.darkCircles.present) {
+        if (!regions.underEyes && results.regions) {
+          // Use eyes region for under eyes if available
+          const eyesRegion = results.regions.find(r => r.id === 'eyes');
+          if (eyesRegion && eyesRegion.thumbnail) {
+            regions.underEyes = {
+              thumbnail: eyesRegion.thumbnail,
+              region: eyesRegion.region
+            };
+          }
+        }
+      }
+      
+      // Store original image for fallback
+      if (results.overall && !originalImage) {
+        originalImage = this.analysisData?.image || results.overall.image;
+      }
       
       // Build aiAnalysis object in expected format
       aiAnalysis = {
@@ -213,6 +249,10 @@ class SkinAnalysis extends Component {
           goldenRatio: 75,
           faceShape: 'بيضاوي'
         },
+        
+        // Store regions for thumbnails
+        regions: regions,
+        originalImage: originalImage,
         
         // Default values for other required fields
         wrinkles: {
@@ -253,19 +293,184 @@ class SkinAnalysis extends Component {
       aiAnalysis = results;
     }
     
+    // Calculate age appearance analysis
+    const ageAppearanceAnalysis = this.calculateAgeAppearance(aiAnalysis);
+    
+    // Generate problem-specific recommendations with thumbnails
+    const problemRecommendations = this.generateProblemRecommendations(aiAnalysis);
+    
     const recommendations = this.generateRecommendations(aiAnalysis);
     
     this.setState({
       aiAnalysis: {
         ...aiAnalysis,
-        recommendations,
-        lastUpdate: new Date().toLocaleDateString('ar-SA', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })
+        ageAppearanceAnalysis,
+        problemRecommendations,
+        recommendations
       }
     });
+  };
+
+  // حساب تحليل مظهر العمر
+  calculateAgeAppearance = (analysis) => {
+    const detectedAge = analysis.age || 30;
+    let ageDifference = 0;
+    const factors = [];
+    
+    // تحليل المشاكل التي تجعل الوجه يبدو أكبر
+    if (analysis.skinProblems) {
+      if (analysis.skinProblems.wrinkles && analysis.skinProblems.wrinkles.total > 5) {
+        ageDifference += 2;
+        factors.push('التجاعيد');
+      }
+      
+      if (analysis.skinProblems.darkCircles && analysis.skinProblems.darkCircles.present) {
+        ageDifference += 1.5;
+        factors.push('الهالات السوداء');
+      }
+      
+      if (analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد') {
+        ageDifference += 1;
+        factors.push('التصبغات');
+      }
+      
+      if (analysis.wrinkles && analysis.wrinkles.severity === 'عالي') {
+        ageDifference += 2;
+        if (!factors.includes('التجاعيد')) factors.push('التجاعيد');
+      }
+      
+      if (analysis.sagging && analysis.sagging.severity === 'عالي') {
+        ageDifference += 1.5;
+        factors.push('الترهل');
+      }
+    }
+    
+    // تحليل المشاكل التي تجعل الوجه يبدو أصغر
+    if (analysis.advancedSkin && analysis.advancedSkin.hydration === 'طبيعي' || analysis.advancedSkin.hydration === 'جيد') {
+      ageDifference -= 0.5;
+    }
+    
+    const apparentAge = detectedAge + ageDifference;
+    const isOlder = apparentAge > detectedAge;
+    const isYounger = apparentAge < detectedAge;
+    
+    return {
+      detectedAge,
+      apparentAge: Math.round(apparentAge),
+      ageDifference: Math.round(ageDifference * 10) / 10,
+      isOlder,
+      isYounger,
+      factors,
+      description: isOlder 
+        ? `مظهر العمر المتوقع للبشرة: ${Math.round(apparentAge)} سنة (أكبر من عمرك الحقيقي بـ ${Math.round(ageDifference)} سنة). هذا بسبب: ${factors.join('، ')}.`
+        : isYounger
+        ? `مظهر العمر المتوقع للبشرة: ${Math.round(apparentAge)} سنة (أصغر من عمرك الحقيقي بـ ${Math.abs(Math.round(ageDifference))} سنة).`
+        : `مظهر العمر المتوقع للبشرة: ${detectedAge} سنة (متوافق مع عمرك الحقيقي).`
+    };
+  };
+
+  // توليد توصيات لكل مشكلة مع صور مصغرة
+  generateProblemRecommendations = (analysis) => {
+    const recommendations = [];
+    
+    if (!analysis.skinProblems) return recommendations;
+    
+    // الهالات السوداء والتجويف
+    if (analysis.skinProblems.darkCircles && analysis.skinProblems.darkCircles.present) {
+      const darkCirclesSeverity = analysis.skinProblems.darkCircles.severity || 'متوسط';
+      const solutions = [
+        'استخدام كريمات تحتوي على فيتامين C وريتينول',
+        'الحصول على قسط كافٍ من النوم (7-8 ساعات)',
+        'استخدام كريمات مرطبة خاصة بمنطقة تحت العين',
+        'تجنب فرك العينين',
+        'استخدام واقي الشمس يومياً'
+      ];
+      
+      // إضافة حلول إضافية حسب الشدة
+      if (darkCirclesSeverity === 'شديد' || darkCirclesSeverity === 'واضح') {
+        solutions.push('العلاج بالليزر أو الفيلر تحت العين');
+        solutions.push('العلاج بالبوتوكس للخطوط حول العين');
+        solutions.push('استخدام كريمات تحتوي على كافيين');
+      }
+      
+      recommendations.push({
+        problem: 'الهالات السوداء والتجويف',
+        severity: darkCirclesSeverity,
+        thumbnail: analysis.regions?.underEyes?.thumbnail || analysis.regions?.eyes?.thumbnail || analysis.originalImage,
+        solutions: solutions
+      });
+    }
+    
+    // حب الشباب
+    if (analysis.skinProblems.acne && analysis.skinProblems.acne.active) {
+      recommendations.push({
+        problem: 'حب الشباب',
+        severity: analysis.skinProblems.acne.severity || 'متوسط',
+        thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
+        solutions: [
+          'تنظيف البشرة مرتين يومياً بمنتج لطيف',
+          'استخدام منتجات تحتوي على ساليسيليك أسيد أو بنزويل بيروكسايد',
+          'تجنب لمس الوجه',
+          'استخدام منتجات خالية من الزيوت',
+          'تغيير أغطية الوسائد بانتظام',
+          'استشارة طبيب جلدية للعلاجات الطبية إذا كانت الحالة شديدة'
+        ]
+      });
+    }
+    
+    // التصبغات
+    if (analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد') {
+      recommendations.push({
+        problem: 'التصبغات والبقع الداكنة',
+        severity: analysis.skinProblems.pigmentation.level,
+        thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
+        solutions: [
+          'استخدام واقي الشمس SPF 50+ يومياً',
+          'استخدام منتجات تحتوي على فيتامين C أو نياسيناميد',
+          'تجنب التعرض المباشر لأشعة الشمس',
+          'استخدام كريمات تفتيح تحتوي على هيدروكينون (بوصفة طبية)',
+          'العلاج بالليزر أو التقشير الكيميائي',
+          'استخدام منتجات تحتوي على أحماض ألفا هيدروكسي'
+        ]
+      });
+    }
+    
+    // التجاعيد
+    if (analysis.wrinkles && (analysis.wrinkles.severity === 'عالي' || analysis.wrinkles.severity === 'متوسط')) {
+      recommendations.push({
+        problem: 'التجاعيد',
+        severity: analysis.wrinkles.severity,
+        thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
+        solutions: [
+          'استخدام كريمات مضادة للشيخوخة تحتوي على ريتينول',
+          'استخدام واقي الشمس SPF 50+ يومياً',
+          'ترطيب البشرة بانتظام',
+          'تجنب التدخين والتعرض للشمس',
+          'العلاج بالبوتوكس للخطوط الديناميكية',
+          'استخدام فيلر للخطوط الثابتة',
+          'العلاج بالليزر أو التقشير الكيميائي'
+        ]
+      });
+    }
+    
+    // الترهل
+    if (analysis.sagging && analysis.sagging.severity === 'عالي') {
+      recommendations.push({
+        problem: 'الترهل',
+        severity: analysis.sagging.severity,
+        thumbnail: analysis.regions?.skin?.thumbnail || analysis.originalImage,
+        solutions: [
+          'تمارين وجهية يومية',
+          'استخدام منتجات تحتوي على ببتيدات وكولاجين',
+          'العلاج بالخيوط (Thread Lift)',
+          'العلاج بالليزر أو الموجات الراديوية',
+          'شد الوجه الجراحي في الحالات المتقدمة',
+          'استخدام أجهزة شد الوجه المنزلية'
+        ]
+      });
+    }
+    
+    return recommendations;
   };
 
   generateRecommendations = (analysis) => {
@@ -384,455 +589,192 @@ class SkinAnalysis extends Component {
         <AnalysisCard>
             <SectionTitle>📊 نتائج التحليل</SectionTitle>
           
-          <AnalysisItem>
-              <div className="item-label">العمر المتوقع</div>
-              <div className="item-value">
-                {aiAnalysis.age} سنة
-                <span style={{ 
-                  display: 'inline-block',
-                    padding: '0.05rem 0.1rem',
-                    borderRadius: '0.1rem',
-                    fontSize: '0.14rem',
-                  fontWeight: 500,
-                  background: '#e3f2fd', 
-                  color: '#1565c0', 
-                  marginRight: '0.05rem' 
-                }}>
-                  {aiAnalysis.gender}
-                </span>
-              </div>
-            </AnalysisItem>
-
-            <AnalysisItem>
-              <div className="item-label">نوع البشرة</div>
-              <div className="item-value">
-                {aiAnalysis.skinType && aiAnalysis.skinType.type ? aiAnalysis.skinType.type : 
-                 aiAnalysis.advancedSkin && aiAnalysis.advancedSkin.type ? aiAnalysis.advancedSkin.type : 'غير محدد'}
-                {aiAnalysis.skinType && aiAnalysis.skinType.confidence > 0 && (
-                  <span style={{ fontSize: '0.14rem', color: '#718096', marginRight: '0.05rem' }}>
-                    ({aiAnalysis.skinType.confidence}% دقة)
-                </span>
-                )}
-              </div>
-            </AnalysisItem>
-
-            <AnalysisItem>
-              <div className="item-label">التجاعيد</div>
-              <div className="item-value">
-                <Badge type={this.getSeverityBadgeType(aiAnalysis.wrinkles.severity)}>
-                  {aiAnalysis.wrinkles.severity}
-                </Badge>
-              </div>
-              <ScoreBar score={aiAnalysis.wrinkles.score}>
-                <div className="score-fill" />
-                <div className="score-text">{aiAnalysis.wrinkles.score}%</div>
-              </ScoreBar>
-              <div className="item-description">
-                الجبهة: {aiAnalysis.wrinkles.forehead} | العينان: {aiAnalysis.wrinkles.eyes} | حول الفم: {aiAnalysis.wrinkles.mouth}
-            </div>
-          </AnalysisItem>
-          
-          <AnalysisItem>
-              <div className="item-label">الترهل</div>
-              <div className="item-value">
-                <Badge type={this.getSeverityBadgeType(aiAnalysis.sagging.severity)}>
-                  {aiAnalysis.sagging.severity}
-                </Badge>
-              </div>
-              <ScoreBar score={aiAnalysis.sagging.score}>
-                <div className="score-fill" />
-                <div className="score-text">{aiAnalysis.sagging.score}%</div>
-              </ScoreBar>
-            </AnalysisItem>
-
-            <AnalysisItem>
-              <div className="item-label">خطوط الوجه</div>
-              <div className="item-value">
-                <Badge type={this.getSeverityBadgeType(aiAnalysis.facialLines.severity)}>
-                  {aiAnalysis.facialLines.severity}
-                </Badge>
-              </div>
-              <div className="item-description">
-                خطوط الأنف-الشفاه: {aiAnalysis.facialLines.nasolabial} | 
-                خطوط ماريونيت: {aiAnalysis.facialLines.marionette} | 
-                خطوط الجبهة: {aiAnalysis.facialLines.forehead}
-              </div>
-            </AnalysisItem>
-
-            {aiAnalysis.eyebrows && (
+          {/* 1. شكل الوجه - أول شيء */}
+          {aiAnalysis.facialProportions && (
+            <>
+              <SectionTitle style={{ marginTop: '0.2rem' }}>👤 شكل الوجه</SectionTitle>
+              
               <AnalysisItem>
-                <div className="item-label">الحواجب</div>
-                <div className="item-value">
-                  <Badge type={aiAnalysis.eyebrows.needsCorrection ? 'warning' : 'success'}>
-                    {aiAnalysis.eyebrows.symmetry}
-                  </Badge>
-                  {aiAnalysis.eyebrows.needsCorrection && (
-                    <Badge type="danger" style={{ marginRight: '0.05rem' }}>
-                      تحتاج تصحيح
-                    </Badge>
-                  )}
-                </div>
-                <div className="item-description">
-                  الفرق في الارتفاع: {aiAnalysis.eyebrows.heightDifference}% | 
-                  النتيجة: {aiAnalysis.eyebrows.score}/100
+                <div className="item-label">شكل الوجه</div>
+                <div className="item-value" style={{ fontSize: '0.22rem', fontWeight: 700, color: '#667eea' }}>
+                  {aiAnalysis.facialProportions.faceShape}
                 </div>
               </AnalysisItem>
-            )}
+            </>
+          )}
 
-            {aiAnalysis.mouth && (
-              <AnalysisItem>
-                <div className="item-label">الفم</div>
-                <div className="item-value">
-                  الحجم: {aiAnalysis.mouth.size}
-                  {aiAnalysis.mouth.needsFiller && (
-                    <Badge type="warning" style={{ marginRight: '0.05rem' }}>
-                      يحتاج فيلر
-                    </Badge>
-                  )}
-                </div>
-                <div className="item-description">
-                  العرض: {aiAnalysis.mouth.width} | 
-                  الارتفاع: {aiAnalysis.mouth.height} | 
-                  السماكة: {aiAnalysis.mouth.thickness}
-                  {aiAnalysis.mouth.recommendation && (
-                    <div style={{ marginTop: '0.05rem', color: '#c62828', fontWeight: 500 }}>
-                      💡 {aiAnalysis.mouth.recommendation}
-                    </div>
-                  )}
-                </div>
-              </AnalysisItem>
-            )}
-
-            {/* التحليلات المتقدمة للجلد */}
-            {aiAnalysis.advancedSkin && (
-              <>
-                <SectionTitle style={{ marginTop: '0.2rem' }}>🔬 تحليل الجلد المتقدم</SectionTitle>
-                
-                <AnalysisItem>
-                  <div className="item-label">نوع البشرة</div>
-                  <div className="item-value">{aiAnalysis.advancedSkin.type}</div>
-                  <div className="item-description">
-                    الترطيب: {aiAnalysis.advancedSkin.hydration} | 
-                    الزهم: {aiAnalysis.advancedSkin.sebum} | 
-                    الملمس: {aiAnalysis.advancedSkin.texture} | 
-                    المسام: {aiAnalysis.advancedSkin.pores}
-                  </div>
-                </AnalysisItem>
-              </>
-            )}
-
-            {/* المشاكل الجلدية */}
-            {aiAnalysis.skinProblems && (
-              <>
-                <SectionTitle style={{ marginTop: '0.2rem' }}>⚠️ المشاكل الجلدية</SectionTitle>
-                
-                {aiAnalysis.skinProblems.acne && (
-                  <AnalysisItem>
-                    <div className="item-label">حب الشباب</div>
-                    <div className="item-value">
-                      {aiAnalysis.skinProblems.acne.active ? (
-                        <>
-                          <Badge type="danger">نشط</Badge>
-                          <Badge type={aiAnalysis.skinProblems.acne.severity === 'شديد' ? 'danger' : aiAnalysis.skinProblems.acne.severity === 'متوسط' ? 'warning' : 'success'} style={{ marginRight: '0.05rem' }}>
-                            {aiAnalysis.skinProblems.acne.severity}
-                          </Badge>
-                        </>
-                      ) : aiAnalysis.skinProblems.acne.scars ? (
-                        <Badge type="warning">آثار</Badge>
-                      ) : (
-                        <Badge type="success">لا يوجد</Badge>
-                      )}
-                    </div>
-                    {aiAnalysis.skinProblems.acne.active && (
-                      <>
-                        {aiAnalysis.skinProblems.acne.types && aiAnalysis.skinProblems.acne.types.length > 0 && (
-                          <div className="item-description">
-                            الأنواع: {aiAnalysis.skinProblems.acne.types.join('، ')}
-                          </div>
-                        )}
-                        {aiAnalysis.skinProblems.acne.location && (
-                          <div className="item-description">
-                            المواقع: 
-                            {aiAnalysis.skinProblems.acne.location.tzone && aiAnalysis.skinProblems.acne.location.tzone.present && (
-                              <span> T-zone ({aiAnalysis.skinProblems.acne.location.tzone.count})</span>
-                            )}
-                            {aiAnalysis.skinProblems.acne.location.cheeks && aiAnalysis.skinProblems.acne.location.cheeks.present && (
-                              <span> الخدود ({aiAnalysis.skinProblems.acne.location.cheeks.count})</span>
-                            )}
-                          </div>
-                        )}
-                        {aiAnalysis.skinProblems.acne.totalSpots && (
-                          <div className="item-description">
-                            العدد الإجمالي: {aiAnalysis.skinProblems.acne.totalSpots} بقعة
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </AnalysisItem>
-                )}
-
-                {/* التحليل الطبي لحب الشباب */}
-                {aiAnalysis.skinProblems.medicalAcne && aiAnalysis.skinProblems.medicalAcne.types && aiAnalysis.skinProblems.medicalAcne.types.length > 0 && (
-                  <AnalysisItem>
-                    <div className="item-label">التشخيص الطبي</div>
-                    <div style={{ marginTop: '0.08rem' }}>
-                      {aiAnalysis.skinProblems.medicalAcne.types.map((type, index) => (
-                        <div key={index} className="item-description" style={{ marginBottom: '0.08rem' }}>
-                          <strong>{type.arabicName}</strong> ({type.name})
-                          <div style={{ fontSize: '0.14rem', color: '#718096', marginTop: '0.03rem' }}>
-                            {type.description}
-                          </div>
-                          {type.severity && (
-                            <Badge type={type.severity === 'شديد' ? 'danger' : type.severity === 'متوسط' ? 'warning' : 'success'} style={{ marginTop: '0.03rem' }}>
-                              {type.severity}
-                            </Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {aiAnalysis.skinProblems.medicalAcne.recommendations && aiAnalysis.skinProblems.medicalAcne.recommendations.length > 0 && (
-                      <div className="item-description" style={{ marginTop: '0.1rem', padding: '0.1rem', background: '#fff3cd', borderRadius: '0.05rem' }}>
-                        <strong>التوصيات الطبية:</strong>
-                        {aiAnalysis.skinProblems.medicalAcne.recommendations.map((rec, index) => (
-                          <div key={index} style={{ marginTop: '0.05rem' }}>• {rec}</div>
-                        ))}
-                      </div>
-                    )}
-                  </AnalysisItem>
-                )}
-
-                {aiAnalysis.skinProblems.pigmentation && (
-                  <AnalysisItem>
-                    <div className="item-label">التصبغات</div>
-                    <div className="item-value">
-                      <Badge type={aiAnalysis.skinProblems.pigmentation.level === 'لا يوجد' ? 'success' : 'warning'}>
-                        {aiAnalysis.skinProblems.pigmentation.level}
-                      </Badge>
-                    </div>
-                    {aiAnalysis.skinProblems.pigmentation.types && aiAnalysis.skinProblems.pigmentation.types.length > 0 && (
-                      <div className="item-description">
-                        الأنواع: {aiAnalysis.skinProblems.pigmentation.types.join('، ')}
-                      </div>
-                    )}
-                  </AnalysisItem>
-                )}
-
-                {aiAnalysis.skinProblems.darkCircles && (
-                  <AnalysisItem>
-                    <div className="item-label">الهالات السوداء</div>
-                    <div className="item-value">
-                      {aiAnalysis.skinProblems.darkCircles.present ? (
-                        <Badge type="warning">موجودة ({aiAnalysis.skinProblems.darkCircles.severity})</Badge>
-                      ) : (
-                        <Badge type="success">غير موجودة</Badge>
-                      )}
-                    </div>
-                  </AnalysisItem>
-                )}
-
-                {aiAnalysis.skinProblems.wrinkles && (
-                  <AnalysisItem>
-                    <div className="item-label">التجاعيد التفصيلية</div>
-                    <div className="item-description">
-                      الجبهة: {aiAnalysis.skinProblems.wrinkles.forehead} | 
-                      العينان: {aiAnalysis.skinProblems.wrinkles.eyes} | 
-                      الفم: {aiAnalysis.skinProblems.wrinkles.mouth} | 
-                      المجموع: {aiAnalysis.skinProblems.wrinkles.total}
-                    </div>
-                  </AnalysisItem>
-                )}
-              </>
-            )}
-
-            {/* نسب الوجه */}
-            {aiAnalysis.facialProportions && (
-              <>
-                <SectionTitle style={{ marginTop: '0.2rem' }}>📐 نسب الوجه</SectionTitle>
-                
-                <AnalysisItem>
-                  <div className="item-label">التناسق</div>
-                  <div className="item-value">{aiAnalysis.facialProportions.symmetry}%</div>
-                  <ScoreBar score={aiAnalysis.facialProportions.symmetry}>
-                    <div className="score-fill" />
-                    <div className="score-text">{aiAnalysis.facialProportions.symmetry}%</div>
-                  </ScoreBar>
-                </AnalysisItem>
-
-                <AnalysisItem>
-                  <div className="item-label">النسبة الذهبية</div>
-                  <div className="item-value">{aiAnalysis.facialProportions.goldenRatio}%</div>
-                  <ScoreBar score={aiAnalysis.facialProportions.goldenRatio}>
-                    <div className="score-fill" />
-                    <div className="score-text">{aiAnalysis.facialProportions.goldenRatio}%</div>
-                  </ScoreBar>
-                </AnalysisItem>
-
+          {/* 2. تحليل الشخصية والانطباع */}
+          {aiAnalysis.facialProportions && aiAnalysis.facialProportions.personalityAnalysis && (
+            <>
+              <SectionTitle style={{ marginTop: '0.2rem' }}>🧠 تحليل الشخصية والانطباع</SectionTitle>
+              
+              {aiAnalysis.facialProportions.personalityAnalysis.faceShapeDescription && (
                 <AnalysisItem>
                   <div className="item-label">شكل الوجه</div>
-                  <div className="item-value">{aiAnalysis.facialProportions.faceShape}</div>
+                  <div className="item-description" style={{ 
+                    fontSize: '0.16rem', 
+                    lineHeight: '1.6',
+                    color: '#4a5568',
+                    marginTop: '0.08rem'
+                  }}>
+                    {aiAnalysis.facialProportions.personalityAnalysis.faceShapeDescription}
+                  </div>
                 </AnalysisItem>
-              </>
-            )}
+              )}
 
-            {/* تحليل الشخصية */}
-            {aiAnalysis.facialProportions && aiAnalysis.facialProportions.personalityAnalysis && (
-              <>
-                <SectionTitle style={{ marginTop: '0.2rem' }}>🧠 تحليل الشخصية والانطباع</SectionTitle>
-                
-                {aiAnalysis.facialProportions.personalityAnalysis.faceShapeDescription && (
-                  <AnalysisItem>
-                    <div className="item-label">شكل الوجه</div>
-                    <div className="item-description" style={{ 
-                      fontSize: '0.16rem', 
-                      lineHeight: '1.6',
-                      color: '#4a5568',
-                      marginTop: '0.08rem'
-                    }}>
-                      {aiAnalysis.facialProportions.personalityAnalysis.faceShapeDescription}
-                    </div>
-                  </AnalysisItem>
-                )}
+              {aiAnalysis.facialProportions.personalityAnalysis.ageAppearance && (
+                <AnalysisItem>
+                  <div className="item-label">مظهر العمر</div>
+                  <div className="item-description" style={{ 
+                    fontSize: '0.16rem', 
+                    lineHeight: '1.6',
+                    color: '#4a5568',
+                    marginTop: '0.08rem'
+                  }}>
+                    {aiAnalysis.facialProportions.personalityAnalysis.ageAppearance}
+                  </div>
+                </AnalysisItem>
+              )}
 
-                {aiAnalysis.facialProportions.personalityAnalysis.ageAppearance && (
-                  <AnalysisItem>
-                    <div className="item-label">مظهر العمر</div>
-                    <div className="item-description" style={{ 
-                      fontSize: '0.16rem', 
-                      lineHeight: '1.6',
-                      color: '#4a5568',
-                      marginTop: '0.08rem'
-                    }}>
-                      {aiAnalysis.facialProportions.personalityAnalysis.ageAppearance}
-                    </div>
-                  </AnalysisItem>
-                )}
+              {aiAnalysis.facialProportions.personalityAnalysis.intelligence && (
+                <AnalysisItem>
+                  <div className="item-label">الذكاء</div>
+                  <div className="item-description" style={{ 
+                    fontSize: '0.16rem', 
+                    lineHeight: '1.6',
+                    color: '#4a5568',
+                    marginTop: '0.08rem'
+                  }}>
+                    {aiAnalysis.facialProportions.personalityAnalysis.intelligence}
+                  </div>
+                </AnalysisItem>
+              )}
 
-                {aiAnalysis.facialProportions.personalityAnalysis.intelligence && (
-                  <AnalysisItem>
-                    <div className="item-label">الذكاء</div>
-                    <div className="item-description" style={{ 
-                      fontSize: '0.16rem', 
-                      lineHeight: '1.6',
-                      color: '#4a5568',
-                      marginTop: '0.08rem'
-                    }}>
-                      {aiAnalysis.facialProportions.personalityAnalysis.intelligence}
-                    </div>
-                  </AnalysisItem>
-                )}
+              {aiAnalysis.facialProportions.personalityAnalysis.distance && (
+                <AnalysisItem>
+                  <div className="item-label">المسافة والانطباع</div>
+                  <div className="item-description" style={{ 
+                    fontSize: '0.16rem', 
+                    lineHeight: '1.6',
+                    color: '#4a5568',
+                    marginTop: '0.08rem'
+                  }}>
+                    {aiAnalysis.facialProportions.personalityAnalysis.distance}
+                  </div>
+                </AnalysisItem>
+              )}
+            </>
+          )}
 
-                {aiAnalysis.facialProportions.personalityAnalysis.distance && (
-                  <AnalysisItem>
-                    <div className="item-label">المسافة والانطباع</div>
-                    <div className="item-description" style={{ 
-                      fontSize: '0.16rem', 
-                      lineHeight: '1.6',
-                      color: '#4a5568',
-                      marginTop: '0.08rem'
-                    }}>
-                      {aiAnalysis.facialProportions.personalityAnalysis.distance}
-                    </div>
-                  </AnalysisItem>
-                )}
-              </>
-            )}
-
-            {/* المناطق المحددة */}
-            {aiAnalysis.specificRegions && (
-              <>
-                <SectionTitle style={{ marginTop: '0.2rem' }}>📍 المناطق المحددة</SectionTitle>
-                
-                {aiAnalysis.specificRegions.tzone && (
-                  <AnalysisItem>
-                    <div className="item-label">منطقة T-zone</div>
-                    <div className="item-description">
-                      الزهم: {aiAnalysis.specificRegions.tzone.sebum} | 
-                      المسام: {aiAnalysis.specificRegions.tzone.pores} | 
-                      الحالة: {aiAnalysis.specificRegions.tzone.condition}
-                    </div>
-                  </AnalysisItem>
-                )}
-
-                {aiAnalysis.specificRegions.underEyes && (
-                  <AnalysisItem>
-                    <div className="item-label">تحت العينين</div>
-                    <div className="item-description">
-                      الهالات: {aiAnalysis.specificRegions.underEyes.darkCircles} | 
-                      التجاعيد: {aiAnalysis.specificRegions.underEyes.wrinkles} | 
-                      الترطيب: {aiAnalysis.specificRegions.underEyes.hydration}
-                    </div>
-                  </AnalysisItem>
-                )}
-
-                {aiAnalysis.specificRegions.cheeks && (
-                  <AnalysisItem>
-                    <div className="item-label">الخدود</div>
-                    <div className="item-description">
-                      الملمس: {aiAnalysis.specificRegions.cheeks.texture} | 
-                      الترطيب: {aiAnalysis.specificRegions.cheeks.hydration} | 
-                      الحالة: {aiAnalysis.specificRegions.cheeks.condition}
-                    </div>
-                  </AnalysisItem>
-                )}
-
-                {aiAnalysis.specificRegions.lips && (
-                  <AnalysisItem>
-                    <div className="item-label">الشفاه</div>
-                    <div className="item-description">
-                      الحجم: {aiAnalysis.specificRegions.lips.size} | 
-                      الحالة: {aiAnalysis.specificRegions.lips.condition}
-                    </div>
-                  </AnalysisItem>
-                )}
-
-                {aiAnalysis.specificRegions.neck && (
-                  <AnalysisItem>
-                    <div className="item-label">الرقبة</div>
-                    <div className="item-description">
-                      الوضوح: {aiAnalysis.specificRegions.neck.definition} | 
-                      الحالة: {aiAnalysis.specificRegions.neck.condition}
-                    </div>
-                  </AnalysisItem>
-                )}
-              </>
-            )}
-
-            {/* العلاجات المقترحة */}
-            {aiAnalysis.treatments && aiAnalysis.treatments.length > 0 && (
-              <>
-                <SectionTitle style={{ marginTop: '0.2rem' }}>💊 العلاجات المقترحة</SectionTitle>
-                {aiAnalysis.treatments.map((treatment, index) => (
-                  <AnalysisItem key={index}>
-                    <div className="item-label">
-                      {treatment.name}
-                      <Badge 
-                        type={treatment.priority === 'عالٍ' ? 'danger' : treatment.priority === 'متوسط' ? 'warning' : 'success'}
-                        style={{ marginRight: '0.05rem' }}
-                      >
-                        {treatment.priority}
-                      </Badge>
-                    </div>
-                    <div className="item-description">{treatment.description}</div>
-                  </AnalysisItem>
-                ))}
-              </>
-            )}
-
-            <AnalysisItem>
-              <div className="item-label">التوصيات العامة</div>
-            <div style={{ marginTop: '0.08rem' }}>
-                {aiAnalysis.recommendations && aiAnalysis.recommendations.map((rec, index) => (
-                <div key={index} className="item-description" style={{ marginBottom: '0.05rem' }}>
-                  • {rec}
+          {/* 3. العمر المتوقع للبشرة */}
+          {aiAnalysis.ageAppearanceAnalysis && (
+            <>
+              <SectionTitle style={{ marginTop: '0.2rem' }}>⏰ العمر المتوقع للبشرة</SectionTitle>
+              
+              <AnalysisItem>
+                <div className="item-label">العمر المتوقع</div>
+                <div className="item-value">
+                  {aiAnalysis.ageAppearanceAnalysis.apparentAge} سنة
+                  {aiAnalysis.ageAppearanceAnalysis.isOlder && (
+                    <Badge type="warning" style={{ marginRight: '0.05rem' }}>
+                      أكبر بـ {Math.abs(aiAnalysis.ageAppearanceAnalysis.ageDifference)} سنة
+                    </Badge>
+                  )}
+                  {aiAnalysis.ageAppearanceAnalysis.isYounger && (
+                    <Badge type="success" style={{ marginRight: '0.05rem' }}>
+                      أصغر بـ {Math.abs(aiAnalysis.ageAppearanceAnalysis.ageDifference)} سنة
+                    </Badge>
+                  )}
                 </div>
+                <div className="item-description" style={{ 
+                  fontSize: '0.16rem', 
+                  lineHeight: '1.6',
+                  color: '#4a5568',
+                  marginTop: '0.08rem'
+                }}>
+                  {aiAnalysis.ageAppearanceAnalysis.description}
+                </div>
+              </AnalysisItem>
+            </>
+          )}
+
+
+          {/* 4. المشاكل الجلدية مع الصور المصغرة والتوصيات */}
+          {aiAnalysis.problemRecommendations && aiAnalysis.problemRecommendations.length > 0 && (
+            <>
+              <SectionTitle style={{ marginTop: '0.2rem' }}>⚠️ للمشاكل الوجه نوصي الحلول</SectionTitle>
+              
+              {aiAnalysis.problemRecommendations.map((problem, index) => (
+                <AnalysisItem key={index} style={{ 
+                  background: 'rgba(255, 243, 205, 0.3)',
+                  borderRadius: '0.1rem',
+                  padding: '0.15rem',
+                  marginBottom: '0.15rem'
+                }}>
+                  <div style={{ display: 'flex', gap: '0.15rem', alignItems: 'flex-start' }}>
+                    {/* صورة مصغرة */}
+                    {problem.thumbnail && (
+                      <div style={{
+                        width: '1rem',
+                        height: '1rem',
+                        borderRadius: '0.08rem',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '2px solid #667eea'
+                      }}>
+                        <img 
+                          src={problem.thumbnail} 
+                          alt={problem.problem}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* معلومات المشكلة والحلول */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.1rem', marginBottom: '0.08rem' }}>
+                        <div className="item-label" style={{ margin: 0, fontSize: '0.18rem', fontWeight: 700 }}>
+                          {problem.problem}
+                        </div>
+                        <Badge type={problem.severity === 'شديد' || problem.severity === 'عالي' ? 'danger' : 'warning'}>
+                          {problem.severity}
+                        </Badge>
+                      </div>
+                      
+                      {/* الحلول */}
+                      <div style={{ marginTop: '0.1rem' }}>
+                        <div style={{ 
+                          fontSize: '0.15rem', 
+                          fontWeight: 600, 
+                          color: '#667eea',
+                          marginBottom: '0.08rem'
+                        }}>
+                          الحلول المقترحة:
+                        </div>
+                        <div style={{ 
+                          padding: '0.1rem',
+                          background: 'rgba(255, 255, 255, 0.8)',
+                          borderRadius: '0.08rem',
+                          fontSize: '0.14rem',
+                          lineHeight: '1.6'
+                        }}>
+                          {problem.solutions.map((solution, solIndex) => (
+                            <div key={solIndex} style={{ marginBottom: '0.05rem', color: '#4a5568' }}>
+                              • {solution}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </AnalysisItem>
               ))}
-            </div>
-          </AnalysisItem>
-          
-          <AnalysisItem>
-              <div className="item-label">تاريخ التحليل</div>
-              <div className="item-value">{aiAnalysis.lastUpdate}</div>
-          </AnalysisItem>
+            </>
+          )}
         </AnalysisCard>
         )}
 
