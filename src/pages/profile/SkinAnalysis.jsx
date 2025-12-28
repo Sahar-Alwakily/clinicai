@@ -197,6 +197,9 @@ class SkinAnalysis extends Component {
         });
       }
       
+      // Store regions data for problem recommendations
+      const regionsData = results.regions || [];
+      
       // Extract underEyes region if dark circles are present
       if (fullAnalysis.skinProblems && fullAnalysis.skinProblems.darkCircles && fullAnalysis.skinProblems.darkCircles.present) {
         if (!regions.underEyes && results.regions) {
@@ -253,6 +256,7 @@ class SkinAnalysis extends Component {
         // Store regions for thumbnails
         regions: regions,
         originalImage: originalImage,
+        regionsData: regionsData, // Store full regions data for recommendations
         
         // Default values for other required fields
         wrinkles: {
@@ -373,6 +377,93 @@ class SkinAnalysis extends Component {
   generateProblemRecommendations = (analysis) => {
     const recommendations = [];
     
+    // إضافة جميع المناطق من results.regions
+    if (analysis.regionsData && analysis.regionsData.length > 0) {
+      analysis.regionsData.forEach(region => {
+        const regionNames = {
+          'eyes': 'العيون',
+          'nose': 'الأنف',
+          'mouth': 'الفم',
+          'jawline': 'خط الفك',
+          'cheeks': 'الخدود',
+          'skin': 'البشرة'
+        };
+        
+        const arabicName = regionNames[region.id] || region.name;
+        
+        // إذا كانت المنطقة ممتازة (score >= 80)، فقط اكتب أنها بحالة ممتازة
+        if (region.score >= 80) {
+          recommendations.push({
+            problem: arabicName,
+            severity: 'ممتازة',
+            thumbnail: region.thumbnail,
+            solutions: [],
+            isExcellent: true
+          });
+        } else {
+          // إذا لم تكن ممتازة، أضف حلول حسب نوع المنطقة
+          let solutions = [];
+          
+          if (region.id === 'eyes') {
+            solutions = [
+              'استخدام كريمات مرطبة خاصة بمنطقة العين',
+              'الحصول على قسط كافٍ من النوم',
+              'استخدام واقي الشمس حول العين',
+              'تجنب فرك العينين',
+              'استخدام منتجات تحتوي على فيتامين C'
+            ];
+          } else if (region.id === 'nose') {
+            solutions = [
+              'تنظيف الأنف بلطف',
+              'استخدام منتجات لتقليص المسام',
+              'تجنب لمس الأنف',
+              'استخدام واقي الشمس',
+              'ترطيب منطقة الأنف'
+            ];
+          } else if (region.id === 'mouth') {
+            solutions = [
+              'ترطيب الشفاه بانتظام',
+              'استخدام مرطب شفاه يحتوي على SPF',
+              'تجنب لعق الشفاه',
+              'شرب الماء بكميات كافية',
+              'استخدام فيلر للشفاه إذا لزم الأمر'
+            ];
+          } else if (region.id === 'jawline') {
+            solutions = [
+              'تمارين وجهية لتقوية خط الفك',
+              'استخدام منتجات رفع وتقوية',
+              'العلاج بالخيوط (Thread Lift)',
+              'العلاج بالليزر أو الموجات الراديوية',
+              'شد الوجه الجراحي في الحالات المتقدمة'
+            ];
+          } else if (region.id === 'cheeks') {
+            solutions = [
+              'ترطيب الخدود بانتظام',
+              'استخدام منتجات تحتوي على فيتامين C',
+              'تجنب التعرض المباشر لأشعة الشمس',
+              'استخدام واقي الشمس',
+              'العلاج بالفيلر للخدود إذا لزم الأمر'
+            ];
+          } else if (region.id === 'skin') {
+            solutions = [
+              'تنظيف البشرة مرتين يومياً',
+              'استخدام واقي الشمس SPF 50+',
+              'ترطيب البشرة بانتظام',
+              'تجنب التدخين والتعرض للشمس',
+              'استخدام منتجات مضادة للشيخوخة'
+            ];
+          }
+          
+          recommendations.push({
+            problem: arabicName,
+            severity: region.score >= 60 ? 'جيدة' : 'تحتاج تحسين',
+            thumbnail: region.thumbnail,
+            solutions: solutions
+          });
+        }
+      });
+    }
+    
     if (!analysis.skinProblems) return recommendations;
     
     // الهالات السوداء والتجويف
@@ -468,6 +559,61 @@ class SkinAnalysis extends Component {
           'استخدام أجهزة شد الوجه المنزلية'
         ]
       });
+    }
+    
+    // تحليل الفم - السواد والكبر
+    if (analysis.mouth) {
+      const mouthProblems = [];
+      const mouthSolutions = [];
+      
+      // تحليل السواد
+      if (analysis.mouth.darkness || (analysis.skinProblems && analysis.skinProblems.pigmentation && analysis.skinProblems.pigmentation.level !== 'لا يوجد')) {
+        mouthProblems.push('السواد');
+        mouthSolutions.push('استخدام كريمات تفتيح للشفاه');
+        mouthSolutions.push('تجنب التدخين');
+        mouthSolutions.push('استخدام واقي الشمس للشفاه');
+        mouthSolutions.push('ترطيب الشفاه بانتظام');
+      }
+      
+      // تحليل الكبر/الصغر
+      if (analysis.mouth.size) {
+        if (analysis.mouth.size === 'صغير' || analysis.mouth.needsFiller) {
+          mouthProblems.push('صغر الحجم');
+          mouthSolutions.push('استخدام فيلر للشفاه');
+          mouthSolutions.push('تمارين لتكبير الشفاه');
+          mouthSolutions.push('استخدام منتجات تكبير الشفاه');
+        } else if (analysis.mouth.size === 'كبير') {
+          mouthProblems.push('كبر الحجم');
+          mouthSolutions.push('استشارة أخصائي تجميل');
+          mouthSolutions.push('العلاج بالليزر لتقليل الحجم');
+        }
+      }
+      
+      // تحليل السماكة
+      if (analysis.mouth.thickness && parseFloat(analysis.mouth.thickness) < 0.3) {
+        mouthProblems.push('نحافة الشفاه');
+        mouthSolutions.push('استخدام فيلر للشفاه');
+        mouthSolutions.push('ترطيب الشفاه بانتظام');
+        mouthSolutions.push('استخدام منتجات تكثيف الشفاه');
+      }
+      
+      if (mouthProblems.length > 0) {
+        recommendations.push({
+          problem: `الفم - ${mouthProblems.join(' و ')}`,
+          severity: 'متوسط',
+          thumbnail: analysis.regions?.mouth?.thumbnail || analysis.originalImage,
+          solutions: mouthSolutions
+        });
+      } else if (analysis.mouth.size === 'متوسط' && !analysis.mouth.needsFiller) {
+        // إذا كان الفم ممتاز
+        recommendations.push({
+          problem: 'الفم',
+          severity: 'ممتازة',
+          thumbnail: analysis.regions?.mouth?.thumbnail || analysis.originalImage,
+          solutions: [],
+          isExcellent: true
+        });
+      }
     }
     
     return recommendations;
@@ -746,29 +892,44 @@ class SkinAnalysis extends Component {
                       </div>
                       
                       {/* الحلول */}
-                      <div style={{ marginTop: '0.1rem' }}>
+                      {problem.isExcellent ? (
                         <div style={{ 
-                          fontSize: '0.15rem', 
-                          fontWeight: 600, 
-                          color: '#667eea',
-                          marginBottom: '0.08rem'
-                        }}>
-                          الحلول المقترحة:
-                        </div>
-                        <div style={{ 
+                          marginTop: '0.1rem',
                           padding: '0.1rem',
-                          background: 'rgba(255, 255, 255, 0.8)',
+                          background: 'rgba(72, 187, 120, 0.2)',
                           borderRadius: '0.08rem',
                           fontSize: '0.14rem',
-                          lineHeight: '1.6'
+                          color: '#2f855a',
+                          fontWeight: 600,
+                          textAlign: 'center'
                         }}>
-                          {problem.solutions.map((solution, solIndex) => (
-                            <div key={solIndex} style={{ marginBottom: '0.05rem', color: '#4a5568' }}>
-                              • {solution}
-                            </div>
-                          ))}
+                          ✓ الحالة ممتازة
                         </div>
-                      </div>
+                      ) : problem.solutions && problem.solutions.length > 0 ? (
+                        <div style={{ marginTop: '0.1rem' }}>
+                          <div style={{ 
+                            fontSize: '0.15rem', 
+                            fontWeight: 600, 
+                            color: '#667eea',
+                            marginBottom: '0.08rem'
+                          }}>
+                            الحلول المقترحة:
+                          </div>
+                          <div style={{ 
+                            padding: '0.1rem',
+                            background: 'rgba(255, 255, 255, 0.8)',
+                            borderRadius: '0.08rem',
+                            fontSize: '0.14rem',
+                            lineHeight: '1.6'
+                          }}>
+                            {problem.solutions.map((solution, solIndex) => (
+                              <div key={solIndex} style={{ marginBottom: '0.05rem', color: '#4a5568' }}>
+                                • {solution}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </AnalysisItem>

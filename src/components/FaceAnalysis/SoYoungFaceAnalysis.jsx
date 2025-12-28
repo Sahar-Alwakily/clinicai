@@ -1906,56 +1906,10 @@ class SoYoungFaceAnalysis extends Component {
 
   /**
    * Render Page 3: Results
+   * Disabled - results are now shown in SkinAnalysis component
    */
   renderResultsPage = () => {
-    const { analysisResults } = this.state;
-    
-    if (!analysisResults) return null;
-    
-    return (
-      <PageWrapper active={this.state.currentPage === 'results'} enter={this.state.pageEnter}>
-        <ResultsPageContainer>
-          <ResultsHeader>
-            <BackButton onClick={this.handleBack}>×</BackButton>
-            <h1>Analysis Results</h1>
-            <p>
-              Overall Score: {analysisResults.overall.score}/100
-              {analysisResults.overall.age && (
-                <span style={{ marginRight: '0.2rem' }}>
-                  • Age: {analysisResults.overall.age}
-                  {analysisResults.overall.gender && ` (${analysisResults.overall.gender})`}
-                </span>
-              )}
-            </p>
-          </ResultsHeader>
-          
-          <ResultsGrid>
-            {analysisResults.regions.map((region, index) => (
-              <ResultCard 
-                key={region.id}
-                delay={index * 0.1}
-                onClick={() => {
-                  if (this.props.onRegionClick) {
-                    this.props.onRegionClick(region);
-                  }
-                }}
-              >
-                <CardImage gradient={region.gradient}>
-                  <img src={region.thumbnail} alt={region.name} />
-                </CardImage>
-                <CardContent>
-                  <h3>
-                    {region.icon} {region.name}
-                    <ScoreBadge score={region.score}>{region.score}</ScoreBadge>
-                  </h3>
-                  <p>{region.description}</p>
-                </CardContent>
-              </ResultCard>
-            ))}
-          </ResultsGrid>
-        </ResultsPageContainer>
-      </PageWrapper>
-    );
+    return null; // Results are now displayed in SkinAnalysis component
   };
 
   render() {
