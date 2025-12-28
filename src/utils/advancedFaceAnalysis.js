@@ -779,22 +779,71 @@ function calculateGoldenRatio(positions) {
 }
 
 function determineFaceShape(positions) {
-  const jawline = positions.slice(0, 17);
-  const foreheadWidth = Math.abs(positions[16].x - positions[0].x);
-  const jawWidth = Math.abs(jawline[8].x - jawline[8].x);
-  const faceLength = Math.abs(positions[8].y - positions[27].y);
+  if (!positions || positions.length < 68) {
+    return 'بيضاوي'; // Default
+  }
 
-  const jawlineWidth = Math.abs(jawline[Math.floor(jawline.length / 4)].x - jawline[Math.floor(jawline.length * 3 / 4)].x);
-  
-  if (foreheadWidth > jawlineWidth * 1.2) {
+  // النقاط الرئيسية
+  const chin = positions[8];        // الذقن (النقطة 8)
+  const foreheadLeft = positions[0];  // الجانب الأيسر من الجبهة
+  const foreheadRight = positions[16]; // الجانب الأيمن من الجبهة
+  const cheekLeft = positions[4];     // الخد الأيسر
+  const cheekRight = positions[12];    // الخد الأيمن
+  const jawLeft = positions[2];        // الفك الأيسر
+  const jawRight = positions[14];     // الفك الأيمن
+  const noseTop = positions[27];        // أعلى الأنف (بداية الجبهة)
+
+  // حساب القياسات
+  const foreheadWidth = Math.abs(foreheadRight.x - foreheadLeft.x);
+  const cheekWidth = Math.abs(cheekRight.x - cheekLeft.x);
+  const jawWidth = Math.abs(jawRight.x - jawLeft.x);
+  const faceLength = Math.abs(chin.y - noseTop.y);
+  const faceWidth = Math.max(foreheadWidth, cheekWidth, jawWidth);
+
+  // حساب النسب
+  const foreheadToJawRatio = foreheadWidth / jawWidth;
+  const cheekToForeheadRatio = cheekWidth / foreheadWidth;
+  const cheekToJawRatio = cheekWidth / jawWidth;
+  const lengthToWidthRatio = faceLength / faceWidth;
+
+  // تحديد شكل الوجه بناءً على النسب
+  // قلب (Heart): الجبهة أوسع بكثير من الفك، والخدود متوسطة
+  if (foreheadToJawRatio > 1.15 && cheekToForeheadRatio < 0.95) {
     return 'قلب';
-  } else if (jawlineWidth > foreheadWidth * 1.1) {
+  }
+  
+  // ماس (Diamond): الخدود أوسع من الجبهة والفك
+  if (cheekToForeheadRatio > 1.1 && cheekToJawRatio > 1.1) {
+    return 'ماس';
+  }
+  
+  // مثلث (Triangle): الفك أوسع من الجبهة
+  if (foreheadToJawRatio < 0.85) {
+    return 'مثلث';
+  }
+  
+  // مربع (Square): الجبهة والفك متساويان تقريباً، والوجه قصير نسبياً
+  if (foreheadToJawRatio >= 0.9 && foreheadToJawRatio <= 1.1 && lengthToWidthRatio < 1.3) {
     return 'مربع';
-  } else if (faceLength / foreheadWidth > 1.5) {
-    return 'بيضاوي';
-  } else {
+  }
+  
+  // دائري (Round): الجبهة والفك متساويان، والوجه قصير نسبياً
+  if (foreheadToJawRatio >= 0.9 && foreheadToJawRatio <= 1.1 && lengthToWidthRatio >= 1.3 && lengthToWidthRatio < 1.5) {
     return 'دائري';
   }
+  
+  // مستطيل (Rectangle/Oblong): الجبهة والفك متساويان، والوجه طويل جداً
+  if (foreheadToJawRatio >= 0.9 && foreheadToJawRatio <= 1.1 && lengthToWidthRatio > 1.5) {
+    return 'مستطيل';
+  }
+  
+  // بيضاوي (Oval): الجبهة والفك متساويان تقريباً، والوجه طويل نسبياً (الأكثر شيوعاً)
+  if (foreheadToJawRatio >= 0.9 && foreheadToJawRatio <= 1.1 && lengthToWidthRatio >= 1.5) {
+    return 'بيضاوي';
+  }
+  
+  // Default: بيضاوي
+  return 'بيضاوي';
 }
 
 function calculateJawAngle(positions) {
