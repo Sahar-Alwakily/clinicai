@@ -823,39 +823,142 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
     
     console.log("🔧 تم ضبط المودل - Scale:", scale, "Position:", scene.position);
     
-    // التأكد من أن المواد مرئية
+    // التأكد من أن المواد مرئية وإصلاحها
     scene.traverse((child) => {
       if (child.isMesh) {
+        // التأكد من أن mesh مرئي
+        child.visible = true;
+        child.frustumCulled = false; // تعطيل frustum culling
+        
         if (child.material) {
-          // التأكد من أن المادة مرئية
-          child.material.visible = true;
-          child.material.transparent = false;
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
           
-          // إذا كانت المادة بدون texture، أضف لون
-          if (!child.material.map && !child.material.color) {
-            child.material.color = new THREE.Color(0xcccccc);
-          }
-          
-          // إذا كانت المادة شفافة، أضف opacity
-          if (child.material.transparent && child.material.opacity === 0) {
-            child.material.opacity = 1;
-            child.material.transparent = false;
-          }
-          
-          console.log(`🎨 Material for ${child.name}:`, {
-            visible: child.material.visible,
-            transparent: child.material.transparent,
-            opacity: child.material.opacity,
-            color: child.material.color,
-            hasMap: !!child.material.map
+          materials.forEach((mat, index) => {
+            // إنشاء مادة جديدة إذا كانت المادة غير صالحة
+            if (!mat || mat.opacity === 0) {
+              console.warn(`⚠️ Material ${index} for ${child.name} غير صالحة - إنشاء مادة جديدة`);
+              const newMaterial = new THREE.MeshStandardMaterial({
+                color: 0xcccccc,
+                side: THREE.DoubleSide,
+                visible: true,
+                transparent: false
+              });
+              
+              if (Array.isArray(child.material)) {
+                child.material[index] = newMaterial;
+              } else {
+                child.material = newMaterial;
+              }
+              return;
+            }
+            
+            // التأكد من أن المادة مرئية
+            mat.visible = true;
+            mat.transparent = false;
+            mat.side = THREE.DoubleSide; // عرض من كلا الجانبين
+            
+            // إذا كانت المادة بدون texture، أضف لون
+            if (!mat.map && (!mat.color || mat.color.getHex() === 0xffffff)) {
+              mat.color = new THREE.Color(0xcccccc);
+            }
+            
+            // إذا كانت المادة شفافة، أضف opacity
+            if (mat.transparent && mat.opacity === 0) {
+              mat.opacity = 1;
+              mat.transparent = false;
+            }
+            
+            console.log(`🎨 Material ${index} for ${child.name}:`, {
+              visible: mat.visible,
+              transparent: mat.transparent,
+              opacity: mat.opacity,
+              color: mat.color?.getHex(),
+              hasMap: !!mat.map,
+              side: mat.side
+            });
+          });
+        } else {
+          // إذا لم تكن هناك مادة، أضف واحدة
+          console.warn(`⚠️ Mesh ${child.name} بدون مادة - إضافة مادة افتراضية`);
+          child.material = new THREE.MeshStandardMaterial({
+            color: 0xcccccc,
+            side: THREE.DoubleSide,
+            visible: true
           });
         }
         
-        // التأكد من أن mesh مرئي
-        child.visible = true;
-        console.log(`👁️ Mesh ${child.name} visible:`, child.visible);
+        console.log(`👁️ Mesh ${child.name}:`, {
+          visible: child.visible,
+          position: child.position,
+          scale: child.scale,
+          rotation: child.rotation,
+          hasMaterial: !!child.material
+        });
       }
     });
+  }, [scene]);
+
+  // إضافة helper للتحقق من المودل
+  useEffect(() => {
+    if (!scene || !groupRef.current) return;
+    
+    // إضافة box helper للتحقق من الحدود
+    const box = new THREE.Box3().setFromObject(scene);
+    if (box.isEmpty()) {
+      console.warn("⚠️ المودل فارغ - Box3 فارغ");
+      return;
+    }
+    
+    const helper = new THREE.BoxHelper(scene, 0xff0000);
+    groupRef.current.add(helper);
+    
+    console.log("📦 تم إضافة BoxHelper للتحقق من المودل");
+    
+    return () => {
+      if (groupRef.current && helper) {
+        groupRef.current.remove(helper);
+        helper.dispose();
+      }
+    };
+  }, [scene]);
+
+  // إضافة helper للتحقق من المودل
+  useEffect(() => {
+    if (!scene || !groupRef.current) return;
+    
+    // إضافة box helper للتحقق من الحدود
+    const box = new THREE.Box3().setFromObject(scene);
+    if (box.isEmpty()) {
+      console.warn("⚠️ المودل فارغ - Box3 فارغ");
+      return;
+    }
+    
+    const helper = new THREE.BoxHelper(scene, 0xff0000);
+    groupRef.current.add(helper);
+    
+    console.log("📦 تم إضافة BoxHelper (مربع أحمر) للتحقق من المودل");
+    
+    // إضافة wireframe مؤقت للتحقق
+    scene.traverse((child) => {
+      if (child.isMesh && child.material) {
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((mat) => {
+          if (mat) {
+            // إضافة wireframe للتحقق
+            mat.wireframe = true;
+            mat.color = new THREE.Color(0x00ff00); // لون أخضر للتحقق
+            console.log(`🔷 تم تفعيل wireframe لـ ${child.name}`);
+          }
+        });
+      }
+    });
+    
+    return () => {
+      if (groupRef.current && helper) {
+        groupRef.current.remove(helper);
+        helper.dispose();
+      }
+    };
   }, [scene]);
 
   return (
