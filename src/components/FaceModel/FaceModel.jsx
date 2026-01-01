@@ -4,24 +4,6 @@ import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import * as THREE from "three";
 import styled from "styled-components";
 
-// إعداد معالج مخصص لـ textures في GLTFLoader
-if (typeof window !== 'undefined') {
-  // منع تحميل blob URLs في XMLHttpRequest
-  const originalOpen = XMLHttpRequest.prototype.open;
-  XMLHttpRequest.prototype.open = function(method, url, ...args) {
-    if (url && typeof url === 'string' && url.includes('blob:')) {
-      // تجاهل blob URLs - منع تحميلها
-      this.addEventListener('error', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }, { once: true });
-      // إرجاع بدون فتح الاتصال
-      return;
-    }
-    return originalOpen.call(this, method, url, ...args);
-  };
-}
-
 const MainContainer = styled.div`
   width: 100%;
   margin: 0.2rem;
@@ -525,6 +507,15 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
   // تحميل المودل face.glb فقط
   const gltf = useGLTF("/assets/models/face.glb");
   const scene = gltf?.scene;
+  
+  // Debug: التحقق من تحميل المودل
+  useEffect(() => {
+    if (gltf && gltf.scene) {
+      console.log("✅ المودل تم تحميله بنجاح:", gltf);
+    } else {
+      console.warn("⚠️ المودل لم يتم تحميله:", gltf);
+    }
+  }, [gltf]);
   
   const [hoveredRegion, setHoveredRegion] = useState(null);
   const [waveProgress, setWaveProgress] = useState(0);
