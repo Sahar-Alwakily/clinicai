@@ -1,6 +1,7 @@
-import React, { Suspense, useRef, useState } from "react";
+import React, { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
+import * as THREE from "three";
 import styled from "styled-components";
 
 const MainContainer = styled.div`
@@ -233,6 +234,26 @@ const ServiceDesc = styled.div`
 
 // معلومات المناطق والخدمات
 const faceRegions = {
+  undereyes: {
+    name: "تحت العين",
+    description: "علاجات تجميلية متخصصة لمنطقة تحت العين",
+    services: [
+      {
+        name: "إزالة الهالات السوداء",
+        description: "علاج فعال للهالات السوداء والانتفاخات تحت العين"
+      },
+      {
+        name: "حقن الفيلر",
+        description: "ملء التجاويف تحت العين وإزالة الانتفاخات"
+      },
+      {
+        name: "شد الجلد",
+        description: "شد الجلد المترهل تحت العين"
+      }
+    ],
+    position: [0.4, 0.4, 0.7],
+    side: 'right'
+  },
   eyes: {
     name: "العين",
     description: "علاجات تجميلية متخصصة لمنطقة العين",
@@ -250,15 +271,27 @@ const faceRegions = {
         description: "تحسين شكل العين وإبراز جمالها الطبيعي"
       },
       {
-        name: "إزالة الهالات السوداء",
-        description: "علاج فعال للهالات السوداء والانتفاخات تحت العين"
-      },
-      {
         name: "شد الجلد حول العين",
         description: "إزالة التجاعيد وشد الجلد المترهل حول منطقة العين"
       }
     ],
     position: [0.4, 0.4, 0.7],
+    side: 'right'
+  },
+  temple: {
+    name: "الصدغ",
+    description: "علاجات تجميلية لمنطقة الصدغ",
+    services: [
+      {
+        name: "حقن الفيلر",
+        description: "ملء منطقة الصدغ وإبراز ملامح الوجه"
+      },
+      {
+        name: "شد الجلد",
+        description: "شد الجلد المترهل في منطقة الصدغ"
+      }
+    ],
+    position: [0.5, 0.3, 0.6],
     side: 'right'
   },
   nose: {
@@ -311,6 +344,26 @@ const faceRegions = {
       }
     ],
     position: [0.4, -0.7, 0.6],
+    side: 'right'
+  },
+  doublechin: {
+    name: "الذقن المزدوج",
+    description: "علاجات لإزالة الذقن المزدوج",
+    services: [
+      {
+        name: "إزالة الدهون",
+        description: "إزالة الدهون الزائدة في منطقة الذقن المزدوج"
+      },
+      {
+        name: "شد الجلد",
+        description: "شد الجلد المترهل في منطقة الذقن المزدوج"
+      },
+      {
+        name: "تنحيف الذقن",
+        description: "تقليل حجم الذقن المزدوج وتحسين شكل الوجه"
+      }
+    ],
+    position: [0.3, -0.8, 0.5],
     side: 'right'
   },
   forehead: {
@@ -445,19 +498,132 @@ function Hotspot({ position, name, onClick, active }) {
   );
 }
 
-function FaceModelMesh({ onHotspotClick, activeHotspot }) {
-  const meshRef = useRef();
-  const { scene } = useGLTF("/assets/models/model.glb");
+// أسماء المناطق في المودل
+const regionNames = ['cheeks', 'doublechin', 'forehead', 'jawline', 'lips', 'neck', 'nose', 'temple', 'undereyes'];
+
+function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegionSelect }) {
+  const groupRef = useRef();
+  const { scene } = useGLTF("/assets/models/face.glb");
+  const [hoveredRegion, setHoveredRegion] = useState(null);
+  const [waveProgress, setWaveProgress] = useState(0);
+  const waveRef = useRef(0);
+  const meshesRef = useRef(new Map());
   
-  // تدوير الموديل ليواجه مباشرة
-  React.useEffect(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = 0;
+  // لون التحديد: بنفسجي شفاف يميل للوردي
+  const highlightColor = new THREE.Color(0x9d4edd); // بنفسجي
+  const highlightColorPink = new THREE.Color(0xe91e63); // وردي
+
+  // تأثير الموجة عند الانتقال
+  useEffect(() => {
+    if (selectedRegion) {
+      waveRef.current = 0;
+      setWaveProgress(0);
+      const interval = setInterval(() => {
+        waveRef.current += 0.08;
+        setWaveProgress(waveRef.current);
+        if (waveRef.current >= 2) {
+          clearInterval(interval);
+          waveRef.current = 0;
+        }
+      }, 16);
+      return () => clearInterval(interval);
     }
-  }, []);
+  }, [selectedRegion]);
+
+  // البحث عن meshes المناطق وإعدادها
+  useEffect(() => {
+    if (!scene) return;
+
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        const meshName = child.name.toLowerCase();
+        
+        // التحقق إذا كان هذا mesh من المناطق المطلوبة
+        const regionId = regionNames.find(region => meshName.includes(region));
+        
+        if (regionId) {
+          // حفظ المادة الأصلية
+          if (!child.userData.originalMaterial) {
+            child.userData.originalMaterial = child.material.clone();
+          }
+          
+          // جعل mesh قابل للتفاعل
+          child.userData.regionName = meshName;
+          child.userData.regionId = regionId;
+          child.userData.isRegion = true;
+          
+          // إضافة event listeners
+          child.onPointerOver = (e) => {
+            e.stopPropagation();
+            setHoveredRegion(regionId);
+            document.body.style.cursor = 'pointer';
+          };
+          
+          child.onPointerOut = () => {
+            setHoveredRegion(null);
+            document.body.style.cursor = 'auto';
+          };
+          
+          child.onClick = (e) => {
+            e.stopPropagation();
+            if (onRegionSelect) {
+              onRegionSelect(regionId);
+            }
+          };
+          
+          // حفظ المرجع
+          meshesRef.current.set(regionId, child);
+        }
+      }
+    });
+  }, [scene, onRegionSelect]);
+
+  // تحديث ألوان المناطق مع تأثير الموجة
+  useFrame(() => {
+    if (!scene) return;
+
+    meshesRef.current.forEach((mesh, regionId) => {
+      const isActive = selectedRegion === regionId;
+      const isHovered = hoveredRegion === regionId;
+      
+      if (isActive || isHovered) {
+        // إنشاء مادة جديدة مع تأثير الموجة
+        if (!mesh.userData.highlightMaterial) {
+          mesh.userData.highlightMaterial = new THREE.MeshStandardMaterial({
+            color: highlightColor,
+            transparent: true,
+            opacity: 0.4,
+            emissive: highlightColorPink,
+            emissiveIntensity: 0.3,
+            side: THREE.DoubleSide
+          });
+        }
+        
+        const material = mesh.userData.highlightMaterial;
+        
+        if (isActive) {
+          // تأثير الموجة: نبضة ناعمة
+          const waveEffect = Math.sin(waveProgress * Math.PI) * 0.15 + 0.35;
+          material.opacity = waveEffect;
+          material.emissiveIntensity = Math.sin(waveProgress * Math.PI) * 0.2 + 0.4;
+        } else {
+          // تأثير hover
+          material.opacity = 0.3;
+          material.emissiveIntensity = 0.2;
+        }
+        
+        mesh.material = material;
+      } else {
+        // إعادة المادة الأصلية
+        if (mesh.userData.originalMaterial) {
+          mesh.material = mesh.userData.originalMaterial;
+        }
+      }
+    });
+  });
 
   return (
-    <group ref={meshRef}>
+    <group ref={groupRef}>
       <primitive object={scene} scale={2} position={[0, -0.3, 0]} rotation={[0, 0, 0]} />
     </group>
   );
@@ -481,12 +647,32 @@ function LoadingFallback() {
 export default function FaceModel({ onSelectCategory }) {
   const [activeHotspot, setActiveHotspot] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState(null);
+  const [selectedRegionId, setSelectedRegionId] = useState(null);
+  const [transitioning, setTransitioning] = useState(false);
 
   const handleRegionClick = (region) => {
+    if (transitioning) return;
+    
+    setTransitioning(true);
     setActiveHotspot(region.id);
-    setSelectedRegion(region);
-    if (onSelectCategory) {
-      onSelectCategory(region.name);
+    setSelectedRegionId(region.id);
+    
+    // تأثير الموجة عند الانتقال
+    setTimeout(() => {
+      setSelectedRegion(region);
+      if (onSelectCategory) {
+        onSelectCategory(region.name);
+      }
+      setTransitioning(false);
+    }, 300);
+  };
+
+  const handleMeshRegionSelect = (regionId) => {
+    if (transitioning) return;
+    
+    const region = Object.entries(faceRegions).find(([id]) => id === regionId);
+    if (region) {
+      handleRegionClick({ id: regionId, ...region[1] });
     }
   };
 
@@ -517,6 +703,8 @@ export default function FaceModel({ onSelectCategory }) {
                 <FaceModelMesh 
                   onHotspotClick={handleRegionClick} 
                   activeHotspot={activeHotspot}
+                  selectedRegion={selectedRegionId}
+                  onRegionSelect={handleMeshRegionSelect}
                 />
               </Suspense>
               
