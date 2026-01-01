@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Carousel } from "antd-mobile";
 import { Bannerdiv, OfferCard } from "./styled";
-import { getBannerImage } from "../../utils/defaultImages";
+import { getBannerImage } from "../../../utils/defaultImages";
 
 export default class Banner extends Component {
   state = {
