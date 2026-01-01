@@ -938,16 +938,72 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
     
     console.log("📦 تم إضافة BoxHelper (مربع أحمر) للتحقق من المودل");
     
-    // إضافة wireframe مؤقت للتحقق
+    // إصلاح textures وإزالة wireframe
     scene.traverse((child) => {
       if (child.isMesh && child.material) {
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         materials.forEach((mat) => {
           if (mat) {
-            // إضافة wireframe للتحقق
-            mat.wireframe = true;
-            mat.color = new THREE.Color(0x00ff00); // لون أخضر للتحقق
-            console.log(`🔷 تم تفعيل wireframe لـ ${child.name}`);
+            // إزالة wireframe
+            mat.wireframe = false;
+            
+            // إصلاح texture إذا كان موجوداً
+            if (mat.map) {
+              const texture = mat.map;
+              
+              // التحقق من blob URL
+              let isBlobUrl = false;
+              try {
+                if (texture.image) {
+                  const src = texture.image.src || texture.image.currentSrc || '';
+                  if (src && typeof src === 'string' && src.includes('blob:')) {
+                    isBlobUrl = true;
+                  }
+                }
+              } catch (e) {
+                // تجاهل
+              }
+              
+              if (isBlobUrl) {
+                // إذا كان blob URL، أزل texture واستخدم لون بديل
+                console.warn(`⚠️ Texture لـ ${child.name} هو blob URL - إزالة texture`);
+                mat.map = null;
+                if (!mat.color || mat.color.getHex() === 0xffffff) {
+                  mat.color = new THREE.Color(0xcccccc);
+                }
+              } else {
+                // التأكد من أن texture يعمل
+                texture.needsUpdate = true;
+                texture.flipY = false; // مهم للـ GLB
+                
+                // إضافة error handler
+                if (texture.image) {
+                  texture.image.onerror = (e) => {
+                    console.warn(`⚠️ فشل تحميل texture لـ ${child.name}`);
+                    mat.map = null;
+                    if (!mat.color || mat.color.getHex() === 0xffffff) {
+                      mat.color = new THREE.Color(0xcccccc);
+                    }
+                  };
+                }
+                
+                console.log(`✅ Texture لـ ${child.name} جاهز:`, {
+                  hasImage: !!texture.image,
+                  imageSrc: texture.image?.src,
+                  needsUpdate: texture.needsUpdate
+                });
+              }
+            }
+            
+            // التأكد من أن المادة مرئية
+            mat.visible = true;
+            mat.transparent = false;
+            mat.side = THREE.DoubleSide;
+            
+            // إذا لم يكن هناك texture ولون، أضف لون
+            if (!mat.map && (!mat.color || mat.color.getHex() === 0xffffff)) {
+              mat.color = new THREE.Color(0xcccccc);
+            }
           }
         });
       }
