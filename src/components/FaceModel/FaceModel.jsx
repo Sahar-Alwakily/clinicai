@@ -521,68 +521,100 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
   useEffect(() => {
     if (!scene) return;
     
-    scene.traverse((child) => {
-      if (child.isMesh && child.material) {
-        const material = child.material;
-        const materials = Array.isArray(material) ? material : [material];
-        
-        materials.forEach((mat) => {
-          // إزالة جميع textures التي تحتوي على blob URLs
-          const textureTypes = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'];
+    // معالجة فورية لجميع textures
+    const processTextures = () => {
+      scene.traverse((child) => {
+        if (child.isMesh && child.material) {
+          const material = child.material;
+          const materials = Array.isArray(material) ? material : [material];
           
-          textureTypes.forEach((textureType) => {
-            if (mat[textureType]) {
-              const texture = mat[textureType];
-              
-              // التحقق من blob URL بطرق متعددة
-              let isBlobUrl = false;
-              
-              if (texture.image) {
-                // التحقق من src مباشرة
-                if (texture.image.src && typeof texture.image.src === 'string' && texture.image.src.startsWith('blob:')) {
-                  isBlobUrl = true;
+          materials.forEach((mat) => {
+            const textureTypes = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'];
+            
+            textureTypes.forEach((textureType) => {
+              if (mat[textureType]) {
+                const texture = mat[textureType];
+                
+                // التحقق من blob URL بطرق متعددة
+                let isBlobUrl = false;
+                
+                if (texture.image) {
+                  try {
+                    const src = texture.image.src || texture.image.currentSrc || '';
+                    if (src && typeof src === 'string' && src.startsWith('blob:')) {
+                      isBlobUrl = true;
+                    }
+                  } catch (e) {
+                    // تجاهل الأخطاء
+                  }
                 }
-                // التحقق من currentSrc
-                if (!isBlobUrl && texture.image.currentSrc && typeof texture.image.currentSrc === 'string' && texture.image.currentSrc.startsWith('blob:')) {
-                  isBlobUrl = true;
+                
+                // التحقق من source.data.uri
+                if (!isBlobUrl && texture.source && texture.source.data && texture.source.data.uri) {
+                  try {
+                    if (typeof texture.source.data.uri === 'string' && texture.source.data.uri.startsWith('blob:')) {
+                      isBlobUrl = true;
+                    }
+                  } catch (e) {
+                    // تجاهل الأخطاء
+                  }
                 }
-              }
-              
-              // التحقق من source.data.uri
-              if (!isBlobUrl && texture.source && texture.source.data && texture.source.data.uri && typeof texture.source.data.uri === 'string' && texture.source.data.uri.startsWith('blob:')) {
-                isBlobUrl = true;
-              }
-              
-              if (isBlobUrl) {
-                // إزالة texture فوراً
-                mat[textureType] = null;
-                if (textureType === 'map' && !mat.color) {
-                  mat.color = new THREE.Color(0xffffff);
-                }
-                // إزالة texture من الذاكرة
-                if (texture.dispose) {
-                  texture.dispose();
-                }
-              } else if (texture && texture.image) {
-                // معالجة أخطاء تحميل textures العادية - منع ظهور الأخطاء
-                texture.image.onerror = (e) => {
-                  // منع ظهور الخطأ في console
-                  e.preventDefault?.();
-                  e.stopPropagation?.();
+                
+                if (isBlobUrl) {
+                  // إزالة texture فوراً
                   mat[textureType] = null;
                   if (textureType === 'map' && !mat.color) {
                     mat.color = new THREE.Color(0xffffff);
                   }
-                  if (texture.dispose) {
-                    texture.dispose();
+                  // إزالة texture من الذاكرة
+                  try {
+                    if (texture.dispose) {
+                      texture.dispose();
+                    }
+                  } catch (e) {
+                    // تجاهل أخطاء dispose
                   }
-                };
+                } else if (texture && texture.image) {
+                  // منع أخطاء تحميل textures - إضافة error handler قبل التحميل
+                  const originalOnError = texture.image.onerror;
+                  texture.image.onerror = (e) => {
+                    // منع ظهور الخطأ في console
+                    try {
+                      e.preventDefault?.();
+                      e.stopPropagation?.();
+                    } catch (err) {
+                      // تجاهل
+                    }
+                    mat[textureType] = null;
+                    if (textureType === 'map' && !mat.color) {
+                      mat.color = new THREE.Color(0xffffff);
+                    }
+                    try {
+                      if (texture.dispose) {
+                        texture.dispose();
+                      }
+                    } catch (err) {
+                      // تجاهل
+                    }
+                    if (originalOnError) {
+                      originalOnError(e);
+                    }
+                  };
+                }
               }
-            }
+            });
           });
-        });
-      }
-    });
+        }
+      });
+    };
+    
+    // معالجة فورية
+    processTextures();
+    
+    // معالجة مرة أخرى بعد تأخير قصير للتأكد من معالجة جميع textures
+    const timeout = setTimeout(processTextures, 100);
+    
+    return () => clearTimeout(timeout);
   }, [scene]);
 
   // تأثير الموجة عند الانتقال
