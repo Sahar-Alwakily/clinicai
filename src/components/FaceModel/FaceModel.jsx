@@ -801,16 +801,61 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
     
+    console.log("📐 Box size:", size, "Center:", center);
+    
+    // التحقق من أن المودل له حجم
+    if (size.x === 0 && size.y === 0 && size.z === 0) {
+      console.warn("⚠️ المودل لا يحتوي على حجم - قد يكون مسطح");
+      // إضافة حجم افتراضي للمودل المسطح
+      scene.scale.set(1, 1, 1);
+      scene.position.set(0, 0, 0);
+      return;
+    }
+    
     // ضبط المقياس بناءً على الحجم
     const maxSize = Math.max(size.x, size.y, size.z);
     const targetSize = 1.5; // الحجم المطلوب
-    const scale = targetSize / maxSize;
+    const scale = maxSize > 0 ? targetSize / maxSize : 1;
     
     // ضبط الموضع ليكون في المركز
     scene.scale.set(scale, scale, scale);
     scene.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
     
     console.log("🔧 تم ضبط المودل - Scale:", scale, "Position:", scene.position);
+    
+    // التأكد من أن المواد مرئية
+    scene.traverse((child) => {
+      if (child.isMesh) {
+        if (child.material) {
+          // التأكد من أن المادة مرئية
+          child.material.visible = true;
+          child.material.transparent = false;
+          
+          // إذا كانت المادة بدون texture، أضف لون
+          if (!child.material.map && !child.material.color) {
+            child.material.color = new THREE.Color(0xcccccc);
+          }
+          
+          // إذا كانت المادة شفافة، أضف opacity
+          if (child.material.transparent && child.material.opacity === 0) {
+            child.material.opacity = 1;
+            child.material.transparent = false;
+          }
+          
+          console.log(`🎨 Material for ${child.name}:`, {
+            visible: child.material.visible,
+            transparent: child.material.transparent,
+            opacity: child.material.opacity,
+            color: child.material.color,
+            hasMap: !!child.material.map
+          });
+        }
+        
+        // التأكد من أن mesh مرئي
+        child.visible = true;
+        console.log(`👁️ Mesh ${child.name} visible:`, child.visible);
+      }
+    });
   }, [scene]);
 
   return (
@@ -884,11 +929,12 @@ export default function FaceModel({ onSelectCategory }) {
         <ModelWrapper hasSelection={hasSelection}>
           <ModelHeader>نموذج الوجه التفاعلي</ModelHeader>
           <CanvasWrapper>
-            <Canvas camera={{ position: [0, 0, 2.5], fov: 45 }}>
-              <ambientLight intensity={1.2} />
-              <directionalLight position={[5, 5, 5]} intensity={1.2} />
-              <directionalLight position={[-5, 5, 5]} intensity={0.6} />
-              <pointLight position={[0, 5, 5]} intensity={0.8} />
+            <Canvas camera={{ position: [0, 0, 3], fov: 50 }}>
+              <ambientLight intensity={1.5} />
+              <directionalLight position={[5, 5, 5]} intensity={1.5} />
+              <directionalLight position={[-5, 5, 5]} intensity={0.8} />
+              <pointLight position={[0, 5, 5]} intensity={1} />
+              <pointLight position={[0, -5, 5]} intensity={0.5} />
               
               <Suspense fallback={<LoadingFallback />}>
                 <FaceModelMesh 
