@@ -4,6 +4,19 @@ import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import * as THREE from "three";
 import styled from "styled-components";
 
+// قمع أخطاء GLTFLoader لـ blob URLs
+if (typeof window !== 'undefined' && window.console) {
+  const originalError = console.error;
+  console.error = function(...args) {
+    // تجاهل أخطاء blob URLs من GLTFLoader
+    const message = args.join(' ');
+    if (message.includes('GLTFLoader') && message.includes('blob:')) {
+      return; // تجاهل الخطأ
+    }
+    originalError.apply(console, args);
+  };
+}
+
 const MainContainer = styled.div`
   width: 100%;
   margin: 0.2rem;
