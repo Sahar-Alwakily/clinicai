@@ -504,16 +504,8 @@ const regionNames = ['cheeks', 'doublechin', 'forehead', 'jawline', 'lips', 'nec
 function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegionSelect }) {
   const groupRef = useRef();
   
-  // تحميل المودل - استخدام fallback إذا فشل
-  let gltf;
-  try {
-    gltf = useGLTF("/assets/models/face.glb");
-  } catch (error) {
-    // إذا فشل تحميل face.glb، استخدم المودل القديم
-    console.warn("Could not load face.glb, using fallback model.glb");
-    gltf = useGLTF("/assets/models/model.glb");
-  }
-  
+  // تحميل المودل face.glb فقط
+  const gltf = useGLTF("/assets/models/face.glb");
   const scene = gltf?.scene;
   
   // إصلاح مشكلة تحميل textures من blob URLs
@@ -529,64 +521,31 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
         const materials = Array.isArray(material) ? material : [material];
         
         materials.forEach((mat) => {
-          // إصلاح baseColorTexture / map
-          if (mat.map) {
-            const texture = mat.map;
-            if (texture && texture.image) {
-              // إزالة blob URL errors
-              if (texture.image.src && texture.image.src.startsWith('blob:')) {
-                texture.image.onerror = () => {
-                  console.warn("Failed to load texture from blob URL, using default color");
-                  mat.map = null;
-                  if (!mat.color) {
+          // إصلاح جميع textures - إزالة blob URLs فوراً
+          const textureTypes = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'];
+          
+          textureTypes.forEach((textureType) => {
+            if (mat[textureType]) {
+              const texture = mat[textureType];
+              if (texture && texture.image) {
+                // إزالة blob URL textures فوراً بدون انتظار error
+                if (texture.image.src && texture.image.src.startsWith('blob:')) {
+                  mat[textureType] = null;
+                  if (textureType === 'map' && !mat.color) {
                     mat.color = new THREE.Color(0xffffff);
                   }
-                };
-              } else {
-                // معالجة أخطاء تحميل textures العادية
-                texture.image.onerror = () => {
-                  console.warn("Failed to load texture, using default color");
-                  mat.map = null;
-                  if (!mat.color) {
-                    mat.color = new THREE.Color(0xffffff);
-                  }
-                };
+                } else {
+                  // معالجة أخطاء تحميل textures العادية
+                  texture.image.onerror = () => {
+                    mat[textureType] = null;
+                    if (textureType === 'map' && !mat.color) {
+                      mat.color = new THREE.Color(0xffffff);
+                    }
+                  };
+                }
               }
             }
-          }
-          
-          // إصلاح normalMap
-          if (mat.normalMap) {
-            const texture = mat.normalMap;
-            if (texture && texture.image) {
-              texture.image.onerror = () => {
-                console.warn("Failed to load normal map");
-                mat.normalMap = null;
-              };
-            }
-          }
-          
-          // إصلاح roughnessMap
-          if (mat.roughnessMap) {
-            const texture = mat.roughnessMap;
-            if (texture && texture.image) {
-              texture.image.onerror = () => {
-                console.warn("Failed to load roughness map");
-                mat.roughnessMap = null;
-              };
-            }
-          }
-          
-          // إصلاح metalnessMap
-          if (mat.metalnessMap) {
-            const texture = mat.metalnessMap;
-            if (texture && texture.image) {
-              texture.image.onerror = () => {
-                console.warn("Failed to load metalness map");
-                mat.metalnessMap = null;
-              };
-            }
-          }
+          });
         });
       }
     });
@@ -631,52 +590,31 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
         const materials = Array.isArray(material) ? material : [material];
         
         materials.forEach((mat) => {
-          // إصلاح baseColorTexture / map
-          if (mat.map) {
-            const texture = mat.map;
-            if (texture && texture.image) {
-              texture.image.onerror = () => {
-                console.warn("Failed to load texture, using default color");
-                mat.map = null;
-                if (!mat.color) {
-                  mat.color = new THREE.Color(0xffffff);
+          // إصلاح جميع textures - إزالة blob URLs فوراً
+          const textureTypes = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap'];
+          
+          textureTypes.forEach((textureType) => {
+            if (mat[textureType]) {
+              const texture = mat[textureType];
+              if (texture && texture.image) {
+                // إزالة blob URL textures فوراً بدون انتظار error
+                if (texture.image.src && texture.image.src.startsWith('blob:')) {
+                  mat[textureType] = null;
+                  if (textureType === 'map' && !mat.color) {
+                    mat.color = new THREE.Color(0xffffff);
+                  }
+                } else {
+                  // معالجة أخطاء تحميل textures العادية
+                  texture.image.onerror = () => {
+                    mat[textureType] = null;
+                    if (textureType === 'map' && !mat.color) {
+                      mat.color = new THREE.Color(0xffffff);
+                    }
+                  };
                 }
-              };
+              }
             }
-          }
-          
-          // إصلاح normalMap
-          if (mat.normalMap) {
-            const texture = mat.normalMap;
-            if (texture && texture.image) {
-              texture.image.onerror = () => {
-                console.warn("Failed to load normal map");
-                mat.normalMap = null;
-              };
-            }
-          }
-          
-          // إصلاح roughnessMap
-          if (mat.roughnessMap) {
-            const texture = mat.roughnessMap;
-            if (texture && texture.image) {
-              texture.image.onerror = () => {
-                console.warn("Failed to load roughness map");
-                mat.roughnessMap = null;
-              };
-            }
-          }
-          
-          // إصلاح metalnessMap
-          if (mat.metalnessMap) {
-            const texture = mat.metalnessMap;
-            if (texture && texture.image) {
-              texture.image.onerror = () => {
-                console.warn("Failed to load metalness map");
-                mat.metalnessMap = null;
-              };
-            }
-          }
+          });
         });
       }
     });
