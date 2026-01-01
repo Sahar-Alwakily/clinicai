@@ -504,8 +504,7 @@ const regionNames = ['cheeks', 'doublechin', 'forehead', 'jawline', 'lips', 'nec
 function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegionSelect }) {
   const groupRef = useRef();
   
-  // محاولة تحميل المودل - استخدام fallback إذا فشل
-  // استخدام useGLTF بشكل مباشر (لا يمكن استخدامه بشكل مشروط)
+  // تحميل المودل - استخدام fallback إذا فشل
   let gltf;
   try {
     gltf = useGLTF("/assets/models/face.glb");
@@ -516,6 +515,82 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
   }
   
   const scene = gltf?.scene;
+  
+  // إصلاح مشكلة تحميل textures من blob URLs
+  useEffect(() => {
+    if (!scene) return;
+    
+    scene.traverse((child) => {
+      if (child.isMesh && child.material) {
+        // إصلاح textures المكسورة
+        const material = child.material;
+        
+        // معالجة material array
+        const materials = Array.isArray(material) ? material : [material];
+        
+        materials.forEach((mat) => {
+          // إصلاح baseColorTexture / map
+          if (mat.map) {
+            const texture = mat.map;
+            if (texture && texture.image) {
+              // إزالة blob URL errors
+              if (texture.image.src && texture.image.src.startsWith('blob:')) {
+                texture.image.onerror = () => {
+                  console.warn("Failed to load texture from blob URL, using default color");
+                  mat.map = null;
+                  if (!mat.color) {
+                    mat.color = new THREE.Color(0xffffff);
+                  }
+                };
+              } else {
+                // معالجة أخطاء تحميل textures العادية
+                texture.image.onerror = () => {
+                  console.warn("Failed to load texture, using default color");
+                  mat.map = null;
+                  if (!mat.color) {
+                    mat.color = new THREE.Color(0xffffff);
+                  }
+                };
+              }
+            }
+          }
+          
+          // إصلاح normalMap
+          if (mat.normalMap) {
+            const texture = mat.normalMap;
+            if (texture && texture.image) {
+              texture.image.onerror = () => {
+                console.warn("Failed to load normal map");
+                mat.normalMap = null;
+              };
+            }
+          }
+          
+          // إصلاح roughnessMap
+          if (mat.roughnessMap) {
+            const texture = mat.roughnessMap;
+            if (texture && texture.image) {
+              texture.image.onerror = () => {
+                console.warn("Failed to load roughness map");
+                mat.roughnessMap = null;
+              };
+            }
+          }
+          
+          // إصلاح metalnessMap
+          if (mat.metalnessMap) {
+            const texture = mat.metalnessMap;
+            if (texture && texture.image) {
+              texture.image.onerror = () => {
+                console.warn("Failed to load metalness map");
+                mat.metalnessMap = null;
+              };
+            }
+          }
+        });
+      }
+    });
+  }, [scene]);
   
   const [hoveredRegion, setHoveredRegion] = useState(null);
   const [waveProgress, setWaveProgress] = useState(0);
@@ -542,6 +617,70 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
       return () => clearInterval(interval);
     }
   }, [selectedRegion]);
+
+  // إصلاح مشكلة تحميل textures من blob URLs
+  useEffect(() => {
+    if (!scene) return;
+    
+    scene.traverse((child) => {
+      if (child.isMesh && child.material) {
+        // إصلاح textures المكسورة
+        const material = child.material;
+        
+        // معالجة material array
+        const materials = Array.isArray(material) ? material : [material];
+        
+        materials.forEach((mat) => {
+          // إصلاح baseColorTexture / map
+          if (mat.map) {
+            const texture = mat.map;
+            if (texture && texture.image) {
+              texture.image.onerror = () => {
+                console.warn("Failed to load texture, using default color");
+                mat.map = null;
+                if (!mat.color) {
+                  mat.color = new THREE.Color(0xffffff);
+                }
+              };
+            }
+          }
+          
+          // إصلاح normalMap
+          if (mat.normalMap) {
+            const texture = mat.normalMap;
+            if (texture && texture.image) {
+              texture.image.onerror = () => {
+                console.warn("Failed to load normal map");
+                mat.normalMap = null;
+              };
+            }
+          }
+          
+          // إصلاح roughnessMap
+          if (mat.roughnessMap) {
+            const texture = mat.roughnessMap;
+            if (texture && texture.image) {
+              texture.image.onerror = () => {
+                console.warn("Failed to load roughness map");
+                mat.roughnessMap = null;
+              };
+            }
+          }
+          
+          // إصلاح metalnessMap
+          if (mat.metalnessMap) {
+            const texture = mat.metalnessMap;
+            if (texture && texture.image) {
+              texture.image.onerror = () => {
+                console.warn("Failed to load metalness map");
+                mat.metalnessMap = null;
+              };
+            }
+          }
+        });
+      }
+    });
+  }, [scene]);
 
   // البحث عن meshes المناطق وإعدادها
   useEffect(() => {
