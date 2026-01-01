@@ -521,10 +521,29 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
   const gltf = useGLTF("/assets/models/face.glb");
   const scene = gltf?.scene;
   
-  // Debug: التحقق من تحميل المودل
+  // Debug: التحقق من تحميل المودل وحجمه
   useEffect(() => {
     if (gltf && gltf.scene) {
       console.log("✅ المودل تم تحميله بنجاح:", gltf);
+      
+      // حساب حجم المودل
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      
+      console.log("📏 حجم المودل:", size);
+      console.log("📍 مركز المودل:", center);
+      console.log("🎨 عدد المواد:", Object.keys(gltf.materials || {}).length);
+      
+      // التحقق من وجود meshes
+      let meshCount = 0;
+      gltf.scene.traverse((child) => {
+        if (child.isMesh) {
+          meshCount++;
+          console.log(`🔷 Mesh: ${child.name || 'unnamed'}, Material:`, child.material?.name || 'no material');
+        }
+      });
+      console.log("📦 عدد Meshes:", meshCount);
     } else {
       console.warn("⚠️ المودل لم يتم تحميله:", gltf);
     }
@@ -774,9 +793,29 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
     );
   }
 
+  // حساب حجم المودل وضبطه تلقائياً
+  useEffect(() => {
+    if (!scene || !groupRef.current) return;
+    
+    const box = new THREE.Box3().setFromObject(scene);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    
+    // ضبط المقياس بناءً على الحجم
+    const maxSize = Math.max(size.x, size.y, size.z);
+    const targetSize = 1.5; // الحجم المطلوب
+    const scale = targetSize / maxSize;
+    
+    // ضبط الموضع ليكون في المركز
+    scene.scale.set(scale, scale, scale);
+    scene.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+    
+    console.log("🔧 تم ضبط المودل - Scale:", scale, "Position:", scene.position);
+  }, [scene]);
+
   return (
     <group ref={groupRef}>
-      <primitive object={scene} scale={2} position={[0, -0.3, 0]} rotation={[0, 0, 0]} />
+      <primitive object={scene} />
     </group>
   );
 }
