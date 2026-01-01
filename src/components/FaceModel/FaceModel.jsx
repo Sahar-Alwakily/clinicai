@@ -942,14 +942,30 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
     scene.traverse((child) => {
       if (child.isMesh && child.material) {
         const materials = Array.isArray(child.material) ? child.material : [child.material];
-        materials.forEach((mat) => {
+        materials.forEach((mat, matIndex) => {
           if (mat) {
             // إزالة wireframe
             mat.wireframe = false;
             
+            console.log(`🔍 فحص Material ${matIndex} لـ ${child.name}:`, {
+              hasMap: !!mat.map,
+              mapType: mat.map?.constructor?.name,
+              color: mat.color?.getHex(),
+              visible: mat.visible,
+              transparent: mat.transparent
+            });
+            
             // إصلاح texture إذا كان موجوداً
             if (mat.map) {
               const texture = mat.map;
+              
+              console.log(`🖼️ Texture موجود لـ ${child.name}:`, {
+                hasImage: !!texture.image,
+                imageSrc: texture.image?.src,
+                imageComplete: texture.image?.complete,
+                imageWidth: texture.image?.width,
+                imageHeight: texture.image?.height
+              });
               
               // التحقق من blob URL
               let isBlobUrl = false;
@@ -958,52 +974,79 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
                   const src = texture.image.src || texture.image.currentSrc || '';
                   if (src && typeof src === 'string' && src.includes('blob:')) {
                     isBlobUrl = true;
+                    console.warn(`⚠️ Texture لـ ${child.name} هو blob URL:`, src);
                   }
                 }
               } catch (e) {
-                // تجاهل
+                console.error(`❌ خطأ في فحص texture:`, e);
               }
               
               if (isBlobUrl) {
                 // إذا كان blob URL، أزل texture واستخدم لون بديل
-                console.warn(`⚠️ Texture لـ ${child.name} هو blob URL - إزالة texture`);
+                console.warn(`⚠️ إزالة blob URL texture لـ ${child.name}`);
                 mat.map = null;
                 if (!mat.color || mat.color.getHex() === 0xffffff) {
                   mat.color = new THREE.Color(0xcccccc);
                 }
-              } else {
+              } else if (texture.image) {
                 // التأكد من أن texture يعمل
                 texture.needsUpdate = true;
                 texture.flipY = false; // مهم للـ GLB
+                texture.format = THREE.RGBAFormat;
                 
-                // إضافة error handler
-                if (texture.image) {
-                  texture.image.onerror = (e) => {
-                    console.warn(`⚠️ فشل تحميل texture لـ ${child.name}`);
-                    mat.map = null;
-                    if (!mat.color || mat.color.getHex() === 0xffffff) {
-                      mat.color = new THREE.Color(0xcccccc);
-                    }
+                // التحقق من أن الصورة محملة
+                if (texture.image.complete) {
+                  console.log(`✅ Texture image محملة لـ ${child.name}`);
+                  texture.needsUpdate = true;
+                } else {
+                  console.warn(`⏳ Texture image لم تكتمل بعد لـ ${child.name}`);
+                  texture.image.onload = () => {
+                    console.log(`✅ Texture image اكتمل التحميل لـ ${child.name}`);
+                    texture.needsUpdate = true;
+                    mat.needsUpdate = true;
                   };
                 }
                 
-                console.log(`✅ Texture لـ ${child.name} جاهز:`, {
-                  hasImage: !!texture.image,
-                  imageSrc: texture.image?.src,
-                  needsUpdate: texture.needsUpdate
-                });
+                // إضافة error handler
+                texture.image.onerror = (e) => {
+                  console.warn(`⚠️ فشل تحميل texture لـ ${child.name}:`, e);
+                  mat.map = null;
+                  if (!mat.color || mat.color.getHex() === 0xffffff) {
+                    mat.color = new THREE.Color(0xcccccc);
+                  }
+                  mat.needsUpdate = true;
+                };
+                
+                // تحديث المادة
+                mat.needsUpdate = true;
+              } else {
+                console.warn(`⚠️ Texture لـ ${child.name} بدون image`);
+                mat.map = null;
+                if (!mat.color || mat.color.getHex() === 0xffffff) {
+                  mat.color = new THREE.Color(0xcccccc);
+                }
               }
+            } else {
+              console.log(`ℹ️ لا يوجد texture لـ ${child.name} - استخدام لون`);
             }
             
             // التأكد من أن المادة مرئية
             mat.visible = true;
             mat.transparent = false;
             mat.side = THREE.DoubleSide;
+            mat.needsUpdate = true;
             
             // إذا لم يكن هناك texture ولون، أضف لون
             if (!mat.map && (!mat.color || mat.color.getHex() === 0xffffff)) {
               mat.color = new THREE.Color(0xcccccc);
+              console.log(`🎨 إضافة لون افتراضي لـ ${child.name}`);
             }
+            
+            console.log(`✅ Material ${matIndex} لـ ${child.name} جاهز:`, {
+              hasMap: !!mat.map,
+              color: mat.color?.getHex(),
+              visible: mat.visible
+            });
           }
         });
       }
