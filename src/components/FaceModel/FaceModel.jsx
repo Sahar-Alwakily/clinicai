@@ -521,59 +521,168 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
   const gltf = useGLTF("/assets/models/face.glb");
   const scene = gltf?.scene;
   
+  // Debug: التحقق من بنية GLTF الكاملة
+  useEffect(() => {
+    if (gltf) {
+      console.log("🔍 GLTF Structure:", {
+        hasScene: !!gltf.scene,
+        scenes: gltf.scenes?.length || 0,
+        nodes: gltf.nodes ? Object.keys(gltf.nodes).length : 0,
+        meshes: gltf.meshes ? Object.keys(gltf.meshes).length : 0,
+        materials: gltf.materials ? Object.keys(gltf.materials).length : 0,
+        textures: gltf.textures ? Object.keys(gltf.textures).length : 0,
+        images: gltf.images ? Object.keys(gltf.images).length : 0
+      });
+      
+      // عرض جميع nodes
+      if (gltf.nodes) {
+        console.log("📦 All Nodes:", Object.keys(gltf.nodes));
+        Object.entries(gltf.nodes).forEach(([name, node]) => {
+          console.log(`  - Node "${name}":`, {
+            type: node.type,
+            isMesh: node.isMesh,
+            hasMesh: !!node.mesh,
+            children: node.children?.length || 0
+          });
+        });
+      }
+      
+      // عرض جميع meshes
+      if (gltf.meshes) {
+        console.log("📦 All Meshes:", Object.keys(gltf.meshes));
+      }
+      
+      // التحقق من scene
+      if (gltf.scene) {
+        console.log("📦 Scene:", {
+          type: gltf.scene.type,
+          name: gltf.scene.name,
+          children: gltf.scene.children.length,
+          visible: gltf.scene.visible
+        });
+      }
+    }
+  }, [gltf]);
+  
   // Debug: التحقق من تحميل المودل وحجمه
   useEffect(() => {
-    if (gltf && gltf.scene) {
+    if (gltf) {
       console.log("✅ المودل تم تحميله بنجاح:", gltf);
-      console.log("📦 Scene children:", gltf.scene.children.length);
-      console.log("📦 Scene type:", gltf.scene.type);
-      console.log("📦 Scene name:", gltf.scene.name);
-      
-      // التحقق من وجود meshes
-      let meshCount = 0;
-      let nodeCount = 0;
-      gltf.scene.traverse((child) => {
-        nodeCount++;
-        console.log(`🔍 Node ${nodeCount}:`, {
-          type: child.type,
-          name: child.name,
-          isMesh: child.isMesh,
-          isGroup: child.isGroup,
-          isObject3D: child.isObject3D,
-          visible: child.visible,
-          children: child.children.length
-        });
-        
-        if (child.isMesh) {
-          meshCount++;
-          console.log(`🔷 Mesh: ${child.name || 'unnamed'}, Material:`, child.material?.name || 'no material');
-        }
+      console.log("📦 GLTF Structure:", {
+        scenes: gltf.scenes?.length,
+        nodes: Object.keys(gltf.nodes || {}).length,
+        meshes: Object.keys(gltf.meshes || {}).length,
+        materials: Object.keys(gltf.materials || {}).length,
+        textures: Object.keys(gltf.textures || {}).length,
+        images: Object.keys(gltf.images || {}).length
       });
-      console.log("📦 عدد Meshes:", meshCount);
-      console.log("📦 عدد Nodes:", nodeCount);
-      console.log("🎨 عدد المواد:", Object.keys(gltf.materials || {}).length);
       
-      // حساب حجم المودل
-      const box = new THREE.Box3().setFromObject(gltf.scene);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
+      // التحقق من nodes مباشرة
+      if (gltf.nodes) {
+        console.log("📦 Nodes:", Object.keys(gltf.nodes));
+        Object.entries(gltf.nodes).forEach(([name, node]) => {
+          console.log(`🔷 Node "${name}":`, {
+            type: node.type,
+            isMesh: node.isMesh,
+            isGroup: node.isGroup,
+            children: node.children?.length,
+            mesh: node.mesh?.name || node.mesh
+          });
+        });
+      }
       
-      console.log("📏 حجم المودل:", size);
-      console.log("📍 مركز المودل:", center);
+      // التحقق من meshes مباشرة
+      if (gltf.meshes) {
+        console.log("📦 Meshes:", Object.keys(gltf.meshes));
+        Object.entries(gltf.meshes).forEach(([name, mesh]) => {
+          console.log(`🔷 Mesh "${name}":`, {
+            type: mesh.type,
+            primitives: mesh.primitives?.length
+          });
+        });
+      }
       
-      // إذا كان المودل فارغ، حاول إصلاحه
-      if (meshCount === 0) {
-        console.warn("⚠️ لا توجد meshes في المودل - محاولة إصلاح");
+      if (gltf.scene) {
+        console.log("📦 Scene children:", gltf.scene.children.length);
+        console.log("📦 Scene type:", gltf.scene.type);
+        console.log("📦 Scene name:", gltf.scene.name);
         
-        // التحقق من أن الـ scene مرئي
-        gltf.scene.visible = true;
+        // التحقق من وجود meshes
+        let meshCount = 0;
+        let nodeCount = 0;
         gltf.scene.traverse((child) => {
-          child.visible = true;
+          nodeCount++;
+          console.log(`🔍 Node ${nodeCount}:`, {
+            type: child.type,
+            name: child.name,
+            isMesh: child.isMesh,
+            isGroup: child.isGroup,
+            isObject3D: child.isObject3D,
+            visible: child.visible,
+            children: child.children.length
+          });
+          
           if (child.isMesh) {
-            child.visible = true;
-            child.frustumCulled = false;
+            meshCount++;
+            console.log(`🔷 Mesh: ${child.name || 'unnamed'}, Material:`, child.material?.name || 'no material');
           }
         });
+        console.log("📦 عدد Meshes:", meshCount);
+        console.log("📦 عدد Nodes:", nodeCount);
+        console.log("🎨 عدد المواد:", Object.keys(gltf.materials || {}).length);
+        
+        // حساب حجم المودل
+        const box = new THREE.Box3().setFromObject(gltf.scene);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        
+        console.log("📏 حجم المودل:", size);
+        console.log("📍 مركز المودل:", center);
+        
+        // إذا كان المودل فارغ، حاول إصلاحه
+        if (meshCount === 0) {
+          console.warn("⚠️ لا توجد meshes في الـ scene - محاولة إصلاح");
+          
+          // محاولة إضافة meshes من gltf.nodes
+          if (gltf.nodes) {
+            Object.entries(gltf.nodes).forEach(([name, node]) => {
+              if (node.isMesh || (node.mesh && gltf.meshes)) {
+                console.log(`🔧 محاولة إضافة mesh "${name}" إلى scene`);
+                try {
+                  if (node.isMesh) {
+                    node.visible = true;
+                    gltf.scene.add(node);
+                  } else if (node.mesh) {
+                    const meshData = gltf.meshes[node.mesh];
+                    if (meshData) {
+                      // إنشاء mesh من البيانات
+                      const geometry = new THREE.BufferGeometry();
+                      const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+                      const mesh = new THREE.Mesh(geometry, material);
+                      mesh.name = name;
+                      mesh.visible = true;
+                      gltf.scene.add(mesh);
+                    }
+                  }
+                } catch (e) {
+                  console.error(`❌ خطأ في إضافة mesh "${name}":`, e);
+                }
+              }
+            });
+          }
+          
+          // التحقق من أن الـ scene مرئي
+          gltf.scene.visible = true;
+          gltf.scene.traverse((child) => {
+            child.visible = true;
+            if (child.isMesh) {
+              child.visible = true;
+              child.frustumCulled = false;
+            }
+          });
+        }
+      } else {
+        console.warn("⚠️ gltf.scene غير موجود");
       }
     } else {
       console.warn("⚠️ المودل لم يتم تحميله:", gltf);
