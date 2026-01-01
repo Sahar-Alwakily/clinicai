@@ -54,13 +54,28 @@ export default class Banner extends Component {
             resetAutoplay={false}
             afterChange={this.handleSlideChange}
           >
-            {this.state.offers.map((offer) => (
-              <OfferCard key={offer.id}>
-                <div className="offer-image">
-                  <img src={offer.image} alt={offer.title} />
-                </div>
-              </OfferCard>
-            ))}
+            {this.state.offers.map((offer) => {
+              const placeholderBanner = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzY2N2VlYSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Yp9mE2LHYp9mE2YQ8L3RleHQ+PC9zdmc+';
+              return (
+                <OfferCard key={offer.id}>
+                  <div className="offer-image">
+                    <img 
+                      src={offer.image} 
+                      alt={offer.title}
+                      onError={(e) => {
+                        // Prevent error from showing in console
+                        e.preventDefault?.();
+                        e.stopPropagation?.();
+                        // Set placeholder image instead
+                        if (e.target.src !== placeholderBanner) {
+                          e.target.src = placeholderBanner;
+                        }
+                      }}
+                    />
+                  </div>
+                </OfferCard>
+              );
+            })}
           </Carousel>
         </Bannerdiv>
       </>
