@@ -6,6 +6,7 @@ import _ from "lodash";
 import Head from "./header/Head";
 import Banner from "./banner/Banner";
 import Category from "./category/Category";
+import { getTreatmentImage, getAvatarImage } from "../../utils/defaultImages";
 import Nntry from "./entry/Nntry";
 import RegionFilter from "./regionFilter/RegionFilter";
 import Feedtab from "./feedtab/Feedtab";
@@ -258,14 +259,14 @@ class Home extends Component {
         price: treatment.price,
         location: treatment.location,
         imgs: {
-          u: `https://img2.soyoung.com/origin/20200721/${(index % 7) + 1}/daf7ec3daf387fb0857ab8290fa77302_120_120.png`,
+          u: getTreatmentImage(index),
           w: 120,
           h: 120
         },
         user: {
           user_name: treatment.doctor_name,
           avatar: {
-            u: `https://img2.soyoung.com/origin/20200508/${(index % 4) + 1}/0a43bcece5358766e753fc491776c17a_120_120.png`
+            u: getAvatarImage(index)
           }
         },
         view_cnt: `${Math.floor(Math.random() * 5) + 1}.${Math.floor(Math.random() * 9)}k`
@@ -282,14 +283,14 @@ class Home extends Component {
             doctor_name: "د. سارة أحمد",
             price: "200",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png",
+              u: getTreatmentImage(0),
               w: 120,
               h: 120
             },
             user: {
               user_name: "سارة أحمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "1.2k"
@@ -300,14 +301,14 @@ class Home extends Component {
             id: "2",
             summary: "منطقة الجبهة - علاج التجاعيد والخطوط",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png",
+              u: getTreatmentImage(1),
               w: 120,
               h: 120
             },
             user: {
               user_name: "فاطمة محمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "856"
@@ -318,14 +319,14 @@ class Home extends Component {
             id: "3",
             summary: "منطقة العين - إزالة الهالات والانتفاخات",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png",
+              u: getTreatmentImage(2),
               w: 120,
               h: 120
             },
             user: {
               user_name: "ليلى خالد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "2.1k"
@@ -336,14 +337,14 @@ class Home extends Component {
             id: "4",
             summary: "منطقة الأنف - تحسين الشكل والتناسق",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png",
+              u: getTreatmentImage(4),
               w: 120,
               h: 120
             },
             user: {
               user_name: "نورا علي",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "945"
@@ -354,14 +355,14 @@ class Home extends Component {
             id: "5",
             summary: "منطقة الشفاه - تكبير وتجميل الشفاه",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png",
+              u: getTreatmentImage(5),
               w: 120,
               h: 120
             },
             user: {
               user_name: "ريم سعد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png"
+                u: getAvatarImage(2)
               }
             },
             view_cnt: "1.5k"
@@ -372,14 +373,14 @@ class Home extends Component {
             id: "6",
             summary: "منطقة الذقن - نحت وتنحيف الذقن",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/7/9a87253568bfb4db9a3d8f19c7b79bc6_120_120.png",
+              u: getTreatmentImage(3),
               w: 120,
               h: 120
             },
             user: {
               user_name: "هند يوسف",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "678"
@@ -392,14 +393,14 @@ class Home extends Component {
             id: "1",
             summary: "البوتوكس - إزالة التجاعيد والخطوط",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png",
+              u: getTreatmentImage(0),
               w: 120,
               h: 120
             },
             user: {
               user_name: "سارة أحمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "2.3k"
@@ -410,14 +411,14 @@ class Home extends Component {
             id: "2",
             summary: "الفيلر - ملء التجاعيد والخطوط",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png",
+              u: getTreatmentImage(1),
               w: 120,
               h: 120
             },
             user: {
               user_name: "فاطمة محمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "1.8k"
@@ -428,14 +429,14 @@ class Home extends Component {
             id: "3",
             summary: "الليزر - إزالة الشعر وتفتيح البشرة",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png",
+              u: getTreatmentImage(2),
               w: 120,
               h: 120
             },
             user: {
               user_name: "ليلى خالد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "3.1k"
@@ -446,14 +447,14 @@ class Home extends Component {
             id: "4",
             summary: "الميزوثيرابي - شد البشرة وتجديدها",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png",
+              u: getTreatmentImage(4),
               w: 120,
               h: 120
             },
             user: {
               user_name: "نورا علي",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "1.4k"
@@ -464,14 +465,14 @@ class Home extends Component {
             id: "5",
             summary: "الخيوط - شد الوجه بدون جراحة",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png",
+              u: getTreatmentImage(5),
               w: 120,
               h: 120
             },
             user: {
               user_name: "ريم سعد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png"
+                u: getAvatarImage(2)
               }
             },
             view_cnt: "2.7k"
@@ -482,14 +483,14 @@ class Home extends Component {
             id: "6",
             summary: "البرايمر - تحضير البشرة للعلاج",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/7/9a87253568bfb4db9a3d8f19c7b79bc6_120_120.png",
+              u: getTreatmentImage(3),
               w: 120,
               h: 120
             },
             user: {
               user_name: "هند يوسف",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "956"
@@ -502,14 +503,14 @@ class Home extends Component {
             id: "1",
             summary: "تحول مذهل - قبل وبعد البوتوكس",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png",
+              u: getTreatmentImage(0),
               w: 120,
               h: 120
             },
             user: {
               user_name: "سارة أحمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "5.2k"
@@ -520,14 +521,14 @@ class Home extends Component {
             id: "2",
             summary: "نتائج رائعة - فيلر الشفاه",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png",
+              u: getTreatmentImage(1),
               w: 120,
               h: 120
             },
             user: {
               user_name: "فاطمة محمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "4.8k"
@@ -538,14 +539,14 @@ class Home extends Component {
             id: "3",
             summary: "تحسن كبير - علاج الهالات السوداء",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png",
+              u: getTreatmentImage(2),
               w: 120,
               h: 120
             },
             user: {
               user_name: "ليلى خالد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "6.1k"
@@ -556,14 +557,14 @@ class Home extends Component {
             id: "4",
             summary: "نتائج مذهلة - شد الوجه بالخيوط",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png",
+              u: getTreatmentImage(4),
               w: 120,
               h: 120
             },
             user: {
               user_name: "نورا علي",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "3.9k"
@@ -574,14 +575,14 @@ class Home extends Component {
             id: "5",
             summary: "تحول رائع - تفتيح البشرة",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png",
+              u: getTreatmentImage(5),
               w: 120,
               h: 120
             },
             user: {
               user_name: "ريم سعد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png"
+                u: getAvatarImage(2)
               }
             },
             view_cnt: "4.5k"
@@ -592,14 +593,14 @@ class Home extends Component {
             id: "6",
             summary: "نتائج طبيعية - نحت الوجه",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/7/9a87253568bfb4db9a3d8f19c7b79bc6_120_120.png",
+              u: getTreatmentImage(3),
               w: 120,
               h: 120
             },
             user: {
               user_name: "هند يوسف",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "3.2k"
@@ -612,14 +613,14 @@ class Home extends Component {
             id: "1",
             summary: "د. سارة أحمد - أخصائية التجميل",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png",
+              u: getTreatmentImage(0),
               w: 120,
               h: 120
             },
             user: {
               user_name: "د. سارة أحمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "8.5k"
@@ -630,14 +631,14 @@ class Home extends Component {
             id: "2",
             summary: "د. فاطمة محمد - جراحة تجميلية",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png",
+              u: getTreatmentImage(1),
               w: 120,
               h: 120
             },
             user: {
               user_name: "د. فاطمة محمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "7.2k"
@@ -648,14 +649,14 @@ class Home extends Component {
             id: "3",
             summary: "د. ليلى خالد - طب الجلدية",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png",
+              u: getTreatmentImage(2),
               w: 120,
               h: 120
             },
             user: {
               user_name: "د. ليلى خالد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "9.1k"
@@ -666,14 +667,14 @@ class Home extends Component {
             id: "4",
             summary: "د. نورا علي - تجميل الأنف",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png",
+              u: getTreatmentImage(4),
               w: 120,
               h: 120
             },
             user: {
               user_name: "د. نورا علي",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "6.8k"
@@ -684,14 +685,14 @@ class Home extends Component {
             id: "5",
             summary: "د. ريم سعد - علاج البشرة",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png",
+              u: getTreatmentImage(5),
               w: 120,
               h: 120
             },
             user: {
               user_name: "د. ريم سعد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png"
+                u: getAvatarImage(2)
               }
             },
             view_cnt: "5.9k"
@@ -702,14 +703,14 @@ class Home extends Component {
             id: "6",
             summary: "د. هند يوسف - تجميل الشفاه",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/7/9a87253568bfb4db9a3d8f19c7b79bc6_120_120.png",
+              u: getTreatmentImage(3),
               w: 120,
               h: 120
             },
             user: {
               user_name: "د. هند يوسف",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "7.5k"
@@ -722,14 +723,14 @@ class Home extends Component {
             id: "1",
             summary: "سؤال: ما هي أفضل طريقة لإزالة التجاعيد؟",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png",
+              u: getTreatmentImage(0),
               w: 120,
               h: 120
             },
             user: {
               user_name: "سارة أحمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "12.3k"
@@ -740,14 +741,14 @@ class Home extends Component {
             id: "2",
             summary: "سؤال: هل البوتوكس آمن للاستخدام؟",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png",
+              u: getTreatmentImage(1),
               w: 120,
               h: 120
             },
             user: {
               user_name: "فاطمة محمد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "10.8k"
@@ -758,14 +759,14 @@ class Home extends Component {
             id: "3",
             summary: "سؤال: ما الفرق بين الفيلر والبوتوكس؟",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png",
+              u: getTreatmentImage(2),
               w: 120,
               h: 120
             },
             user: {
               user_name: "ليلى خالد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "15.2k"
@@ -776,14 +777,14 @@ class Home extends Component {
             id: "4",
             summary: "سؤال: كم مرة يمكن تكرار جلسات الليزر؟",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png",
+              u: getTreatmentImage(4),
               w: 120,
               h: 120
             },
             user: {
               user_name: "نورا علي",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png"
+                u: getAvatarImage(1)
               }
             },
             view_cnt: "9.7k"
@@ -794,14 +795,14 @@ class Home extends Component {
             id: "5",
             summary: "سؤال: ما هي مدة نتائج الفيلر؟",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png",
+              u: getTreatmentImage(5),
               w: 120,
               h: 120
             },
             user: {
               user_name: "ريم سعد",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png"
+                u: getAvatarImage(2)
               }
             },
             view_cnt: "11.4k"
@@ -812,14 +813,14 @@ class Home extends Component {
             id: "6",
             summary: "سؤال: هل يمكن إزالة الوشم بالليزر؟",
             imgs: {
-              u: "https://img2.soyoung.com/origin/20200721/7/9a87253568bfb4db9a3d8f19c7b79bc6_120_120.png",
+              u: getTreatmentImage(3),
               w: 120,
               h: 120
             },
             user: {
               user_name: "هند يوسف",
               avatar: {
-                u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png"
+                u: getAvatarImage(0)
               }
             },
             view_cnt: "8.9k"
