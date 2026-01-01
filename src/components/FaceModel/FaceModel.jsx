@@ -606,20 +606,47 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
                   isBlobUrl = true;
                 }
                 
-                if (isBlobUrl) {
-                  // إزالة texture فوراً
-                  mat[textureType] = null;
-                  if (textureType === 'map' && !mat.color) {
-                    mat.color = new THREE.Color(0xffffff);
-                  }
-                  // إزالة texture من الذاكرة
+                if (isBlobUrl && textureType === 'map') {
+                  // للـ map texture، نحاول استخدام blob URL مباشرة
+                  console.log(`🔄 محاولة استخدام blob URL texture لـ ${textureType}`);
                   try {
-                    if (texture.dispose) {
-                      texture.dispose();
+                    // تحديث texture
+                    texture.needsUpdate = true;
+                    texture.flipY = false;
+                    texture.format = THREE.RGBAFormat;
+                    
+                    // إضافة error handler
+                    if (texture.image) {
+                      texture.image.onerror = (e) => {
+                        console.warn(`⚠️ فشل تحميل blob URL texture - استخدام لون بديل`);
+                        mat[textureType] = null;
+                        if (!mat.color || mat.color.getHex() === 0xffffff) {
+                          mat.color = new THREE.Color(0xcccccc);
+                        }
+                      };
+                      
+                      // التحقق من أن الصورة محملة
+                      if (texture.image.complete) {
+                        texture.needsUpdate = true;
+                        console.log(`✅ Blob URL texture محملة`);
+                      } else {
+                        texture.image.onload = () => {
+                          texture.needsUpdate = true;
+                          mat.needsUpdate = true;
+                          console.log(`✅ Blob URL texture اكتمل التحميل`);
+                        };
+                      }
                     }
                   } catch (e) {
-                    // تجاهل أخطاء dispose
+                    console.error(`❌ خطأ في استخدام blob URL texture:`, e);
+                    mat[textureType] = null;
+                    if (!mat.color || mat.color.getHex() === 0xffffff) {
+                      mat.color = new THREE.Color(0xcccccc);
+                    }
                   }
+                } else if (isBlobUrl) {
+                  // للـ textures الأخرى (normalMap, etc.)، أزل blob URLs
+                  mat[textureType] = null;
                 } else if (texture && texture.image) {
                   // منع أخطاء تحميل textures - إضافة error handler قبل التحميل
                   const originalOnError = texture.image.onerror;
@@ -982,11 +1009,43 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
               }
               
               if (isBlobUrl) {
-                // إذا كان blob URL، أزل texture واستخدم لون بديل
-                console.warn(`⚠️ إزالة blob URL texture لـ ${child.name}`);
-                mat.map = null;
-                if (!mat.color || mat.color.getHex() === 0xffffff) {
-                  mat.color = new THREE.Color(0xcccccc);
+                // إذا كان blob URL، نحاول استخدامه مباشرة
+                console.log(`🔄 محاولة استخدام blob URL texture لـ ${child.name}`);
+                try {
+                  // تحديث texture
+                  texture.needsUpdate = true;
+                  texture.flipY = false;
+                  texture.format = THREE.RGBAFormat;
+                  
+                  // التحقق من أن الصورة محملة
+                  if (texture.image.complete) {
+                    console.log(`✅ Blob URL texture محملة لـ ${child.name}`);
+                    texture.needsUpdate = true;
+                    mat.needsUpdate = true;
+                  } else {
+                    console.log(`⏳ Blob URL texture لم تكتمل بعد لـ ${child.name}`);
+                    texture.image.onload = () => {
+                      console.log(`✅ Blob URL texture اكتمل التحميل لـ ${child.name}`);
+                      texture.needsUpdate = true;
+                      mat.needsUpdate = true;
+                    };
+                  }
+                  
+                  // إضافة error handler
+                  texture.image.onerror = (e) => {
+                    console.warn(`⚠️ فشل تحميل blob URL texture لـ ${child.name} - استخدام لون بديل`);
+                    mat.map = null;
+                    if (!mat.color || mat.color.getHex() === 0xffffff) {
+                      mat.color = new THREE.Color(0xcccccc);
+                    }
+                    mat.needsUpdate = true;
+                  };
+                } catch (e) {
+                  console.error(`❌ خطأ في استخدام blob URL texture لـ ${child.name}:`, e);
+                  mat.map = null;
+                  if (!mat.color || mat.color.getHex() === 0xffffff) {
+                    mat.color = new THREE.Color(0xcccccc);
+                  }
                 }
               } else if (texture.image) {
                 // التأكد من أن texture يعمل
