@@ -525,6 +525,33 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
   useEffect(() => {
     if (gltf && gltf.scene) {
       console.log("✅ المودل تم تحميله بنجاح:", gltf);
+      console.log("📦 Scene children:", gltf.scene.children.length);
+      console.log("📦 Scene type:", gltf.scene.type);
+      console.log("📦 Scene name:", gltf.scene.name);
+      
+      // التحقق من وجود meshes
+      let meshCount = 0;
+      let nodeCount = 0;
+      gltf.scene.traverse((child) => {
+        nodeCount++;
+        console.log(`🔍 Node ${nodeCount}:`, {
+          type: child.type,
+          name: child.name,
+          isMesh: child.isMesh,
+          isGroup: child.isGroup,
+          isObject3D: child.isObject3D,
+          visible: child.visible,
+          children: child.children.length
+        });
+        
+        if (child.isMesh) {
+          meshCount++;
+          console.log(`🔷 Mesh: ${child.name || 'unnamed'}, Material:`, child.material?.name || 'no material');
+        }
+      });
+      console.log("📦 عدد Meshes:", meshCount);
+      console.log("📦 عدد Nodes:", nodeCount);
+      console.log("🎨 عدد المواد:", Object.keys(gltf.materials || {}).length);
       
       // حساب حجم المودل
       const box = new THREE.Box3().setFromObject(gltf.scene);
@@ -533,17 +560,21 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
       
       console.log("📏 حجم المودل:", size);
       console.log("📍 مركز المودل:", center);
-      console.log("🎨 عدد المواد:", Object.keys(gltf.materials || {}).length);
       
-      // التحقق من وجود meshes
-      let meshCount = 0;
-      gltf.scene.traverse((child) => {
-        if (child.isMesh) {
-          meshCount++;
-          console.log(`🔷 Mesh: ${child.name || 'unnamed'}, Material:`, child.material?.name || 'no material');
-        }
-      });
-      console.log("📦 عدد Meshes:", meshCount);
+      // إذا كان المودل فارغ، حاول إصلاحه
+      if (meshCount === 0) {
+        console.warn("⚠️ لا توجد meshes في المودل - محاولة إصلاح");
+        
+        // التحقق من أن الـ scene مرئي
+        gltf.scene.visible = true;
+        gltf.scene.traverse((child) => {
+          child.visible = true;
+          if (child.isMesh) {
+            child.visible = true;
+            child.frustumCulled = false;
+          }
+        });
+      }
     } else {
       console.warn("⚠️ المودل لم يتم تحميله:", gltf);
     }
@@ -832,10 +863,74 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
     
     // التحقق من أن المودل له حجم
     if (size.x === 0 && size.y === 0 && size.z === 0) {
-      console.warn("⚠️ المودل لا يحتوي على حجم - قد يكون مسطح");
+      console.warn("⚠️ المودل لا يحتوي على حجم - محاولة إصلاح");
+      
+      // التحقق من وجود meshes
+      let hasMeshes = false;
+      let meshInfo = [];
+      scene.traverse((child) => {
+        console.log(`🔍 Child:`, {
+          type: child.type,
+          name: child.name,
+          isMesh: child.isMesh,
+          isGroup: child.isGroup,
+          visible: child.visible,
+          children: child.children.length,
+          position: child.position,
+          scale: child.scale
+        });
+        
+        if (child.isMesh) {
+          hasMeshes = true;
+          meshInfo.push({
+            name: child.name,
+            visible: child.visible,
+            hasMaterial: !!child.material,
+            geometry: child.geometry?.type,
+            vertices: child.geometry?.attributes?.position?.count
+          });
+          
+          // إصلاح mesh
+          child.visible = true;
+          child.frustumCulled = false;
+          
+          // إصلاح المادة
+          if (child.material) {
+            const materials = Array.isArray(child.material) ? child.material : [child.material];
+            materials.forEach((mat) => {
+              if (mat) {
+                mat.visible = true;
+                mat.transparent = false;
+                mat.side = THREE.DoubleSide;
+              }
+            });
+          } else {
+            // إضافة مادة افتراضية
+            child.material = new THREE.MeshStandardMaterial({
+              color: 0xcccccc,
+              side: THREE.DoubleSide,
+              visible: true
+            });
+          }
+        }
+      });
+      
+      console.log("📊 Mesh Info:", meshInfo);
+      
+      if (!hasMeshes) {
+        console.error("❌ لا توجد meshes في المودل!");
+        console.log("📦 Scene structure:", {
+          children: scene.children.length,
+          type: scene.type,
+          name: scene.name
+        });
+        return;
+      }
+      
       // إضافة حجم افتراضي للمودل المسطح
       scene.scale.set(1, 1, 1);
       scene.position.set(0, 0, 0);
+      console.log("🔧 تم ضبط المودل المسطح");
       return;
     }
     
