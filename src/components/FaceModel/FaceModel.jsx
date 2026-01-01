@@ -939,7 +939,10 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
     });
   });
 
-  if (!scene) {
+  // التحقق من أن المودل ليس فارغاً
+  const isEmpty = scene && scene.children.length === 0;
+  
+  if (!scene || isEmpty) {
     return (
       <Html center>
         <div style={{ 
@@ -950,11 +953,25 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
           background: 'rgba(255, 255, 255, 0.9)',
           borderRadius: '0.1rem'
         }}>
-          ⚠️ لا يمكن تحميل المودل
-          <br />
-          <span style={{ fontSize: '0.14rem', color: '#999' }}>
-            يرجى التأكد من وجود ملف face.glb
-          </span>
+          {isEmpty ? (
+            <>
+              ⚠️ المودل فارغ
+              <br />
+              <span style={{ fontSize: '0.14rem', color: '#999' }}>
+                ملف face.glb موجود لكنه فارغ (لا يحتوي على meshes)
+                <br />
+                يرجى التحقق من الملف أو استخدام model.glb
+              </span>
+            </>
+          ) : (
+            <>
+              ⚠️ لا يمكن تحميل المودل
+              <br />
+              <span style={{ fontSize: '0.14rem', color: '#999' }}>
+                يرجى التأكد من وجود ملف face.glb
+              </span>
+            </>
+          )}
         </div>
       </Html>
     );
