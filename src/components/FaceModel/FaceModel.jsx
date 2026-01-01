@@ -503,7 +503,20 @@ const regionNames = ['cheeks', 'doublechin', 'forehead', 'jawline', 'lips', 'nec
 
 function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegionSelect }) {
   const groupRef = useRef();
-  const { scene } = useGLTF("/assets/models/face.glb");
+  
+  // محاولة تحميل المودل - استخدام fallback إذا فشل
+  // استخدام useGLTF بشكل مباشر (لا يمكن استخدامه بشكل مشروط)
+  let gltf;
+  try {
+    gltf = useGLTF("/assets/models/face.glb");
+  } catch (error) {
+    // إذا فشل تحميل face.glb، استخدم المودل القديم
+    console.warn("Could not load face.glb, using fallback model.glb");
+    gltf = useGLTF("/assets/models/model.glb");
+  }
+  
+  const scene = gltf?.scene;
+  
   const [hoveredRegion, setHoveredRegion] = useState(null);
   const [waveProgress, setWaveProgress] = useState(0);
   const waveRef = useRef(0);
@@ -621,6 +634,27 @@ function FaceModelMesh({ onHotspotClick, activeHotspot, selectedRegion, onRegion
       }
     });
   });
+
+  if (!scene) {
+    return (
+      <Html center>
+        <div style={{ 
+          color: '#667eea', 
+          fontSize: '0.2rem',
+          textAlign: 'center',
+          padding: '0.2rem',
+          background: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '0.1rem'
+        }}>
+          ⚠️ لا يمكن تحميل المودل
+          <br />
+          <span style={{ fontSize: '0.14rem', color: '#999' }}>
+            يرجى التأكد من وجود ملف face.glb
+          </span>
+        </div>
+      </Html>
+    );
+  }
 
   return (
     <group ref={groupRef}>

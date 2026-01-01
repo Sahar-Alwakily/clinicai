@@ -166,15 +166,24 @@ module.exports = {
             fs.copyFileSync(iconSrc, iconDest);
           }
           
-          // Copy 3D model
+          // Copy 3D models
           const modelDir = path.resolve(distPath, "assets/models");
           if (!fs.existsSync(modelDir)) {
             fs.mkdirSync(modelDir, { recursive: true });
           }
+          
+          // Copy model.glb
           const modelSrc = path.resolve(__dirname, "../src/assets/models/model.glb");
           const modelDest = path.resolve(modelDir, "model.glb");
           if (fs.existsSync(modelSrc)) {
             fs.copyFileSync(modelSrc, modelDest);
+          }
+          
+          // Copy face.glb
+          const faceModelSrc = path.resolve(__dirname, "../src/assets/models/face.glb");
+          const faceModelDest = path.resolve(modelDir, "face.glb");
+          if (fs.existsSync(faceModelSrc)) {
+            fs.copyFileSync(faceModelSrc, faceModelDest);
           }
         });
       },
