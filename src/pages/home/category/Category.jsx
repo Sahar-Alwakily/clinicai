@@ -65,7 +65,7 @@ class Category extends Component {
   };
   gotoinfo = (name) => {
     return () => {
-      this.props.history.push(`/mianbulunkuo:${name}`);
+      this.props.history.push(`/mianbulunkuo/${encodeURIComponent(name)}`);
     };
   };
   render() {

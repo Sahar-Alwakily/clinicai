@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Productlistdiv } from "./styled";
+import { getTreatmentImage } from "../../../utils/defaultImages";
 
 export default class Productlist extends Component {
   // بيانات وهمية لخدمات متنوعة
@@ -10,175 +11,175 @@ export default class Productlist extends Component {
         title: "إبرة نضارة متقدمة",
         brand: "عيادة الجمال",
         price: 890,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(0) }
       },
       {
         pid: "2",
         title: "بوتوكس الجبهة والعينين",
         brand: "مركز التجميل",
         price: 1200,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(1) }
       },
       {
         pid: "3",
         title: "فيلر الخدود والوجنتين",
         brand: "عيادة النضارة",
         price: 1500,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(2) }
       },
       {
         pid: "4",
         title: "تنظيف البشرة العميق",
         brand: "عيادة العناية",
         price: 450,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(3) }
       },
       {
         pid: "5",
         title: "تفتيح البشرة بالجلوتاثيون",
         brand: "مركز التجميل الفاخر",
         price: 1100,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(4) }
       },
       {
         pid: "6",
         title: "فيلر الشفاه والأنف",
         brand: "عيادة الجمال المتخصص",
         price: 1800,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/3/fa67f15b7512390a00d5037f149d1147_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(5) }
       },
       {
         pid: "7",
         title: "إزالة الهالات السوداء",
         brand: "عيادة العيون",
         price: 950,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(1) }
       },
       {
         pid: "8",
         title: "شد الوجه والرقبة",
         brand: "مركز التجميل المتقدم",
         price: 2500,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/7/9a87253568bfb4db9a3d8f19c7b79bc6_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(6) }
       },
       {
         pid: "9",
         title: "حقن وريدي فيتامين C",
         brand: "عيادة النضارة الطبية",
         price: 750,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(3) }
       },
       {
         pid: "10",
         title: "ملء الدهون الذاتي للوجه",
         brand: "مركز التجميل الطبيعي",
         price: 2200,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/4/adef799e0114a207e991daac3c1db1dc_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(7) }
       },
       {
         pid: "11",
         title: "بوتوكس الشفاه",
         brand: "عيادة الجمال",
         price: 850,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(0) }
       },
       {
         pid: "12",
         title: "فيلر تحت العينين",
         brand: "مركز التجميل",
         price: 1300,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(1) }
       },
       {
         pid: "13",
         title: "تفتيح منطقة الوجه",
         brand: "عيادة النضارة",
         price: 980,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(2) }
       },
       {
         pid: "14",
         title: "شد الجفون",
         brand: "عيادة العناية",
         price: 1600,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(3) }
       },
       {
         pid: "15",
         title: "فيلر الذقن",
         brand: "مركز التجميل الفاخر",
         price: 1400,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(4) }
       },
       {
         pid: "16",
         title: "إبرة نضارة الذهبية",
         brand: "عيادة الجمال المتخصص",
         price: 1200,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/3/fa67f15b7512390a00d5037f149d1147_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(5) }
       },
       {
         pid: "17",
         title: "حقن وريدي جلوتاثيون",
         brand: "عيادة العيون",
         price: 1050,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(1) }
       },
       {
         pid: "18",
         title: "ملء الدهون بالهيالورونيك",
         brand: "مركز التجميل المتقدم",
         price: 1900,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/7/9a87253568bfb4db9a3d8f19c7b79bc6_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(6) }
       },
       {
         pid: "19",
         title: "مكياج شبه دائم للشفاه",
         brand: "عيادة النضارة الطبية",
         price: 1100,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(3) }
       },
       {
         pid: "20",
         title: "تفتيح منطقة الصدر",
         brand: "مركز التجميل الطبيعي",
         price: 1350,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/4/adef799e0114a207e991daac3c1db1dc_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(7) }
       },
       {
         pid: "21",
         title: "بوتوكس الرقبة",
         brand: "عيادة الجمال",
         price: 1150,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/6/daf7ec3daf387fb0857ab8290fa77302_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(0) }
       },
       {
         pid: "22",
         title: "فيلر المعابد",
         brand: "مركز التجميل",
         price: 1250,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/3/cb676444fac65218c279668a3287e6da_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(1) }
       },
       {
         pid: "23",
         title: "إزالة التجاعيد",
         brand: "عيادة النضارة",
         price: 1650,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200721/6/b5069cd9a7d5d3b208eb81057175e2ac_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(2) }
       },
       {
         pid: "24",
         title: "قناع الكولاجين",
         brand: "عيادة العناية",
         price: 550,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/1/0a43bcece5358766e753fc491776c17a_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(3) }
       },
       {
         pid: "25",
         title: "علاج حب الشباب",
         brand: "مركز التجميل الفاخر",
         price: 680,
-        img_cover: { u: "https://img2.soyoung.com/origin/20200508/4/d6ef1e1a38b1dcfbc52a0dae49c5d6cc_120_120.png?imageView2/0/format/webp" }
+        img_cover: { u: getTreatmentImage(4) }
       }
     ];
   };
@@ -209,7 +210,17 @@ export default class Productlist extends Component {
                 className="product-card"
               >
                 <div className="image-container">
-                  <img src={imageUrl} alt={title} />
+                  <img 
+                    src={imageUrl || getTreatmentImage(parseInt(item.pid) % 8)} 
+                    alt={title}
+                    onError={(e) => {
+                      e.preventDefault?.();
+                      e.stopPropagation?.();
+                      if (e.target.src !== getTreatmentImage(parseInt(item.pid) % 8)) {
+                        e.target.src = getTreatmentImage(parseInt(item.pid) % 8);
+                      }
+                    }}
+                  />
                   <div 
                     className="favorite-icon"
                     onClick={(e) => {
